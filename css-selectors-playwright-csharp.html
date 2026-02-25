@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSS Selectors — Playwright C# Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1f2d45;
+    --accent: #38bdf8;
+    --accent2: #a78bfa;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --code-bg: #0d1526;
+    --tag-bg: rgba(56,189,248,0.1);
+    --tag-border: rgba(56,189,248,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .hero {
+    background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 50%, #0a1628 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 20%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(167,139,250,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--tag-bg); border: 1px solid var(--tag-border);
+    color: var(--accent); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 5px 12px; border-radius: 4px; margin-bottom: 16px;
+  }
+  .hero-badge::before { content: '◈'; }
+  h1 {
+    font-size: clamp(28px, 5vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #e2e8f0 30%, #38bdf8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .hero-sub {
+    color: var(--text-dim);
+    font-size: 15px;
+    max-width: 600px;
+  }
+  .hero-meta {
+    display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap;
+  }
+  .hero-stat {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-dim); font-size: 13px;
+  }
+  .hero-stat span { color: var(--accent); font-weight: 700; }
+
+  /* Layout */
+  .container { max-width: 1400px; margin: 0 auto; padding: 40px; }
+
+  /* TOC */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+  }
+  .toc-title {
+    grid-column: 1 / -1;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 12px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toc a:hover { color: var(--accent); background: var(--tag-bg); }
+  .toc a::before { content: '→'; color: var(--text-muted); font-size: 10px; }
+
+  /* Sections */
+  .section { margin-bottom: 48px; }
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 24px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .section-desc { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+
+  /* Cards grid */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(580px, 1fr)); gap: 16px; }
+  .cards.single { grid-template-columns: 1fr; }
+  .cards.triple { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(56,189,248,0.25); }
+
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2);
+  }
+  .card-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--text-dim);
+  }
+  .card-tag {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 3px;
+  }
+  .tag-basic { background: rgba(52,211,153,0.1); color: var(--accent3); border: 1px solid rgba(52,211,153,0.2); }
+  .tag-advanced { background: rgba(167,139,250,0.1); color: var(--accent2); border: 1px solid rgba(167,139,250,0.2); }
+  .tag-playwright { background: rgba(56,189,248,0.1); color: var(--accent); border: 1px solid rgba(56,189,248,0.2); }
+  .tag-warning { background: rgba(251,146,60,0.1); color: var(--accent4); border: 1px solid rgba(251,146,60,0.2); }
+
+  .card-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+
+  /* Selector rows */
+  .selector-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .selector-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .selector-row:first-child { padding-top: 0; }
+
+  .sel-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    color: var(--accent);
+    background: var(--code-bg);
+    padding: 4px 8px; border-radius: 4px;
+    word-break: break-all;
+  }
+  .sel-desc { font-size: 13px; color: var(--text-dim); }
+  .sel-desc strong { color: var(--text); }
+
+  /* Code blocks */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .code-block-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+  .code-block-lang {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .code-block-lang::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent3);
+  }
+  .code-block pre {
+    padding: 16px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: var(--text);
+  }
+
+  /* Syntax highlighting helpers */
+  .kw { color: #c084fc; }
+  .cls { color: #38bdf8; }
+  .str { color: #86efac; }
+  .cmt { color: #475569; font-style: italic; }
+  .fn { color: #fbbf24; }
+  .param { color: #fb923c; }
+  .type { color: #a78bfa; }
+  .op { color: #94a3b8; }
+  .num { color: #f472b6; }
+
+  /* Note boxes */
+  .note {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .note-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+  .note-info { background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); color: #93c5fd; }
+  .note-warn { background: rgba(251,146,60,0.08); border: 1px solid rgba(251,146,60,0.2); color: #fbbf24; }
+  .note-tip { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); color: #6ee7b7; }
+
+  /* Table */
+  .ref-table { width: 100%; border-collapse: collapse; }
+  .ref-table th {
+    text-align: left; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .ref-table td {
+    padding: 10px 14px; font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .ref-table td:first-child {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--accent); white-space: nowrap;
+  }
+  .ref-table td:nth-child(2) { color: var(--accent3); font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+  .ref-table td:nth-child(3) { color: var(--text-dim); }
+
+  /* Divider */
+  .divider {
+    height: 1px; background: var(--border);
+    margin: 48px 0;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 40px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .container { padding: 20px; }
+    .cards { grid-template-columns: 1fr; }
+    .cards.triple { grid-template-columns: 1fr; }
+    .selector-row { grid-template-columns: 1fr; gap: 4px; }
+    h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">Playwright C# Reference</div>
+    <h1>CSS Selectors<br>Cheatsheet</h1>
+    <p class="hero-sub">Complete reference for CSS selectors in Playwright C# — from basic element targeting to advanced pseudo-classes, attribute matching, and Playwright-specific locator strategies.</p>
+    <div class="hero-meta">
+      <div class="hero-stat">Sections <span>10</span></div>
+      <div class="hero-stat">Selectors <span>60+</span></div>
+      <div class="hero-stat">C# Examples <span>40+</span></div>
+      <div class="hero-stat">Framework <span>Playwright .NET</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TOC -->
+  <nav class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <a href="#basic">Basic Selectors</a>
+    <a href="#combinators">Combinators</a>
+    <a href="#attributes">Attribute Selectors</a>
+    <a href="#pseudo-class">Pseudo-classes</a>
+    <a href="#pseudo-element">Pseudo-elements</a>
+    <a href="#playwright">Playwright Locators</a>
+    <a href="#forms">Form Elements</a>
+    <a href="#nth">nth Selectors</a>
+    <a href="#patterns">Common Patterns</a>
+    <a href="#tips">Tips &amp; Best Practices</a>
+  </nav>
+
+  <!-- ======================== BASIC SELECTORS ======================== -->
+  <section class="section" id="basic">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.12);color:var(--accent3)">⬡</div>
+      <div>
+        <div class="section-title">Basic Selectors</div>
+        <div class="section-desc">Fundamental selectors for targeting elements by type, class, or ID</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Selector Reference</div>
+          <span class="card-tag tag-basic">Basic</span>
+        </div>
+        <div class="card-body">
+          <div class="selector-row">
+            <div class="sel-code">*</div>
+            <div class="sel-desc">Selects <strong>all elements</strong> (universal selector). Use sparingly.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">div</div>
+            <div class="sel-desc">Selects all <strong>&lt;div&gt;</strong> elements by tag name.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">.className</div>
+            <div class="sel-desc">Selects elements with <strong>class="className"</strong>.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">#myId</div>
+            <div class="sel-desc">Selects the element with <strong>id="myId"</strong>. Should be unique per page.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">div.card</div>
+            <div class="sel-desc">Selects <strong>&lt;div&gt;</strong> elements that also have class <strong>card</strong>.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">.a.b.c</div>
+            <div class="sel-desc">Selects elements that have <strong>all three classes</strong> simultaneously.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Playwright C# — Basic Usage</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C#</span>
+            </div>
+            <pre><span class="cmt">// Tag selector</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"button"</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// Class selector</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">".submit-btn"</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// ID selector</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"#username"</span>).<span class="fn">FillAsync</span>(<span class="str">"testuser"</span>);
+
+<span class="cmt">// Tag + class combination</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"input.form-control"</span>).<span class="fn">FillAsync</span>(<span class="str">"value"</span>);
+
+<span class="cmt">// Multiple classes</span>
+<span class="kw">var</span> el = page.<span class="fn">Locator</span>(<span class="str">".btn.btn-primary.active"</span>);
+<span class="kw">await</span> el.<span class="fn">ClickAsync</span>();</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== COMBINATORS ======================== -->
+  <section class="section" id="combinators">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.12);color:var(--accent)">⇄</div>
+      <div>
+        <div class="section-title">Combinators</div>
+        <div class="section-desc">Describe relationships between elements in the DOM tree</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Combinator Reference</div>
+          <span class="card-tag tag-basic">Structure</span>
+        </div>
+        <div class="card-body">
+          <div class="selector-row">
+            <div class="sel-code">A B</div>
+            <div class="sel-desc"><strong>Descendant</strong> — B anywhere inside A (any depth).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">A &gt; B</div>
+            <div class="sel-desc"><strong>Child</strong> — B that is a <em>direct</em> child of A only.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">A + B</div>
+            <div class="sel-desc"><strong>Adjacent sibling</strong> — B immediately after A (same parent).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">A ~ B</div>
+            <div class="sel-desc"><strong>General sibling</strong> — all B elements after A (same parent).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">A, B</div>
+            <div class="sel-desc"><strong>Group</strong> — selects both A and B (multiple selectors).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Playwright C# — Combinators</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C#</span>
+            </div>
+            <pre><span class="cmt">// Descendant: input anywhere inside .login-form</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">".login-form input"</span>).<span class="fn">FillAsync</span>(<span class="str">"test"</span>);
+
+<span class="cmt">// Direct child: li that is direct child of ul</span>
+<span class="kw">var</span> items = page.<span class="fn">Locator</span>(<span class="str">"ul.menu > li"</span>);
+<span class="fn">Assert</span>.<span class="fn">AreEqual</span>(<span class="num">5</span>, <span class="kw">await</span> items.<span class="fn">CountAsync</span>());
+
+<span class="cmt">// Adjacent sibling: label immediately after input</span>
+<span class="kw">var</span> lbl = page.<span class="fn">Locator</span>(<span class="str">"input#email + label"</span>);
+
+<span class="cmt">// General sibling: all p after h2</span>
+<span class="kw">var</span> paras = page.<span class="fn">Locator</span>(<span class="str">"h2 ~ p"</span>);
+
+<span class="cmt">// Group: select buttons AND links</span>
+<span class="kw">var</span> all = page.<span class="fn">Locator</span>(<span class="str">"button, a.nav-link"</span>);
+<span class="fn">Assert</span>.<span class="fn">Greater</span>(<span class="kw">await</span> all.<span class="fn">CountAsync</span>(), <span class="num">0</span>);</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== ATTRIBUTE SELECTORS ======================== -->
+  <section class="section" id="attributes">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.12);color:var(--accent2)">[ ]</div>
+      <div>
+        <div class="section-title">Attribute Selectors</div>
+        <div class="section-desc">Target elements by their HTML attributes and attribute values</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Attribute Selector Reference</div>
+          <span class="card-tag tag-advanced">Advanced</span>
+        </div>
+        <div class="card-body">
+          <div class="selector-row">
+            <div class="sel-code">[attr]</div>
+            <div class="sel-desc">Element <strong>has</strong> the attribute (regardless of value).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">[attr="val"]</div>
+            <div class="sel-desc">Attribute <strong>exactly equals</strong> "val".</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">[attr~="val"]</div>
+            <div class="sel-desc">Attribute is a <strong>space-separated list</strong> containing "val".</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">[attr|="val"]</div>
+            <div class="sel-desc">Attribute equals "val" or <strong>starts with "val-"</strong> (language codes).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">[attr^="val"]</div>
+            <div class="sel-desc">Attribute value <strong>starts with</strong> "val".</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">[attr$="val"]</div>
+            <div class="sel-desc">Attribute value <strong>ends with</strong> "val".</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">[attr*="val"]</div>
+            <div class="sel-desc">Attribute value <strong>contains</strong> "val" anywhere.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">[attr="val" i]</div>
+            <div class="sel-desc">Case-<strong>insensitive</strong> match (append <code>i</code> flag).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">[attr="val" s]</div>
+            <div class="sel-desc">Case-<strong>sensitive</strong> match (append <code>s</code> flag).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Playwright C# — Attributes</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C#</span>
+            </div>
+            <pre><span class="cmt">// Has data-testid attribute</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"[data-testid]"</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// Exact attribute value</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"[data-testid='submit-btn']"</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// Input type (exact)</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"input[type='email']"</span>).<span class="fn">FillAsync</span>(<span class="str">"user@test.com"</span>);
+
+<span class="cmt">// href starts with https</span>
+<span class="kw">var</span> extLinks = page.<span class="fn">Locator</span>(<span class="str">"a[href^='https']"</span>);
+
+<span class="cmt">// href ends with .pdf</span>
+<span class="kw">var</span> pdfs = page.<span class="fn">Locator</span>(<span class="str">"a[href$='.pdf']"</span>);
+
+<span class="cmt">// src contains "thumbnail"</span>
+<span class="kw">var</span> thumbs = page.<span class="fn">Locator</span>(<span class="str">"img[src*='thumbnail']"</span>);
+
+<span class="cmt">// Case-insensitive type match</span>
+<span class="kw">var</span> inputs = page.<span class="fn">Locator</span>(<span class="str">"input[type='submit' i]"</span>);
+
+<span class="cmt">// Chain: disabled input of type text</span>
+<span class="kw">var</span> disabled = page.<span class="fn">Locator</span>(<span class="str">"input[type='text'][disabled]"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(disabled).<span class="fn">ToBeDisabledAsync</span>();</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== PSEUDO-CLASSES ======================== -->
+  <section class="section" id="pseudo-class">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.12);color:var(--accent4)">:</div>
+      <div>
+        <div class="section-title">Pseudo-classes</div>
+        <div class="section-desc">Select elements based on state, position, or DOM relationships</div>
+      </div>
+    </div>
+
+    <div class="cards triple">
+      <!-- State pseudo-classes -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">State / Interaction</div>
+          <span class="card-tag tag-basic">State</span>
+        </div>
+        <div class="card-body">
+          <div class="selector-row">
+            <div class="sel-code">:hover</div>
+            <div class="sel-desc">Pointer is over element.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:focus</div>
+            <div class="sel-desc">Element has keyboard/input focus.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:focus-within</div>
+            <div class="sel-desc">Element <em>or any descendant</em> is focused.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:focus-visible</div>
+            <div class="sel-desc">Focus visible to keyboard users.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:active</div>
+            <div class="sel-desc">Currently being activated (click).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:visited</div>
+            <div class="sel-desc">Visited link.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:link</div>
+            <div class="sel-desc">Unvisited anchor element.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:target</div>
+            <div class="sel-desc">Element referenced by URL hash.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form state -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Form State</div>
+          <span class="card-tag tag-basic">Forms</span>
+        </div>
+        <div class="card-body">
+          <div class="selector-row">
+            <div class="sel-code">:checked</div>
+            <div class="sel-desc">Checked checkbox, radio, or option.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:disabled</div>
+            <div class="sel-desc">Form element is disabled.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:enabled</div>
+            <div class="sel-desc">Form element is enabled.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:required</div>
+            <div class="sel-desc">Input has <code>required</code> attribute.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:optional</div>
+            <div class="sel-desc">Input without <code>required</code>.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:valid</div>
+            <div class="sel-desc">Input passes validation.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:invalid</div>
+            <div class="sel-desc">Input fails validation.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:read-only</div>
+            <div class="sel-desc">Non-editable input element.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:placeholder-shown</div>
+            <div class="sel-desc">Input showing placeholder text.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Structural -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Structural</div>
+          <span class="card-tag tag-advanced">DOM</span>
+        </div>
+        <div class="card-body">
+          <div class="selector-row">
+            <div class="sel-code">:first-child</div>
+            <div class="sel-desc">First child of its parent.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:last-child</div>
+            <div class="sel-desc">Last child of its parent.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:only-child</div>
+            <div class="sel-desc">Only child of its parent.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:first-of-type</div>
+            <div class="sel-desc">First element of its type.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:last-of-type</div>
+            <div class="sel-desc">Last element of its type.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:only-of-type</div>
+            <div class="sel-desc">Only element of its type.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:empty</div>
+            <div class="sel-desc">Has no children (incl. text).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:root</div>
+            <div class="sel-desc">Document root element.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">:not(selector)</div>
+            <div class="sel-desc">Does <strong>not</strong> match given selector.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Playwright C# — Pseudo-classes</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C#</span>
+            </div>
+            <pre><span class="cmt">// Checked checkbox</span>
+<span class="kw">var</span> checked = page.<span class="fn">Locator</span>(<span class="str">"input[type='checkbox']:checked"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(checked).<span class="fn">ToBeCheckedAsync</span>();
+
+<span class="cmt">// Disabled inputs</span>
+<span class="kw">var</span> disabled = page.<span class="fn">Locator</span>(<span class="str">"input:disabled"</span>);
+
+<span class="cmt">// Invalid form fields</span>
+<span class="kw">var</span> invalid = page.<span class="fn">Locator</span>(<span class="str">"input:invalid"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(invalid).<span class="fn">ToBeVisibleAsync</span>();
+
+<span class="cmt">// Not disabled buttons</span>
+<span class="kw">var</span> active = page.<span class="fn">Locator</span>(<span class="str">"button:not([disabled])"</span>);
+
+<span class="cmt">// First and last table row</span>
+<span class="kw">var</span> firstRow = page.<span class="fn">Locator</span>(<span class="str">"tr:first-child"</span>);
+<span class="kw">var</span> lastRow  = page.<span class="fn">Locator</span>(<span class="str">"tr:last-child"</span>);
+
+<span class="cmt">// Empty list items</span>
+<span class="kw">var</span> emptyLi = page.<span class="fn">Locator</span>(<span class="str">"li:empty"</span>);
+
+<span class="cmt">// Focus-within: highlight parent when input focused</span>
+<span class="kw">var</span> focused = page.<span class="fn">Locator</span>(<span class="str">".form-group:focus-within"</span>);</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== NTH SELECTORS ======================== -->
+  <section class="section" id="nth">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(244,114,182,0.12);color:var(--accent5)">n</div>
+      <div>
+        <div class="section-title">nth Selectors</div>
+        <div class="section-desc">Select elements by their position using algebraic formulas</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">nth Reference — Formula: an+b</div>
+          <span class="card-tag tag-advanced">Advanced</span>
+        </div>
+        <div class="card-body">
+          <div style="overflow-x:auto;">
+            <table class="ref-table">
+              <thead>
+                <tr>
+                  <th>Selector</th>
+                  <th>Formula / Value</th>
+                  <th>Selects</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>:nth-child(3)</td><td>literal 3</td><td>Exactly the 3rd child</td></tr>
+                <tr><td>:nth-child(2n)</td><td>even positions</td><td>Every even child (2,4,6...)</td></tr>
+                <tr><td>:nth-child(2n+1)</td><td>odd positions</td><td>Every odd child (1,3,5...)</td></tr>
+                <tr><td>:nth-child(even)</td><td>keyword</td><td>Alias for 2n</td></tr>
+                <tr><td>:nth-child(odd)</td><td>keyword</td><td>Alias for 2n+1</td></tr>
+                <tr><td>:nth-child(3n)</td><td>every 3rd</td><td>3rd, 6th, 9th, 12th...</td></tr>
+                <tr><td>:nth-child(3n+1)</td><td>start at 1</td><td>1st, 4th, 7th, 10th...</td></tr>
+                <tr><td>:nth-child(-n+3)</td><td>first 3</td><td>1st, 2nd, 3rd only</td></tr>
+                <tr><td>:nth-child(n+4)</td><td>from 4th</td><td>4th and beyond</td></tr>
+                <tr><td>:nth-last-child(2)</td><td>from end</td><td>2nd from the last</td></tr>
+                <tr><td>:nth-of-type(2)</td><td>by type</td><td>2nd element of same tag type</td></tr>
+                <tr><td>:nth-last-of-type(1)</td><td>last of type</td><td>Last element of that tag type</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Playwright C# — nth Patterns</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C#</span>
+            </div>
+            <pre><span class="cmt">// 3rd table row</span>
+<span class="kw">var</span> row3 = page.<span class="fn">Locator</span>(<span class="str">"table tr:nth-child(3)"</span>);
+
+<span class="cmt">// Every other row (zebra stripe validation)</span>
+<span class="kw">var</span> even = page.<span class="fn">Locator</span>(<span class="str">"tr:nth-child(even)"</span>);
+
+<span class="cmt">// First 3 items in list</span>
+<span class="kw">var</span> first3 = page.<span class="fn">Locator</span>(<span class="str">"li:nth-child(-n+3)"</span>);
+<span class="fn">Assert</span>.<span class="fn">AreEqual</span>(<span class="num">3</span>, <span class="kw">await</span> first3.<span class="fn">CountAsync</span>());
+
+<span class="cmt">// Playwright's .Nth() — zero-based index</span>
+<span class="kw">var</span> second = page.<span class="fn">Locator</span>(<span class="str">".list-item"</span>).<span class="fn">Nth</span>(<span class="num">1</span>); <span class="cmt">// 2nd item</span>
+<span class="kw">var</span> first  = page.<span class="fn">Locator</span>(<span class="str">".list-item"</span>).<span class="fn">First</span>;
+<span class="kw">var</span> last   = page.<span class="fn">Locator</span>(<span class="str">".list-item"</span>).<span class="fn">Last</span>;
+
+<span class="cmt">// 2nd paragraph inside article</span>
+<span class="kw">var</span> p2 = page.<span class="fn">Locator</span>(<span class="str">"article p:nth-of-type(2)"</span>);
+<span class="kw">var</span> txt = <span class="kw">await</span> p2.<span class="fn">TextContentAsync</span>();</pre>
+          </div>
+          <div class="note note-info">
+            <span class="note-icon">ℹ</span>
+            <span>Playwright's <code>.Nth(n)</code> uses 0-based indexing, while CSS <code>:nth-child(n)</code> is 1-based. Use <code>.First</code> and <code>.Last</code> for convenience.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== PSEUDO-ELEMENTS ======================== -->
+  <section class="section" id="pseudo-element">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,146,60,0.12);color:var(--accent4)">::</div>
+      <div>
+        <div class="section-title">Pseudo-elements</div>
+        <div class="section-desc">Style specific parts of an element. Note: limited use in Playwright.</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Pseudo-element Reference</div>
+          <span class="card-tag tag-warning">Limited in Tests</span>
+        </div>
+        <div class="card-body">
+          <div class="selector-row">
+            <div class="sel-code">::before</div>
+            <div class="sel-desc">Inserts content <strong>before</strong> element content (CSS generated).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">::after</div>
+            <div class="sel-desc">Inserts content <strong>after</strong> element content (CSS generated).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">::first-line</div>
+            <div class="sel-desc">Styles the <strong>first line</strong> of text in a block.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">::first-letter</div>
+            <div class="sel-desc">Styles the <strong>first character</strong> of a block.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">::selection</div>
+            <div class="sel-desc">Styles <strong>highlighted/selected</strong> text.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">::placeholder</div>
+            <div class="sel-desc">Styles <strong>placeholder text</strong> in inputs.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">::marker</div>
+            <div class="sel-desc">Styles <strong>list item markers</strong> (bullets/numbers).</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code">::backdrop</div>
+            <div class="sel-desc">Full-screen backdrop behind dialogs/fullscreen.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Playwright C# — Pseudo-element Workarounds</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="note note-warn">
+            <span class="note-icon">⚠</span>
+            <span>Playwright cannot directly interact with pseudo-elements (<code>::before</code>, <code>::after</code>) since they are not real DOM nodes. Use JavaScript evaluation instead.</span>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C#</span>
+            </div>
+            <pre><span class="cmt">// Get computed style of ::before content</span>
+<span class="kw">var</span> content = <span class="kw">await</span> page.<span class="fn">EvaluateAsync</span>&lt;<span class="type">string</span>&gt;(<span class="str">@"
+    window.getComputedStyle(
+        document.querySelector('.icon'), '::before'
+    ).content"</span>);
+
+<span class="cmt">// Get ::after color</span>
+<span class="kw">var</span> color = <span class="kw">await</span> page.<span class="fn">EvaluateAsync</span>&lt;<span class="type">string</span>&gt;(<span class="str">@"
+    window.getComputedStyle(
+        document.querySelector('.badge'), '::after'
+    ).backgroundColor"</span>);
+
+<span class="cmt">// Check placeholder text via attribute</span>
+<span class="kw">var</span> ph = page.<span class="fn">Locator</span>(<span class="str">"input[placeholder='Search...']"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(ph).<span class="fn">ToBeVisibleAsync</span>();
+
+<span class="cmt">// :placeholder-shown (field still has placeholder visible)</span>
+<span class="kw">var</span> empty = page.<span class="fn">Locator</span>(<span class="str">"input:placeholder-shown"</span>);</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== PLAYWRIGHT LOCATORS ======================== -->
+  <section class="section" id="playwright">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(56,189,248,0.12);color:var(--accent)">▶</div>
+      <div>
+        <div class="section-title">Playwright-Specific Locators</div>
+        <div class="section-desc">Playwright extends CSS selectors with powerful built-in locator strategies</div>
+      </div>
+    </div>
+
+    <div class="cards single">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Playwright Locator API Reference</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C# — Playwright Locator Strategies</span>
+            </div>
+            <pre><span class="cmt">// ── ROLE LOCATORS (most recommended) ────────────────────────</span>
+<span class="kw">await</span> page.<span class="fn">GetByRole</span>(<span class="type">AriaRole</span>.Button, <span class="kw">new</span>() { Name = <span class="str">"Submit"</span> }).<span class="fn">ClickAsync</span>();
+<span class="kw">await</span> page.<span class="fn">GetByRole</span>(<span class="type">AriaRole</span>.Textbox, <span class="kw">new</span>() { Name = <span class="str">"Email"</span> }).<span class="fn">FillAsync</span>(<span class="str">"x@x.com"</span>);
+<span class="kw">await</span> page.<span class="fn">GetByRole</span>(<span class="type">AriaRole</span>.Link, <span class="kw">new</span>() { Name = <span class="str">"Home"</span> }).<span class="fn">ClickAsync</span>();
+<span class="kw">await</span> page.<span class="fn">GetByRole</span>(<span class="type">AriaRole</span>.Checkbox).<span class="fn">CheckAsync</span>();
+<span class="kw">await</span> page.<span class="fn">GetByRole</span>(<span class="type">AriaRole</span>.Combobox).<span class="fn">SelectOptionAsync</span>(<span class="str">"Option 1"</span>);
+
+<span class="cmt">// ── TEXT LOCATORS ────────────────────────────────────────────</span>
+<span class="kw">await</span> page.<span class="fn">GetByText</span>(<span class="str">"Welcome back"</span>).<span class="fn">IsVisibleAsync</span>();
+<span class="kw">await</span> page.<span class="fn">GetByText</span>(<span class="str">"Submit"</span>, <span class="kw">new</span>() { Exact = <span class="kw">true</span> }).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// ── LABEL LOCATORS ───────────────────────────────────────────</span>
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="str">"Password"</span>).<span class="fn">FillAsync</span>(<span class="str">"s3cret"</span>);
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="str">"Remember me"</span>).<span class="fn">CheckAsync</span>();
+
+<span class="cmt">// ── PLACEHOLDER ──────────────────────────────────────────────</span>
+<span class="kw">await</span> page.<span class="fn">GetByPlaceholder</span>(<span class="str">"Search products..."</span>).<span class="fn">FillAsync</span>(<span class="str">"shoes"</span>);
+
+<span class="cmt">// ── ALT TEXT (images) ────────────────────────────────────────</span>
+<span class="kw">await</span> page.<span class="fn">GetByAltText</span>(<span class="str">"Company logo"</span>).<span class="fn">IsVisibleAsync</span>();
+
+<span class="cmt">// ── TITLE ATTRIBUTE ──────────────────────────────────────────</span>
+<span class="kw">await</span> page.<span class="fn">GetByTitle</span>(<span class="str">"Close dialog"</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// ── TEST ID ──────────────────────────────────────────────────</span>
+<span class="kw">await</span> page.<span class="fn">GetByTestId</span>(<span class="str">"login-button"</span>).<span class="fn">ClickAsync</span>();
+<span class="cmt">// Configure custom test ID: playwright.testIdAttribute = "data-cy"</span>
+
+<span class="cmt">// ── FILTER ON LOCATORS ───────────────────────────────────────</span>
+<span class="kw">var</span> rows = page.<span class="fn">Locator</span>(<span class="str">"tr"</span>).<span class="fn">Filter</span>(<span class="kw">new</span>() { HasText = <span class="str">"Pending"</span> });
+<span class="kw">var</span> cards = page.<span class="fn">Locator</span>(<span class="str">".card"</span>).<span class="fn">Filter</span>(<span class="kw">new</span>() { Has = page.<span class="fn">Locator</span>(<span class="str">"button.active"</span>) });
+
+<span class="cmt">// ── CHAIN LOCATORS ───────────────────────────────────────────</span>
+<span class="kw">var</span> row = page.<span class="fn">Locator</span>(<span class="str">"table tbody tr"</span>).<span class="fn">Nth</span>(<span class="num">0</span>);
+<span class="kw">var</span> cell = row.<span class="fn">Locator</span>(<span class="str">"td:nth-child(2)"</span>);
+<span class="kw">var</span> text = <span class="kw">await</span> cell.<span class="fn">TextContentAsync</span>();</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== FORM ELEMENTS ======================== -->
+  <section class="section" id="forms">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.12);color:var(--accent3)">⊟</div>
+      <div>
+        <div class="section-title">Form Element Selectors</div>
+        <div class="section-desc">Target specific form controls by type, state, and validation status</div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Input Type Reference</div>
+          <span class="card-tag tag-basic">Forms</span>
+        </div>
+        <div class="card-body">
+          <div style="overflow-x:auto;">
+            <table class="ref-table">
+              <thead>
+                <tr><th>Selector</th><th>Targets</th><th>Description</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>input[type="text"]</td><td>text input</td><td>Single-line text field</td></tr>
+                <tr><td>input[type="email"]</td><td>email input</td><td>Email address field</td></tr>
+                <tr><td>input[type="password"]</td><td>password input</td><td>Masked password field</td></tr>
+                <tr><td>input[type="checkbox"]</td><td>checkbox</td><td>Toggle on/off control</td></tr>
+                <tr><td>input[type="radio"]</td><td>radio button</td><td>Single-select from group</td></tr>
+                <tr><td>input[type="file"]</td><td>file picker</td><td>File upload control</td></tr>
+                <tr><td>input[type="number"]</td><td>number input</td><td>Numeric spinner field</td></tr>
+                <tr><td>input[type="range"]</td><td>slider</td><td>Range slider control</td></tr>
+                <tr><td>input[type="date"]</td><td>date picker</td><td>Date input field</td></tr>
+                <tr><td>input[type="submit"]</td><td>submit button</td><td>Form submit button</td></tr>
+                <tr><td>input[type="hidden"]</td><td>hidden field</td><td>Non-visible form value</td></tr>
+                <tr><td>select</td><td>dropdown</td><td>Select (dropdown) element</td></tr>
+                <tr><td>textarea</td><td>multiline text</td><td>Multi-line text input</td></tr>
+                <tr><td>button[type="submit"]</td><td>submit btn</td><td>Submit button via button tag</td></tr>
+                <tr><td>button[type="reset"]</td><td>reset btn</td><td>Form reset button</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Playwright C# — Form Interactions</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C#</span>
+            </div>
+            <pre><span class="cmt">// Text input</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"input[type='text']"</span>).<span class="fn">FillAsync</span>(<span class="str">"John"</span>);
+
+<span class="cmt">// Email field</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"input[type='email']"</span>).<span class="fn">FillAsync</span>(<span class="str">"john@test.com"</span>);
+
+<span class="cmt">// Password</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"input[type='password']"</span>).<span class="fn">FillAsync</span>(<span class="str">"P@ssword1"</span>);
+
+<span class="cmt">// Checkbox — only click if not already checked</span>
+<span class="kw">var</span> cb = page.<span class="fn">Locator</span>(<span class="str">"input[type='checkbox']#terms"</span>);
+<span class="kw">if</span> (!<span class="kw">await</span> cb.<span class="fn">IsCheckedAsync</span>())
+    <span class="kw">await</span> cb.<span class="fn">CheckAsync</span>();
+
+<span class="cmt">// Radio button</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"input[type='radio'][value='monthly']"</span>).<span class="fn">CheckAsync</span>();
+
+<span class="cmt">// Select dropdown by value / label / index</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"select#country"</span>).<span class="fn">SelectOptionAsync</span>(<span class="str">"US"</span>);
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"select#country"</span>)
+          .<span class="fn">SelectOptionAsync</span>(<span class="kw">new</span> <span class="type">SelectOptionValue</span> { Label = <span class="str">"United States"</span> });
+
+<span class="cmt">// File upload</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"input[type='file']"</span>)
+          .<span class="fn">SetInputFilesAsync</span>(<span class="str">"./files/test.pdf"</span>);
+
+<span class="cmt">// Textarea</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">"textarea#message"</span>).<span class="fn">FillAsync</span>(<span class="str">"Hello world"</span>);
+
+<span class="cmt">// Disabled field check</span>
+<span class="kw">var</span> field = page.<span class="fn">Locator</span>(<span class="str">"input:disabled"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(field).<span class="fn">ToBeDisabledAsync</span>();
+
+<span class="cmt">// Required fields</span>
+<span class="kw">var</span> required = page.<span class="fn">Locator</span>(<span class="str">"input:required"</span>);
+<span class="fn">Assert</span>.<span class="fn">Greater</span>(<span class="kw">await</span> required.<span class="fn">CountAsync</span>(), <span class="num">0</span>);</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== COMMON PATTERNS ======================== -->
+  <section class="section" id="patterns">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.12);color:var(--accent2)">◎</div>
+      <div>
+        <div class="section-title">Common Test Patterns</div>
+        <div class="section-desc">Real-world selector patterns for typical Playwright test scenarios</div>
+      </div>
+    </div>
+
+    <div class="cards single">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Real-World Playwright Selector Patterns</div>
+          <span class="card-tag tag-playwright">C# / Playwright</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C# — Navigation &amp; Menus</span>
+            </div>
+            <pre><span class="cmt">// Active navigation item</span>
+<span class="kw">var</span> activeNav = page.<span class="fn">Locator</span>(<span class="str">"nav a.active, nav a[aria-current='page']"</span>);
+
+<span class="cmt">// Dropdown menu item</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">".dropdown-menu > li > a"</span>).<span class="fn">Nth</span>(<span class="num">0</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// Breadcrumb last item</span>
+<span class="kw">var</span> crumb = page.<span class="fn">Locator</span>(<span class="str">".breadcrumb li:last-child"</span>);</pre>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C# — Tables &amp; Lists</span>
+            </div>
+            <pre><span class="cmt">// Table cell by column position in specific row</span>
+<span class="kw">var</span> cell = page.<span class="fn">Locator</span>(<span class="str">"table tbody tr:nth-child(2) td:nth-child(3)"</span>);
+
+<span class="cmt">// Table row containing specific text</span>
+<span class="kw">var</span> row = page.<span class="fn">Locator</span>(<span class="str">"tr"</span>).<span class="fn">Filter</span>(<span class="kw">new</span>() { HasText = <span class="str">"Invoice #1024"</span> });
+
+<span class="cmt">// Table header cells</span>
+<span class="kw">var</span> headers = page.<span class="fn">Locator</span>(<span class="str">"table thead th"</span>);
+<span class="kw">var</span> headerTexts = <span class="kw">await</span> headers.<span class="fn">AllTextContentsAsync</span>();
+
+<span class="cmt">// Action button inside a specific table row</span>
+<span class="kw">await</span> row.<span class="fn">Locator</span>(<span class="str">"button[data-action='delete']"</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// Unordered list items</span>
+<span class="kw">var</span> items = page.<span class="fn">Locator</span>(<span class="str">"ul.results > li"</span>);
+<span class="fn">Assert</span>.<span class="fn">AreEqual</span>(<span class="num">10</span>, <span class="kw">await</span> items.<span class="fn">CountAsync</span>());</pre>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C# — Modals &amp; Dialogs</span>
+            </div>
+            <pre><span class="cmt">// Modal with specific role</span>
+<span class="kw">var</span> modal = page.<span class="fn">Locator</span>(<span class="str">"[role='dialog']"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(modal).<span class="fn">ToBeVisibleAsync</span>();
+
+<span class="cmt">// Close button inside modal</span>
+<span class="kw">await</span> modal.<span class="fn">Locator</span>(<span class="str">"button[aria-label='Close'], button.close"</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// Confirm button in modal footer</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="str">".modal-footer button[type='submit']"</span>).<span class="fn">ClickAsync</span>();
+
+<span class="cmt">// Alert/toast messages</span>
+<span class="kw">var</span> alert = page.<span class="fn">Locator</span>(<span class="str">"[role='alert'], .toast, .notification"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(alert).<span class="fn">ToContainTextAsync</span>(<span class="str">"Success"</span>);</pre>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C# — Loading &amp; Dynamic States</span>
+            </div>
+            <pre><span class="cmt">// Wait for element NOT to be visible (loading spinner)</span>
+<span class="kw">await</span> <span class="fn">Expect</span>(page.<span class="fn">Locator</span>(<span class="str">".spinner, [data-loading='true']"</span>))
+      .<span class="fn">ToBeHiddenAsync</span>();
+
+<span class="cmt">// Element with aria-busy false (done loading)</span>
+<span class="kw">await</span> <span class="fn">Expect</span>(page.<span class="fn">Locator</span>(<span class="str">"[aria-busy='false']"</span>))
+      .<span class="fn">ToBeVisibleAsync</span>();
+
+<span class="cmt">// Skeleton screen gone</span>
+<span class="kw">await</span> <span class="fn">Expect</span>(page.<span class="fn">Locator</span>(<span class="str">".skeleton"</span>)).<span class="fn">ToHaveCountAsync</span>(<span class="num">0</span>);
+
+<span class="cmt">// Error state</span>
+<span class="kw">var</span> err = page.<span class="fn">Locator</span>(<span class="str">".input-group.has-error input, input[aria-invalid='true']"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(err).<span class="fn">ToBeVisibleAsync</span>();</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================== TIPS ======================== -->
+  <section class="section" id="tips">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(52,211,153,0.12);color:var(--accent3)">✦</div>
+      <div>
+        <div class="section-title">Tips &amp; Best Practices</div>
+        <div class="section-desc">Selector strategy recommendations for robust, maintainable Playwright tests</div>
+      </div>
+    </div>
+
+    <div class="cards triple">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Selector Priority (Best → Worst)</div>
+          <span class="card-tag tag-tip" style="background:rgba(52,211,153,0.1);color:var(--accent3);border:1px solid rgba(52,211,153,0.2)">Strategy</span>
+        </div>
+        <div class="card-body">
+          <div class="selector-row">
+            <div class="sel-code" style="color:var(--accent3)">GetByRole</div>
+            <div class="sel-desc"><strong>Best.</strong> Accessible, semantic, resilient to style changes.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code" style="color:var(--accent3)">GetByLabel</div>
+            <div class="sel-desc"><strong>Great.</strong> Tied to form accessibility, very stable.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code" style="color:var(--accent3)">GetByTestId</div>
+            <div class="sel-desc"><strong>Great.</strong> Set data-testid explicitly for automation.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code" style="color:var(--accent)">GetByText</div>
+            <div class="sel-desc"><strong>Good.</strong> Breaks if copy changes, use Exact=true.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code" style="color:var(--accent)">[data-*]</div>
+            <div class="sel-desc"><strong>Good.</strong> Custom data attributes. Stable if maintained.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code" style="color:var(--accent4)">#id .class</div>
+            <div class="sel-desc"><strong>Okay.</strong> Fragile if UI is refactored or classes change.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code" style="color:#ef4444">div > span:nth-child(3)</div>
+            <div class="sel-desc"><strong>Avoid.</strong> Extremely brittle, breaks with DOM changes.</div>
+          </div>
+          <div class="selector-row">
+            <div class="sel-code" style="color:#ef4444">XPath</div>
+            <div class="sel-desc"><strong>Avoid.</strong> Hard to read/maintain; CSS almost always better.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Scoping &amp; Chaining</div>
+          <span class="card-tag tag-advanced">Patterns</span>
+        </div>
+        <div class="card-body">
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C# — Scope locators to reduce ambiguity</span>
+            </div>
+            <pre><span class="cmt">// Scope inside a component</span>
+<span class="kw">var</span> sidebar = page.<span class="fn">Locator</span>(<span class="str">"aside.sidebar"</span>);
+<span class="kw">var</span> link = sidebar.<span class="fn">GetByRole</span>(<span class="type">AriaRole</span>.Link, <span class="kw">new</span>() { Name = <span class="str">"Settings"</span> });
+
+<span class="cmt">// Filter by child element</span>
+<span class="kw">var</span> activeCard = page
+    .<span class="fn">Locator</span>(<span class="str">".card"</span>)
+    .<span class="fn">Filter</span>(<span class="kw">new</span>() {
+        Has = page.<span class="fn">Locator</span>(<span class="str">".badge.active"</span>)
+    });
+
+<span class="cmt">// Filter by text content</span>
+<span class="kw">var</span> draftItems = page
+    .<span class="fn">Locator</span>(<span class="str">".document-row"</span>)
+    .<span class="fn">Filter</span>(<span class="kw">new</span>() { HasText = <span class="str">"Draft"</span> });
+
+<span class="cmt">// Combine filters</span>
+<span class="kw">var</span> target = page
+    .<span class="fn">Locator</span>(<span class="str">"li"</span>)
+    .<span class="fn">Filter</span>(<span class="kw">new</span>() { HasText = <span class="str">"Pro Plan"</span> })
+    .<span class="fn">Filter</span>(<span class="kw">new</span>() {
+        Has = page.<span class="fn">Locator</span>(<span class="str">"[data-active='true']"</span>)
+    });</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-label">Quick Escape Selector Characters</div>
+          <span class="card-tag tag-warning">Escaping</span>
+        </div>
+        <div class="card-body">
+          <div class="note note-warn">
+            <span class="note-icon">⚠</span>
+            <span>Special characters in selectors must be escaped with a backslash <code>\</code> if used literally inside identifiers.</span>
+          </div>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-block-lang">C# — Escaping special characters</span>
+            </div>
+            <pre><span class="cmt">// ID with dots (e.g. id="my.id")</span>
+<span class="kw">var</span> el = page.<span class="fn">Locator</span>(<span class="str">"#my\\.id"</span>);
+
+<span class="cmt">// Class with colon</span>
+<span class="kw">var</span> el2 = page.<span class="fn">Locator</span>(<span class="str">".tw\\:text-red-500"</span>);
+
+<span class="cmt">// Brackets, colons, slashes in Tailwind classes</span>
+<span class="kw">var</span> tw = page.<span class="fn">Locator</span>(<span class="str">"[class*='text-red']"</span>); <span class="cmt">// safer</span>
+
+<span class="cmt">// Use attribute selector as fallback for tricky IDs</span>
+<span class="kw">var</span> el3 = page.<span class="fn">Locator</span>(<span class="str">"[id='my.id']"</span>); <span class="cmt">// no escaping needed</span></pre>
+          </div>
+          <div style="overflow-x:auto;margin-top:8px">
+            <table class="ref-table">
+              <thead><tr><th>Character</th><th>Escaped</th></tr></thead>
+              <tbody>
+                <tr><td>.</td><td>\.</td></tr>
+                <tr><td>#</td><td>\#</td></tr>
+                <tr><td>:</td><td>\:</td></tr>
+                <tr><td>/</td><td>\/</td></tr>
+                <tr><td>[</td><td>\[</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px;">
+      <div class="note note-tip">
+        <span class="note-icon">✓</span>
+        <div><strong>Use data-testid attributes</strong> — Add <code>data-testid</code> to key elements in your app. They never change with styling/refactors and communicate test intent clearly to developers.</div>
+      </div>
+      <div class="note note-info">
+        <span class="note-icon">ℹ</span>
+        <div><strong>Prefer .Filter() over complex selectors</strong> — <code>page.Locator(".card").Filter(new() { HasText = "Active" })</code> is more readable and maintainable than deeply nested CSS selectors.</div>
+      </div>
+      <div class="note note-warn">
+        <span class="note-icon">⚠</span>
+        <div><strong>Avoid position-based selectors</strong> — <code>:nth-child(3)</code> breaks when the UI adds/reorders items. Use text or attribute matching to target specific elements instead.</div>
+      </div>
+      <div class="note note-tip">
+        <span class="note-icon">✓</span>
+        <div><strong>Use Playwright's built-in assertions</strong> — <code>Expect(locator).ToBeVisibleAsync()</code> auto-waits and retries. Never use <code>IsVisibleAsync()</code> directly in assertions without waiting.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  CSS Selectors Cheatsheet · Playwright C# (.NET) · Built for test automation engineers
+</footer>
+
+</body>
+</html>

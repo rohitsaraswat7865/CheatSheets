@@ -1,0 +1,2176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playwright C# — Complete API Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #16181d;
+    --surface:  #1e2028;
+    --surface2: #252830;
+    --surface3: #2d3040;
+    --border:   #353848;
+    --amber:    #e8a94a;
+    --amber2:   #f0c070;
+    --green:    #6dbf8a;
+    --blue:     #6aaff0;
+    --pink:     #e07090;
+    --purple:   #9b8ff0;
+    --teal:     #50c8a8;
+    --text:     #dde0ea;
+    --muted:    #6a6e80;
+    --dim:      #9098b0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 0;
+  }
+
+  /* ── HEADER ── */
+  .hero {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 2rem 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 120% at -10% 50%, rgba(232,169,74,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 80% at 110% 50%, rgba(106,175,240,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-left { position: relative; }
+
+  .hero-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--amber);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+    line-height: 1.1;
+  }
+
+  h1 span { color: var(--amber); }
+
+  .hero-desc {
+    color: var(--dim);
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    max-width: 500px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+
+  .badge-amber { color: var(--amber); border-color: rgba(232,169,74,0.4); background: rgba(232,169,74,0.08); }
+  .badge-green { color: var(--green); border-color: rgba(109,191,138,0.4); background: rgba(109,191,138,0.08); }
+  .badge-blue  { color: var(--blue);  border-color: rgba(106,175,240,0.4); background: rgba(106,175,240,0.08); }
+
+  /* ── NAV ── */
+  .nav-strip {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 2rem;
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 3px 10px;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+
+  .nav-link:hover { color: var(--amber); background: rgba(232,169,74,0.1); }
+
+  /* ── LAYOUT ── */
+  .page { padding: 2rem; max-width: 1600px; margin: 0 auto; }
+
+  .section {
+    margin-bottom: 3rem;
+    scroll-margin-top: 50px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .section-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background: var(--amber);
+  }
+
+  .section-icon { font-size: 1.1rem; }
+
+  h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+
+  .section-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-left: auto;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1rem;
+  }
+
+  .cards.cols-2 { grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); }
+  .cards.cols-1 { grid-template-columns: 1fr; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .card:hover { border-color: rgba(232,169,74,0.4); }
+
+  .card-head {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-head-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--amber2);
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--amber);
+    opacity: 0.6;
+  }
+
+  .chip {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+
+  .chip-green  { background: rgba(109,191,138,0.15); color: var(--green); }
+  .chip-blue   { background: rgba(106,175,240,0.15); color: var(--blue); }
+  .chip-pink   { background: rgba(224,112,144,0.15); color: var(--pink); }
+  .chip-purple { background: rgba(155,143,240,0.15); color: var(--purple); }
+  .chip-teal   { background: rgba(80,200,168,0.15);  color: var(--teal); }
+  .chip-amber  { background: rgba(232,169,74,0.15);  color: var(--amber); }
+
+  .card-body { padding: 0.85rem 1rem; }
+
+  /* ── CODE BLOCK ── */
+  pre {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    background: #12141a;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    line-height: 1.65;
+    white-space: pre;
+  }
+
+  .kw  { color: #c792ea; }   /* keyword */
+  .ty  { color: var(--teal); }   /* type */
+  .fn  { color: var(--blue); }   /* function/method */
+  .st  { color: #c3e88d; }   /* string */
+  .cm  { color: var(--muted); font-style: italic; } /* comment */
+  .nu  { color: #f78c6c; }   /* number/bool */
+  .am  { color: var(--amber2); } /* interface/class name */
+  .di  { color: var(--dim); }    /* dim text */
+
+  /* ── TABLE ── */
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+  }
+
+  .tbl tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .tbl tr:last-child { border-bottom: none; }
+
+  .tbl td {
+    padding: 0.4rem 0.35rem;
+    vertical-align: top;
+  }
+
+  .tbl td:first-child {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--teal);
+    white-space: nowrap;
+    padding-right: 0.8rem;
+    min-width: 200px;
+  }
+
+  .tbl td:last-child { color: var(--dim); }
+
+  .tbl td.ret {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--purple);
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  .tbl th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: left;
+    padding: 0.3rem 0.35rem;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── NOTE ── */
+  .note {
+    font-size: 0.76rem;
+    color: var(--dim);
+    margin-top: 0.6rem;
+    padding: 0.5rem 0.8rem;
+    border-left: 2px solid var(--amber);
+    background: rgba(232,169,74,0.05);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .note.info { border-color: var(--blue); background: rgba(106,175,240,0.05); }
+  .note.warn { border-color: var(--pink); background: rgba(224,112,144,0.05); }
+
+  .span-2 { grid-column: span 2; }
+  .span-full { grid-column: 1 / -1; }
+
+  @media (max-width: 800px) {
+    .span-2, .span-full { grid-column: span 1; }
+    .page { padding: 1rem; }
+    .nav-strip { padding: 0.5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">// complete api reference</div>
+    <h1>Playwright <span>C#</span></h1>
+    <p class="hero-desc">Every API, every method, every option — covering Browser, Page, Locator, Network, Assertions and more.</p>
+  </div>
+  <div class="hero-meta">
+    <span class="badge badge-amber">Microsoft.Playwright</span>
+    <span class="badge badge-green">.NET 6+</span>
+    <span class="badge badge-blue">NUnit / MSTest / xUnit</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav-strip">
+  <a class="nav-link" href="#setup">Setup</a>
+  <a class="nav-link" href="#playwright">IPlaywright</a>
+  <a class="nav-link" href="#browser">IBrowser</a>
+  <a class="nav-link" href="#context">IBrowserContext</a>
+  <a class="nav-link" href="#page">IPage</a>
+  <a class="nav-link" href="#locator">ILocator</a>
+  <a class="nav-link" href="#selectors">Selectors</a>
+  <a class="nav-link" href="#navigation">Navigation</a>
+  <a class="nav-link" href="#actions">Actions</a>
+  <a class="nav-link" href="#input">Input</a>
+  <a class="nav-link" href="#frames">Frames</a>
+  <a class="nav-link" href="#dialogs">Dialogs</a>
+  <a class="nav-link" href="#network">Network</a>
+  <a class="nav-link" href="#intercept">Intercept</a>
+  <a class="nav-link" href="#assertions">Assertions</a>
+  <a class="nav-link" href="#screenshots">Screenshots</a>
+  <a class="nav-link" href="#video">Video/Trace</a>
+  <a class="nav-link" href="#js">JS Eval</a>
+  <a class="nav-link" href="#events">Events</a>
+  <a class="nav-link" href="#misc">Misc</a>
+</nav>
+
+<div class="page">
+
+<!-- ═══════════════════════════════════════════════ SETUP -->
+<section class="section" id="setup">
+  <div class="section-header">
+    <span class="section-icon">⚙️</span>
+    <h2>Installation &amp; Setup</h2>
+    <span class="section-tag">getting started</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Package Installation</span></div>
+      <div class="card-body">
+<pre><span class="cm"># Install NuGet package</span>
+dotnet add package Microsoft.Playwright
+
+<span class="cm"># Install browsers</span>
+pwsh bin/Debug/net8.0/playwright.ps1 install
+
+<span class="cm"># Install specific browser</span>
+pwsh bin/Debug/net8.0/playwright.ps1 install chromium
+pwsh bin/Debug/net8.0/playwright.ps1 install firefox
+pwsh bin/Debug/net8.0/playwright.ps1 install webkit
+
+<span class="cm"># Install with dependencies (Linux)</span>
+pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Test Base Class (NUnit)</span></div>
+      <div class="card-body">
+<pre><span class="kw">using</span> Microsoft.Playwright.NUnit;
+
+[<span class="am">Parallelizable</span>(<span class="am">ParallelScope</span>.Self)]
+[<span class="am">TestFixture</span>]
+<span class="kw">public class</span> <span class="am">MyTests</span> : <span class="am">PageTest</span>
+{
+    [<span class="am">Test</span>]
+    <span class="kw">public async</span> <span class="ty">Task</span> <span class="fn">BasicTest</span>()
+    {
+        <span class="kw">await</span> Page.<span class="fn">GotoAsync</span>(<span class="st">"https://example.com"</span>);
+        <span class="kw">await</span> Expect(Page).ToHaveTitleAsync(<span class="st">"Example"</span>);
+    }
+}
+
+<span class="cm">// Other base classes:</span>
+<span class="cm">// BrowserTest   → gives Browser</span>
+<span class="cm">// ContextTest   → gives Context</span>
+<span class="cm">// PlaywrightTest → gives Playwright</span></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Manual Instantiation</span></div>
+      <div class="card-body">
+<pre><span class="kw">using</span> Microsoft.Playwright;
+
+<span class="kw">var</span> playwright = <span class="kw">await</span> <span class="am">Playwright</span>.<span class="fn">CreateAsync</span>();
+<span class="kw">var</span> browser    = <span class="kw">await</span> playwright.Chromium.<span class="fn">LaunchAsync</span>(<span class="kw">new</span>() {
+    Headless = <span class="nu">true</span>,
+    SlowMo   = <span class="nu">50</span>
+});
+<span class="kw">var</span> context = <span class="kw">await</span> browser.<span class="fn">NewContextAsync</span>();
+<span class="kw">var</span> page    = <span class="kw">await</span> context.<span class="fn">NewPageAsync</span>();
+
+<span class="kw">await</span> page.<span class="fn">GotoAsync</span>(<span class="st">"https://example.com"</span>);
+
+<span class="kw">await</span> context.<span class="fn">CloseAsync</span>();
+<span class="kw">await</span> browser.<span class="fn">CloseAsync</span>();
+playwright.<span class="fn">Dispose</span>();</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">playwright.config / .runsettings</span></div>
+      <div class="card-body">
+<pre><span class="cm">&lt;!-- .runsettings --&gt;</span>
+&lt;<span class="am">RunSettings</span>&gt;
+  &lt;<span class="am">Playwright</span>&gt;
+    &lt;<span class="am">BrowserName</span>&gt;chromium&lt;/<span class="am">BrowserName</span>&gt;
+    &lt;<span class="am">LaunchOptions</span>&gt;
+      &lt;<span class="am">Headless</span>&gt;false&lt;/<span class="am">Headless</span>&gt;
+      &lt;<span class="am">Channel</span>&gt;chrome&lt;/<span class="am">Channel</span>&gt;
+    &lt;/<span class="am">LaunchOptions</span>&gt;
+  &lt;/<span class="am">Playwright</span>&gt;
+&lt;/<span class="am">RunSettings</span>&gt;
+
+<span class="cm">// Env vars override:</span>
+<span class="cm">// PLAYWRIGHT_BROWSER, PLAYWRIGHT_HEADLESS</span>
+<span class="cm">// BROWSER_NAME, BROWSER_LAUNCH_TIMEOUT</span></pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ IPLAYWRIGHT -->
+<section class="section" id="playwright">
+  <div class="section-header">
+    <span class="section-icon">🎭</span>
+    <h2>IPlaywright</h2>
+    <span class="section-tag">root object</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Browser Types</span><span class="chip chip-teal">IPlaywright</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><th>Property / Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>Chromium</td><td class="ret">IBrowserType</td><td>Chromium browser type</td></tr>
+          <tr><td>Firefox</td><td class="ret">IBrowserType</td><td>Firefox browser type</td></tr>
+          <tr><td>Webkit</td><td class="ret">IBrowserType</td><td>WebKit browser type</td></tr>
+          <tr><td>Selectors</td><td class="ret">ISelectors</td><td>Global selector registry</td></tr>
+          <tr><td>APIRequest</td><td class="ret">IAPIRequest</td><td>API request context factory</td></tr>
+          <tr><td>Playwright.CreateAsync()</td><td class="ret">IPlaywright</td><td>Static factory, creates instance</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IBrowserType Launch Options</span><span class="chip chip-blue">BrowserTypeLaunchOptions</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>Headless</td><td>bool? (default true)</td></tr>
+          <tr><td>Channel</td><td>"chrome" | "msedge" | "chrome-beta" etc.</td></tr>
+          <tr><td>ExecutablePath</td><td>Path to browser binary</td></tr>
+          <tr><td>Args</td><td>IEnumerable&lt;string&gt; — extra CLI args</td></tr>
+          <tr><td>IgnoreDefaultArgs</td><td>bool or string[] of args to remove</td></tr>
+          <tr><td>Devtools</td><td>bool — open DevTools (headful only)</td></tr>
+          <tr><td>SlowMo</td><td>float? ms delay between operations</td></tr>
+          <tr><td>Timeout</td><td>float? launch timeout ms</td></tr>
+          <tr><td>Env</td><td>Dictionary&lt;string,string&gt;</td></tr>
+          <tr><td>Proxy</td><td>ProxySettings</td></tr>
+          <tr><td>DownloadsPath</td><td>string</td></tr>
+          <tr><td>FirefoxUserPrefs</td><td>Dictionary&lt;string,object&gt;</td></tr>
+          <tr><td>HandleSIGINT/TERM/HUP</td><td>bool</td></tr>
+          <tr><td>ChromiumSandbox</td><td>bool</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IBrowserType Methods</span><span class="chip chip-purple">IBrowserType</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>LaunchAsync(opts)</td><td class="ret">IBrowser</td><td>Launch a browser</td></tr>
+          <tr><td>LaunchPersistentContextAsync(dir, opts)</td><td class="ret">IBrowserContext</td><td>Launch with persistent profile</td></tr>
+          <tr><td>ConnectAsync(wsEndpoint, opts)</td><td class="ret">IBrowser</td><td>Connect to remote browser server</td></tr>
+          <tr><td>ConnectOverCDPAsync(endpoint, opts)</td><td class="ret">IBrowser</td><td>Connect via CDP (Chromium only)</td></tr>
+          <tr><td>Name</td><td class="ret">string</td><td>"chromium" / "firefox" / "webkit"</td></tr>
+          <tr><td>ExecutablePath</td><td class="ret">string</td><td>Path to browser executable</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ IBROWSER -->
+<section class="section" id="browser">
+  <div class="section-header">
+    <span class="section-icon">🌐</span>
+    <h2>IBrowser</h2>
+    <span class="section-tag">browser instance</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IBrowser Methods</span><span class="chip chip-green">IBrowser</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>NewContextAsync(opts)</td><td class="ret">IBrowserContext</td><td>New isolated browser context</td></tr>
+          <tr><td>NewPageAsync(opts)</td><td class="ret">IPage</td><td>New page in default context</td></tr>
+          <tr><td>CloseAsync()</td><td class="ret">Task</td><td>Close browser</td></tr>
+          <tr><td>Contexts</td><td class="ret">IReadOnlyList&lt;IBrowserContext&gt;</td><td>All open contexts</td></tr>
+          <tr><td>IsConnected</td><td class="ret">bool</td><td>Connection status</td></tr>
+          <tr><td>Version</td><td class="ret">string</td><td>Browser version string</td></tr>
+          <tr><td>StartTracingAsync(page, opts)</td><td class="ret">Task</td><td>Start Chromium tracing</td></tr>
+          <tr><td>StopTracingAsync()</td><td class="ret">Task&lt;byte[]&gt;</td><td>Stop tracing, get trace</td></tr>
+        </table>
+        <div class="note info">Disconnected event fires when browser is closed. Subscribe via <code style="font-family: IBM Plex Mono; color:var(--teal)">browser.Disconnected += handler</code></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">NewContextAsync Options</span><span class="chip chip-amber">BrowserNewContextOptions</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>ViewportSize</td><td>ViewportSize? (Width, Height) or null</td></tr>
+          <tr><td>ScreenSize</td><td>ScreenSize (Width, Height)</td></tr>
+          <tr><td>UserAgent</td><td>string</td></tr>
+          <tr><td>Locale</td><td>string — e.g. "en-GB"</td></tr>
+          <tr><td>TimezoneId</td><td>string — e.g. "America/New_York"</td></tr>
+          <tr><td>Geolocation</td><td>Geolocation (Latitude, Longitude, Accuracy)</td></tr>
+          <tr><td>Permissions</td><td>IEnumerable&lt;string&gt;</td></tr>
+          <tr><td>ExtraHTTPHeaders</td><td>Dictionary&lt;string,string&gt;</td></tr>
+          <tr><td>HttpCredentials</td><td>HttpCredentials (Username, Password)</td></tr>
+          <tr><td>IgnoreHTTPSErrors</td><td>bool</td></tr>
+          <tr><td>JavaScriptEnabled</td><td>bool (default true)</td></tr>
+          <tr><td>BypassCSP</td><td>bool</td></tr>
+          <tr><td>IsMobile</td><td>bool</td></tr>
+          <tr><td>HasTouch</td><td>bool</td></tr>
+          <tr><td>DeviceScaleFactor</td><td>float?</td></tr>
+          <tr><td>ColorScheme</td><td>ColorScheme enum (Dark/Light/NoPreference)</td></tr>
+          <tr><td>ForcedColors</td><td>ForcedColors enum (Active/None)</td></tr>
+          <tr><td>ReducedMotion</td><td>ReducedMotion enum</td></tr>
+          <tr><td>AcceptDownloads</td><td>bool (default true)</td></tr>
+          <tr><td>StorageState</td><td>string (JSON) or StorageState object</td></tr>
+          <tr><td>StorageStatePath</td><td>string (file path)</td></tr>
+          <tr><td>RecordVideoDir</td><td>string — enables video recording</td></tr>
+          <tr><td>RecordVideoSize</td><td>RecordVideoSize (Width, Height)</td></tr>
+          <tr><td>RecordHarPath</td><td>string — enables HAR recording</td></tr>
+          <tr><td>RecordHarContent</td><td>HarContentPolicy enum</td></tr>
+          <tr><td>ServiceWorkers</td><td>ServiceWorkerPolicy (Allow/Block)</td></tr>
+          <tr><td>Proxy</td><td>ProxySettings</td></tr>
+          <tr><td>BaseURL</td><td>string</td></tr>
+          <tr><td>StrictSelectors</td><td>bool — error on multi-match</td></tr>
+          <tr><td>ClientCertificates</td><td>IEnumerable&lt;ClientCertificate&gt;</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ IBROWSERCONTEXT -->
+<section class="section" id="context">
+  <div class="section-header">
+    <span class="section-icon">📦</span>
+    <h2>IBrowserContext</h2>
+    <span class="section-tag">isolated environment</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Core Methods</span><span class="chip chip-teal">IBrowserContext</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>NewPageAsync()</td><td class="ret">IPage</td><td>Open new page in context</td></tr>
+          <tr><td>CloseAsync()</td><td class="ret">Task</td><td>Close context and all pages</td></tr>
+          <tr><td>Pages</td><td class="ret">IReadOnlyList&lt;IPage&gt;</td><td>All pages in context</td></tr>
+          <tr><td>Browser</td><td class="ret">IBrowser?</td><td>Owning browser (null if persistent)</td></tr>
+          <tr><td>StorageStateAsync(opts)</td><td class="ret">Task&lt;string&gt;</td><td>Serialize cookies + localStorage</td></tr>
+          <tr><td>AddInitScriptAsync(script)</td><td class="ret">Task</td><td>Run script on every new page/frame</td></tr>
+          <tr><td>AddCookiesAsync(cookies)</td><td class="ret">Task</td><td>Add cookies to context</td></tr>
+          <tr><td>ClearCookiesAsync()</td><td class="ret">Task</td><td>Clear all cookies</td></tr>
+          <tr><td>CookiesAsync(urls)</td><td class="ret">Task&lt;IReadOnlyList&lt;BrowserContextCookiesResult&gt;&gt;</td><td>Get cookies</td></tr>
+          <tr><td>ClearPermissionsAsync()</td><td class="ret">Task</td><td>Reset all permissions</td></tr>
+          <tr><td>GrantPermissionsAsync(perms, opts)</td><td class="ret">Task</td><td>Grant browser permissions</td></tr>
+          <tr><td>SetGeolocationAsync(geo)</td><td class="ret">Task</td><td>Override geolocation</td></tr>
+          <tr><td>SetOfflineAsync(offline)</td><td class="ret">Task</td><td>Simulate offline mode</td></tr>
+          <tr><td>SetExtraHTTPHeadersAsync(hdrs)</td><td class="ret">Task</td><td>Add headers to all requests</td></tr>
+          <tr><td>SetHTTPCredentialsAsync(creds)</td><td class="ret">Task</td><td>Set HTTP auth credentials</td></tr>
+          <tr><td>ExposeBindingAsync(name, cb)</td><td class="ret">Task</td><td>Expose C# function to JS</td></tr>
+          <tr><td>ExposeFunctionAsync(name, cb)</td><td class="ret">Task</td><td>Expose C# function to JS (simple)</td></tr>
+          <tr><td>RouteAsync(url, handler)</td><td class="ret">Task</td><td>Intercept/mock requests</td></tr>
+          <tr><td>UnrouteAsync(url, handler)</td><td class="ret">Task</td><td>Remove route handler</td></tr>
+          <tr><td>RouteFromHARAsync(har, opts)</td><td class="ret">Task</td><td>Replay requests from HAR</td></tr>
+          <tr><td>WaitForPageAsync(opts)</td><td class="ret">Task&lt;IPage&gt;</td><td>Wait for new page to open</td></tr>
+          <tr><td>NewCDPSessionAsync(page)</td><td class="ret">Task&lt;ICDPSession&gt;</td><td>Chrome DevTools Protocol session</td></tr>
+          <tr><td>Tracing</td><td class="ret">ITracing</td><td>Tracing API</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Storage State &amp; Auth</span><span class="chip chip-pink">auth patterns</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Save auth state after login</span>
+<span class="kw">await</span> context.<span class="fn">StorageStateAsync</span>(<span class="kw">new</span>() {
+    Path = <span class="st">"auth.json"</span>
+});
+
+<span class="cm">// Reuse auth state in next test</span>
+<span class="kw">var</span> context = <span class="kw">await</span> browser.<span class="fn">NewContextAsync</span>(<span class="kw">new</span>() {
+    StorageStatePath = <span class="st">"auth.json"</span>
+});
+
+<span class="cm">// NUnit: override NewContextOptions</span>
+<span class="kw">public override</span> BrowserNewContextOptions ContextOptions() => <span class="kw">new</span>() {
+    StorageStatePath = <span class="st">"auth.json"</span>
+};</pre>
+        <div class="note">Permissions: "geolocation", "midi", "midi-sysex", "notifications", "camera", "microphone", "background-sync", "ambient-light-sensor", "accelerometer", "gyroscope", "magnetometer", "accessibility-events", "clipboard-read", "clipboard-write", "payment-handler"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ IPAGE -->
+<section class="section" id="page">
+  <div class="section-header">
+    <span class="section-icon">📄</span>
+    <h2>IPage</h2>
+    <span class="section-tag">core interface</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Navigation</span><span class="chip chip-blue">navigation</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><th>Method</th><th>Returns</th><th>Description</th></tr>
+          <tr><td>GotoAsync(url, opts)</td><td class="ret">IResponse?</td><td>Navigate to URL</td></tr>
+          <tr><td>GoBackAsync(opts)</td><td class="ret">IResponse?</td><td>Navigate back</td></tr>
+          <tr><td>GoForwardAsync(opts)</td><td class="ret">IResponse?</td><td>Navigate forward</td></tr>
+          <tr><td>ReloadAsync(opts)</td><td class="ret">IResponse?</td><td>Reload page</td></tr>
+          <tr><td>WaitForURLAsync(url, opts)</td><td class="ret">Task</td><td>Wait for URL match</td></tr>
+          <tr><td>WaitForLoadStateAsync(state, opts)</td><td class="ret">Task</td><td>Wait for load event</td></tr>
+          <tr><td>Url</td><td class="ret">string</td><td>Current URL</td></tr>
+          <tr><td>Title()</td><td class="ret">Task&lt;string&gt;</td><td>Page title (async not needed)</td></tr>
+          <tr><td>TitleAsync()</td><td class="ret">Task&lt;string&gt;</td><td>Page title</td></tr>
+          <tr><td>Content()</td><td class="ret">Task&lt;string&gt;</td><td>Full HTML content</td></tr>
+          <tr><td>SetContentAsync(html, opts)</td><td class="ret">Task</td><td>Set page HTML</td></tr>
+        </table>
+        <div class="note">WaitUntil options: <code style="font-family:IBM Plex Mono;color:var(--amber2)">Load</code> | <code style="font-family:IBM Plex Mono;color:var(--amber2)">DOMContentLoaded</code> | <code style="font-family:IBM Plex Mono;color:var(--amber2)">NetworkIdle</code> | <code style="font-family:IBM Plex Mono;color:var(--amber2)">Commit</code></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Finding Elements (Page-level)</span><span class="chip chip-green">locators</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>Locator(selector, opts)</td><td>Create ILocator (preferred)</td></tr>
+          <tr><td>GetByRole(role, opts)</td><td>ARIA role locator</td></tr>
+          <tr><td>GetByText(text, opts)</td><td>Text content locator</td></tr>
+          <tr><td>GetByLabel(text, opts)</td><td>Associated label locator</td></tr>
+          <tr><td>GetByPlaceholder(text, opts)</td><td>Placeholder attr locator</td></tr>
+          <tr><td>GetByAltText(text, opts)</td><td>Alt text locator</td></tr>
+          <tr><td>GetByTitle(text, opts)</td><td>Title attr locator</td></tr>
+          <tr><td>GetByTestId(testId)</td><td>data-testid attr locator</td></tr>
+          <tr><td>QuerySelectorAsync(sel)</td><td>IElementHandle? (legacy)</td></tr>
+          <tr><td>QuerySelectorAllAsync(sel)</td><td>IReadOnlyList&lt;IElementHandle&gt; (legacy)</td></tr>
+          <tr><td>WaitForSelectorAsync(sel, opts)</td><td>IElementHandle? (legacy)</td></tr>
+        </table>
+        <div class="note warn">Prefer <code style="font-family:IBM Plex Mono">Locator()</code> and <code style="font-family:IBM Plex Mono">GetBy*()</code> over ElementHandle-based APIs.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Page Actions</span><span class="chip chip-purple">actions</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>ClickAsync(sel, opts)</td><td>Click element matching selector</td></tr>
+          <tr><td>DblClickAsync(sel, opts)</td><td>Double-click</td></tr>
+          <tr><td>TapAsync(sel, opts)</td><td>Touch tap</td></tr>
+          <tr><td>FillAsync(sel, value, opts)</td><td>Fill input (clears first)</td></tr>
+          <tr><td>TypeAsync(sel, text, opts)</td><td>Type char by char (slow)</td></tr>
+          <tr><td>PressAsync(sel, key, opts)</td><td>Key press on element</td></tr>
+          <tr><td>FocusAsync(sel, opts)</td><td>Focus element</td></tr>
+          <tr><td>BlurAsync(sel, opts)</td><td>Blur element</td></tr>
+          <tr><td>HoverAsync(sel, opts)</td><td>Hover (mouse move)</td></tr>
+          <tr><td>CheckAsync(sel, opts)</td><td>Check checkbox</td></tr>
+          <tr><td>UncheckAsync(sel, opts)</td><td>Uncheck checkbox</td></tr>
+          <tr><td>SelectOptionAsync(sel, val, opts)</td><td>Select dropdown option</td></tr>
+          <tr><td>DispatchEventAsync(sel, evt, detail)</td><td>Dispatch DOM event</td></tr>
+          <tr><td>SetInputFilesAsync(sel, files, opts)</td><td>Upload files</td></tr>
+          <tr><td>DragAndDropAsync(src, tgt, opts)</td><td>Drag element to target</td></tr>
+          <tr><td>WheelAsync(deltaX, deltaY)</td><td>Mouse wheel event</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Page Properties &amp; Info</span><span class="chip chip-teal">properties</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>Context</td><td>IBrowserContext — owning context</td></tr>
+          <tr><td>MainFrame</td><td>IFrame — main frame</td></tr>
+          <tr><td>Frames</td><td>IReadOnlyList&lt;IFrame&gt;</td></tr>
+          <tr><td>Workers</td><td>IReadOnlyList&lt;IWorker&gt;</td></tr>
+          <tr><td>IsClosed</td><td>bool</td></tr>
+          <tr><td>ViewportSize</td><td>ViewportSize? (Width, Height)</td></tr>
+          <tr><td>Mouse</td><td>IMouse — raw mouse API</td></tr>
+          <tr><td>Keyboard</td><td>IKeyboard — raw keyboard API</td></tr>
+          <tr><td>Touchscreen</td><td>ITouchscreen</td></tr>
+          <tr><td>Clock</td><td>IClock — control time</td></tr>
+          <tr><td>Video</td><td>IVideo? — recorded video</td></tr>
+          <tr><td>Accessibility</td><td>IAccessibility</td></tr>
+          <tr><td>Coverage</td><td>ICoverage? (Chromium only)</td></tr>
+          <tr><td>Request</td><td>event — request fired</td></tr>
+          <tr><td>Response</td><td>event — response received</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Waiting</span><span class="chip chip-amber">wait</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>WaitForLoadStateAsync(state, opts)</td><td>Wait for load/domcontent/networkidle</td></tr>
+          <tr><td>WaitForURLAsync(url, opts)</td><td>Wait for URL (string/regex/func)</td></tr>
+          <tr><td>WaitForRequestAsync(url, opts)</td><td>Wait for matching request</td></tr>
+          <tr><td>WaitForResponseAsync(url, opts)</td><td>Wait for matching response</td></tr>
+          <tr><td>WaitForNavigationAsync(opts)</td><td>Wait for any navigation (legacy)</td></tr>
+          <tr><td>WaitForFunctionAsync(expr, arg, opts)</td><td>Wait for JS expression truthy</td></tr>
+          <tr><td>WaitForSelectorAsync(sel, opts)</td><td>Wait for selector (legacy)</td></tr>
+          <tr><td>WaitForTimeoutAsync(ms)</td><td>Sleep (avoid in production)</td></tr>
+          <tr><td>WaitForEventAsync(event, opts)</td><td>Wait for page event</td></tr>
+          <tr><td>RunAndWaitForRequestAsync(action, url)</td><td>Action + wait for request</td></tr>
+          <tr><td>RunAndWaitForResponseAsync(action, url)</td><td>Action + wait for response</td></tr>
+          <tr><td>RunAndWaitForNavigationAsync(action, opts)</td><td>Action + wait for nav</td></tr>
+          <tr><td>RunAndWaitForPopupAsync(action, opts)</td><td>Action + wait for popup</td></tr>
+          <tr><td>RunAndWaitForDownloadAsync(action, opts)</td><td>Action + wait for download</td></tr>
+          <tr><td>RunAndWaitForFileChooserAsync(action)</td><td>Action + wait for file dialog</td></tr>
+          <tr><td>RunAndWaitForConsoleMessageAsync(action)</td><td>Action + wait for console</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Page Config</span><span class="chip chip-pink">config</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>SetViewportSizeAsync(w, h)</td><td>Resize viewport</td></tr>
+          <tr><td>SetExtraHTTPHeadersAsync(hdrs)</td><td>Extra headers for this page</td></tr>
+          <tr><td>SetDefaultTimeout(ms)</td><td>Override default timeout</td></tr>
+          <tr><td>SetDefaultNavigationTimeout(ms)</td><td>Override nav timeout</td></tr>
+          <tr><td>EmulateMediaAsync(opts)</td><td>Set media type / color scheme</td></tr>
+          <tr><td>AddInitScriptAsync(script, arg)</td><td>Script on every navigation</td></tr>
+          <tr><td>AddScriptTagAsync(opts)</td><td>Inject &lt;script&gt; tag</td></tr>
+          <tr><td>AddStyleTagAsync(opts)</td><td>Inject &lt;style&gt; tag</td></tr>
+          <tr><td>RouteAsync(url, handler)</td><td>Intercept requests on this page</td></tr>
+          <tr><td>UnrouteAsync(url, handler?)</td><td>Remove route</td></tr>
+          <tr><td>RouteWebSocketAsync(url, handler)</td><td>Intercept WebSocket connections</td></tr>
+          <tr><td>ExposeBindingAsync(name, cb)</td><td>Expose C# to window.name</td></tr>
+          <tr><td>ExposeFunctionAsync(name, cb)</td><td>Expose C# function to JS</td></tr>
+          <tr><td>CloseAsync(opts)</td><td>Close page</td></tr>
+          <tr><td>BringToFrontAsync()</td><td>Focus browser window</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ ILOCATOR -->
+<section class="section" id="locator">
+  <div class="section-header">
+    <span class="section-icon">🎯</span>
+    <h2>ILocator</h2>
+    <span class="section-tag">preferred element API</span>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Actions</span><span class="chip chip-green">ILocator</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>ClickAsync(opts)</td><td>Click the element</td></tr>
+          <tr><td>DblClickAsync(opts)</td><td>Double-click</td></tr>
+          <tr><td>TapAsync(opts)</td><td>Touch tap</td></tr>
+          <tr><td>FillAsync(value, opts)</td><td>Clear and type value</td></tr>
+          <tr><td>PressSequentiallyAsync(text, opts)</td><td>Type character by character</td></tr>
+          <tr><td>ClearAsync(opts)</td><td>Clear input value</td></tr>
+          <tr><td>TypeAsync(text, opts)</td><td>Type with key events (legacy)</td></tr>
+          <tr><td>PressAsync(key, opts)</td><td>Key: "Enter", "Tab", "ArrowDown"…</td></tr>
+          <tr><td>FocusAsync(opts)</td><td>Focus element</td></tr>
+          <tr><td>BlurAsync(opts)</td><td>Remove focus</td></tr>
+          <tr><td>HoverAsync(opts)</td><td>Mouse hover</td></tr>
+          <tr><td>CheckAsync(opts)</td><td>Check checkbox or radio</td></tr>
+          <tr><td>UncheckAsync(opts)</td><td>Uncheck</td></tr>
+          <tr><td>SetCheckedAsync(checked, opts)</td><td>Set checked state explicitly</td></tr>
+          <tr><td>SelectOptionAsync(val, opts)</td><td>Select &lt;select&gt; option(s)</td></tr>
+          <tr><td>SelectTextAsync(opts)</td><td>Select text content</td></tr>
+          <tr><td>SetInputFilesAsync(files, opts)</td><td>Upload files to input</td></tr>
+          <tr><td>DispatchEventAsync(type, detail)</td><td>Fire DOM event</td></tr>
+          <tr><td>DragToAsync(target, opts)</td><td>Drag to another locator</td></tr>
+          <tr><td>ScrollIntoViewIfNeededAsync(opts)</td><td>Scroll element into view</td></tr>
+          <tr><td>WaitForAsync(opts)</td><td>Wait for element state</td></tr>
+          <tr><td>HighlightAsync()</td><td>Debug: highlight element</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Reading Data</span><span class="chip chip-blue">data</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>InnerTextAsync(opts)</td><td>Rendered text content</td></tr>
+          <tr><td>InnerHTMLAsync(opts)</td><td>Inner HTML string</td></tr>
+          <tr><td>TextContentAsync(opts)</td><td>Raw text (incl. hidden)</td></tr>
+          <tr><td>InputValueAsync(opts)</td><td>Value of input/select/textarea</td></tr>
+          <tr><td>GetAttributeAsync(name, opts)</td><td>Attribute value or null</td></tr>
+          <tr><td>IsCheckedAsync(opts)</td><td>bool — checkbox state</td></tr>
+          <tr><td>IsDisabledAsync(opts)</td><td>bool — disabled state</td></tr>
+          <tr><td>IsEditableAsync(opts)</td><td>bool — editable state</td></tr>
+          <tr><td>IsEnabledAsync(opts)</td><td>bool — enabled state</td></tr>
+          <tr><td>IsHiddenAsync(opts)</td><td>bool — hidden state</td></tr>
+          <tr><td>IsVisibleAsync(opts)</td><td>bool — visible state</td></tr>
+          <tr><td>BoundingBoxAsync(opts)</td><td>LocatorBoundingBoxResult? (x,y,w,h)</td></tr>
+          <tr><td>CountAsync()</td><td>int — number of matching elements</td></tr>
+          <tr><td>AllInnerTextsAsync()</td><td>IReadOnlyList&lt;string&gt;</td></tr>
+          <tr><td>AllTextContentsAsync()</td><td>IReadOnlyList&lt;string&gt;</td></tr>
+          <tr><td>AllAsync()</td><td>IReadOnlyList&lt;ILocator&gt;</td></tr>
+          <tr><td>EvaluateAsync(expr, arg)</td><td>Run JS in context of element</td></tr>
+          <tr><td>EvaluateAllAsync(expr, arg)</td><td>Run JS over all matched elements</td></tr>
+          <tr><td>ElementHandleAsync(opts)</td><td>IElementHandle (avoid if possible)</td></tr>
+          <tr><td>ElementHandlesAsync()</td><td>IReadOnlyList&lt;IElementHandle&gt;</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Chaining &amp; Filtering</span><span class="chip chip-purple">chaining</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>Locator(selector, opts)</td><td>Sub-locator within match</td></tr>
+          <tr><td>GetByRole(role, opts)</td><td>ARIA role sub-locator</td></tr>
+          <tr><td>GetByText(text, opts)</td><td>Text sub-locator</td></tr>
+          <tr><td>GetByLabel(text, opts)</td><td>Label sub-locator</td></tr>
+          <tr><td>GetByPlaceholder(text, opts)</td><td>Placeholder sub-locator</td></tr>
+          <tr><td>GetByAltText(text, opts)</td><td>Alt text sub-locator</td></tr>
+          <tr><td>GetByTitle(text, opts)</td><td>Title sub-locator</td></tr>
+          <tr><td>GetByTestId(id)</td><td>data-testid sub-locator</td></tr>
+          <tr><td>Filter(opts)</td><td>Filter: Has, HasNot, HasText, HasNotText</td></tr>
+          <tr><td>First</td><td>First match</td></tr>
+          <tr><td>Last</td><td>Last match</td></tr>
+          <tr><td>Nth(index)</td><td>0-based index match</td></tr>
+          <tr><td>And(locator)</td><td>Must match both selectors</td></tr>
+          <tr><td>Or(locator)</td><td>Match either selector</td></tr>
+          <tr><td>FrameLocator(selector)</td><td>Locate inside iframe</td></tr>
+          <tr><td>ContentFrame</td><td>IFrameLocator for iframe element</td></tr>
+        </table>
+<pre style="margin-top:0.6rem"><span class="cm">// Example: chained filters</span>
+<span class="kw">var</span> item = page
+    .<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Listitem)
+    .<span class="fn">Filter</span>(<span class="kw">new</span>() { HasText = <span class="st">"Product A"</span> })
+    .<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Button);
+
+<span class="kw">await</span> item.<span class="fn">ClickAsync</span>();</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Screenshots (Locator)</span><span class="chip chip-teal">screenshot</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>ScreenshotAsync(opts)</td><td>byte[] — element screenshot</td></tr>
+        </table>
+<pre><span class="kw">var</span> bytes = <span class="kw">await</span> page
+    .<span class="fn">Locator</span>(<span class="st">".chart"</span>)
+    .<span class="fn">ScreenshotAsync</span>(<span class="kw">new</span>() {
+        Path = <span class="st">"chart.png"</span>,
+        Type = <span class="am">ScreenshotType</span>.Png
+    });</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ SELECTORS -->
+<section class="section" id="selectors">
+  <div class="section-header">
+    <span class="section-icon">🔎</span>
+    <h2>Selectors &amp; GetBy Locators</h2>
+    <span class="section-tag">finding elements</span>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">CSS / XPath / Text Selectors</span><span class="chip chip-amber">selectors</span></div>
+      <div class="card-body">
+<pre><span class="cm">// CSS selectors</span>
+page.<span class="fn">Locator</span>(<span class="st">"button.primary"</span>)
+page.<span class="fn">Locator</span>(<span class="st">"input[type='email']"</span>)
+page.<span class="fn">Locator</span>(<span class="st">"#submit"</span>)
+page.<span class="fn">Locator</span>(<span class="st">".card:nth-child(2)"</span>)
+
+<span class="cm">// XPath (prefix xpath=)</span>
+page.<span class="fn">Locator</span>(<span class="st">"xpath=//button[@type='submit']"</span>)
+page.<span class="fn">Locator</span>(<span class="st">"//table/tbody/tr"</span>)  <span class="cm">// auto-detected</span>
+
+<span class="cm">// Text selector (prefix text=)</span>
+page.<span class="fn">Locator</span>(<span class="st">"text=Sign in"</span>)
+page.<span class="fn">Locator</span>(<span class="st">"text=/Sign in/i"</span>)  <span class="cm">// regex</span>
+
+<span class="cm">// Combining selectors</span>
+page.<span class="fn">Locator</span>(<span class="st">"css=div >> text=Submit"</span>)
+
+<span class="cm">// Has/has-not pseudo-class</span>
+page.<span class="fn">Locator</span>(<span class="st">"article:has(h2)"</span>)
+page.<span class="fn">Locator</span>(<span class="st">"article:has-text('Breaking')"</span>)
+page.<span class="fn">Locator</span>(<span class="st">".item:not(.disabled)"</span>)</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">GetBy* — Preferred API</span><span class="chip chip-green">semantic</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Role locators (AriaRole enum)</span>
+page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Button, <span class="kw">new</span>() { Name = <span class="st">"Submit"</span> })
+page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Link, <span class="kw">new</span>() { Name = <span class="st">"Home"</span>, Exact = <span class="nu">true</span> })
+page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Heading, <span class="kw">new</span>() { Level = <span class="nu">2</span> })
+page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Textbox)
+page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Checkbox, <span class="kw">new</span>() { Checked = <span class="nu">true</span> })
+
+<span class="cm">// Text</span>
+page.<span class="fn">GetByText</span>(<span class="st">"Welcome"</span>)
+page.<span class="fn">GetByText</span>(<span class="st">"Welcome"</span>, <span class="kw">new</span>() { Exact = <span class="nu">true</span> })
+page.<span class="fn">GetByText</span>(<span class="kw">new</span> <span class="am">Regex</span>(<span class="st">@"welcome"</span>, RegexOptions.IgnoreCase))
+
+<span class="cm">// Label (finds input associated via label)</span>
+page.<span class="fn">GetByLabel</span>(<span class="st">"Password"</span>)
+page.<span class="fn">GetByLabel</span>(<span class="st">"Password"</span>, <span class="kw">new</span>() { Exact = <span class="nu">true</span> })
+
+<span class="cm">// Placeholder</span>
+page.<span class="fn">GetByPlaceholder</span>(<span class="st">"Email address"</span>)
+
+<span class="cm">// Alt text (images)</span>
+page.<span class="fn">GetByAltText</span>(<span class="st">"Company Logo"</span>)
+
+<span class="cm">// Title attribute</span>
+page.<span class="fn">GetByTitle</span>(<span class="st">"Delete row"</span>)
+
+<span class="cm">// Test ID (data-testid by default)</span>
+page.<span class="fn">GetByTestId</span>(<span class="st">"submit-button"</span>)
+
+<span class="cm">// Change test id attribute globally</span>
+playwright.Selectors.<span class="fn">SetTestIdAttribute</span>(<span class="st">"data-cy"</span>);</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">AriaRole Values</span><span class="chip chip-blue">ARIA</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>AriaRole.Alert</td><td>AriaRole.Alertdialog</td><td>AriaRole.Application</td></tr>
+          <tr><td>AriaRole.Article</td><td>AriaRole.Banner</td><td>AriaRole.Blockquote</td></tr>
+          <tr><td>AriaRole.Button</td><td>AriaRole.Caption</td><td>AriaRole.Cell</td></tr>
+          <tr><td>AriaRole.Checkbox</td><td>AriaRole.Code</td><td>AriaRole.Columnheader</td></tr>
+          <tr><td>AriaRole.Combobox</td><td>AriaRole.Complementary</td><td>AriaRole.Contentinfo</td></tr>
+          <tr><td>AriaRole.Definition</td><td>AriaRole.Dialog</td><td>AriaRole.Directory</td></tr>
+          <tr><td>AriaRole.Document</td><td>AriaRole.Emphasis</td><td>AriaRole.Feed</td></tr>
+          <tr><td>AriaRole.Figure</td><td>AriaRole.Form</td><td>AriaRole.Generic</td></tr>
+          <tr><td>AriaRole.Grid</td><td>AriaRole.Gridcell</td><td>AriaRole.Group</td></tr>
+          <tr><td>AriaRole.Heading</td><td>AriaRole.Img</td><td>AriaRole.Insertion</td></tr>
+          <tr><td>AriaRole.Link</td><td>AriaRole.List</td><td>AriaRole.Listbox</td></tr>
+          <tr><td>AriaRole.Listitem</td><td>AriaRole.Log</td><td>AriaRole.Main</td></tr>
+          <tr><td>AriaRole.Marquee</td><td>AriaRole.Math</td><td>AriaRole.Menu</td></tr>
+          <tr><td>AriaRole.Menubar</td><td>AriaRole.Menuitem</td><td>AriaRole.Menuitemcheckbox</td></tr>
+          <tr><td>AriaRole.Menuitemradio</td><td>AriaRole.Meter</td><td>AriaRole.Navigation</td></tr>
+          <tr><td>AriaRole.None</td><td>AriaRole.Note</td><td>AriaRole.Option</td></tr>
+          <tr><td>AriaRole.Paragraph</td><td>AriaRole.Presentation</td><td>AriaRole.Progressbar</td></tr>
+          <tr><td>AriaRole.Radio</td><td>AriaRole.Radiogroup</td><td>AriaRole.Region</td></tr>
+          <tr><td>AriaRole.Row</td><td>AriaRole.Rowgroup</td><td>AriaRole.Rowheader</td></tr>
+          <tr><td>AriaRole.Scrollbar</td><td>AriaRole.Search</td><td>AriaRole.Searchbox</td></tr>
+          <tr><td>AriaRole.Separator</td><td>AriaRole.Slider</td><td>AriaRole.Spinbutton</td></tr>
+          <tr><td>AriaRole.Status</td><td>AriaRole.Strong</td><td>AriaRole.Subscript</td></tr>
+          <tr><td>AriaRole.Superscript</td><td>AriaRole.Switch</td><td>AriaRole.Tab</td></tr>
+          <tr><td>AriaRole.Table</td><td>AriaRole.Tablist</td><td>AriaRole.Tabpanel</td></tr>
+          <tr><td>AriaRole.Term</td><td>AriaRole.Textbox</td><td>AriaRole.Time</td></tr>
+          <tr><td>AriaRole.Timer</td><td>AriaRole.Toolbar</td><td>AriaRole.Tooltip</td></tr>
+          <tr><td>AriaRole.Tree</td><td>AriaRole.Treegrid</td><td>AriaRole.Treeitem</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ ACTIONS -->
+<section class="section" id="actions">
+  <div class="section-header">
+    <span class="section-icon">🖱️</span>
+    <h2>Mouse, Keyboard &amp; Touch</h2>
+    <span class="section-tag">input devices</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IMouse</span><span class="chip chip-pink">IMouse</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>MoveAsync(x, y, opts)</td><td>Move to absolute coords (steps option)</td></tr>
+          <tr><td>ClickAsync(x, y, opts)</td><td>Click at coords (Button, ClickCount, Delay)</td></tr>
+          <tr><td>DblClickAsync(x, y, opts)</td><td>Double-click at coords</td></tr>
+          <tr><td>DownAsync(opts)</td><td>Press mouse button down</td></tr>
+          <tr><td>UpAsync(opts)</td><td>Release mouse button</td></tr>
+          <tr><td>WheelAsync(deltaX, deltaY)</td><td>Scroll wheel event</td></tr>
+        </table>
+<pre style="margin-top:0.5rem"><span class="cm">// Mouse buttons: Left, Right, Middle</span>
+<span class="kw">await</span> page.Mouse.<span class="fn">ClickAsync</span>(<span class="nu">100</span>, <span class="nu">200</span>, <span class="kw">new</span>() {
+    Button = <span class="am">MouseButton</span>.Right
+});
+
+<span class="cm">// Drag via mouse</span>
+<span class="kw">await</span> page.Mouse.<span class="fn">MoveAsync</span>(<span class="nu">50</span>, <span class="nu">50</span>);
+<span class="kw">await</span> page.Mouse.<span class="fn">DownAsync</span>();
+<span class="kw">await</span> page.Mouse.<span class="fn">MoveAsync</span>(<span class="nu">200</span>, <span class="nu">200</span>, <span class="kw">new</span>() { Steps = <span class="nu">10</span> });
+<span class="kw">await</span> page.Mouse.<span class="fn">UpAsync</span>();</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IKeyboard</span><span class="chip chip-purple">IKeyboard</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>PressAsync(key, opts)</td><td>Press + release key combo</td></tr>
+          <tr><td>DownAsync(key)</td><td>Hold key down</td></tr>
+          <tr><td>UpAsync(key)</td><td>Release held key</td></tr>
+          <tr><td>TypeAsync(text, opts)</td><td>Type each char (Delay option)</td></tr>
+          <tr><td>InsertTextAsync(text)</td><td>Insert text without key events</td></tr>
+        </table>
+<pre style="margin-top:0.5rem"><span class="cm">// Key names: Enter, Tab, Escape, ArrowUp/Down/Left/Right</span>
+<span class="cm">// Backspace, Delete, Home, End, PageUp, PageDown</span>
+<span class="cm">// F1-F12, Control, Shift, Alt, Meta</span>
+<span class="cm">// Modifier combos:</span>
+<span class="kw">await</span> page.Keyboard.<span class="fn">PressAsync</span>(<span class="st">"Control+A"</span>);
+<span class="kw">await</span> page.Keyboard.<span class="fn">PressAsync</span>(<span class="st">"Shift+Tab"</span>);
+<span class="kw">await</span> page.Keyboard.<span class="fn">PressAsync</span>(<span class="st">"Control+Shift+I"</span>);
+
+<span class="cm">// Hold modifier while clicking</span>
+<span class="kw">await</span> page.Keyboard.<span class="fn">DownAsync</span>(<span class="st">"Shift"</span>);
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"text=Item"</span>).<span class="fn">ClickAsync</span>();
+<span class="kw">await</span> page.Keyboard.<span class="fn">UpAsync</span>(<span class="st">"Shift"</span>);</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Click &amp; Action Options</span><span class="chip chip-teal">options</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>Button</td><td>MouseButton: Left / Right / Middle</td></tr>
+          <tr><td>ClickCount</td><td>int (1=click, 2=dblclick, 3=triple)</td></tr>
+          <tr><td>Delay</td><td>float ms between mousedown and up</td></tr>
+          <tr><td>Position</td><td>Position (X, Y) — offset from top-left</td></tr>
+          <tr><td>Modifiers</td><td>IEnumerable&lt;KeyboardModifier&gt; (Alt/Control/Meta/Shift)</td></tr>
+          <tr><td>Force</td><td>bool — bypass actionability checks</td></tr>
+          <tr><td>NoWaitAfter</td><td>bool — skip post-action wait</td></tr>
+          <tr><td>Timeout</td><td>float ms</td></tr>
+          <tr><td>Trial</td><td>bool — check without performing</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">ITouchscreen</span><span class="chip chip-amber">touch</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>TapAsync(x, y)</td><td>Touch tap at coordinates</td></tr>
+        </table>
+<pre style="margin-top:0.5rem"><span class="cm">// Enable touch in context:</span>
+<span class="kw">var</span> ctx = <span class="kw">await</span> browser.<span class="fn">NewContextAsync</span>(<span class="kw">new</span>() {
+    HasTouch = <span class="nu">true</span>,
+    IsMobile = <span class="nu">true</span>,
+    ViewportSize = <span class="kw">new</span>() { Width = <span class="nu">390</span>, Height = <span class="nu">844</span> }
+});
+<span class="kw">await</span> page.Touchscreen.<span class="fn">TapAsync</span>(<span class="nu">195</span>, <span class="nu">400</span>);</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ INPUT -->
+<section class="section" id="input">
+  <div class="section-header">
+    <span class="section-icon">📝</span>
+    <h2>Forms &amp; Input</h2>
+    <span class="section-tag">form interactions</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Text Input</span><span class="chip chip-green">input</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Fill (recommended) — clears then types</span>
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Email"</span>).<span class="fn">FillAsync</span>(<span class="st">"user@example.com"</span>);
+
+<span class="cm">// Type character-by-character (simulates real user)</span>
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Email"</span>).<span class="fn">PressSequentiallyAsync</span>(<span class="st">"user@example.com"</span>, <span class="kw">new</span>() {
+    Delay = <span class="nu">50</span>  <span class="cm">// ms between keystrokes</span>
+});
+
+<span class="cm">// Clear input</span>
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Search"</span>).<span class="fn">ClearAsync</span>();
+
+<span class="cm">// Select all text in input</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"input"</span>).<span class="fn">SelectTextAsync</span>();
+
+<span class="cm">// contenteditable</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"[contenteditable]"</span>).<span class="fn">FillAsync</span>(<span class="st">"New content"</span>);</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Select, Checkbox &amp; File</span><span class="chip chip-blue">form</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Select by value, label, index</span>
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Country"</span>).<span class="fn">SelectOptionAsync</span>(<span class="st">"US"</span>);
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"select"</span>).<span class="fn">SelectOptionAsync</span>(<span class="kw">new</span>[] { <span class="st">"value1"</span>, <span class="st">"value2"</span> });
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"select"</span>).<span class="fn">SelectOptionAsync</span>(<span class="kw">new</span> <span class="am">SelectOptionValue</span> {
+    Label = <span class="st">"United States"</span>
+});
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"select"</span>).<span class="fn">SelectOptionAsync</span>(<span class="kw">new</span> <span class="am">SelectOptionValue</span> {
+    Index = <span class="nu">2</span>
+});
+
+<span class="cm">// Checkbox / Radio</span>
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Accept terms"</span>).<span class="fn">CheckAsync</span>();
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Accept terms"</span>).<span class="fn">UncheckAsync</span>();
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Option B"</span>).<span class="fn">SetCheckedAsync</span>(<span class="nu">true</span>);
+
+<span class="cm">// File upload</span>
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Upload"</span>).<span class="fn">SetInputFilesAsync</span>(<span class="st">"photo.jpg"</span>);
+<span class="kw">await</span> page.<span class="fn">GetByLabel</span>(<span class="st">"Upload"</span>).<span class="fn">SetInputFilesAsync</span>(<span class="kw">new</span>[] { <span class="st">"a.pdf"</span>, <span class="st">"b.pdf"</span> });
+<span class="cm">// FilePayload for in-memory files:</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"input[type=file]"</span>).<span class="fn">SetInputFilesAsync</span>(<span class="kw">new</span> <span class="am">FilePayload</span> {
+    Name = <span class="st">"test.csv"</span>,
+    MimeType = <span class="st">"text/csv"</span>,
+    Buffer = System.Text.Encoding.UTF8.<span class="fn">GetBytes</span>(<span class="st">"a,b,c"</span>)
+});</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ FRAMES -->
+<section class="section" id="frames">
+  <div class="section-header">
+    <span class="section-icon">🖼️</span>
+    <h2>Frames &amp; iframes</h2>
+    <span class="section-tag">IFrame / IFrameLocator</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IFrameLocator (recommended)</span><span class="chip chip-teal">IFrameLocator</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Locate inside iframe by selector</span>
+<span class="kw">var</span> frame = page.<span class="fn">FrameLocator</span>(<span class="st">"iframe[title='Checkout']"</span>);
+<span class="kw">await</span> frame.<span class="fn">GetByLabel</span>(<span class="st">"Card number"</span>).<span class="fn">FillAsync</span>(<span class="st">"4111111111111111"</span>);
+
+<span class="cm">// From an ILocator (iframe element)</span>
+<span class="kw">var</span> frame = page.<span class="fn">Locator</span>(<span class="st">"iframe.widget"</span>).ContentFrame;
+
+<span class="cm">// Chained</span>
+<span class="kw">var</span> btn = page
+    .<span class="fn">FrameLocator</span>(<span class="st">"#outer"</span>)
+    .<span class="fn">FrameLocator</span>(<span class="st">"#inner"</span>)
+    .<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Button);
+
+<span class="cm">// IFrameLocator properties</span>
+frame.First   <span class="cm">// first matching frame</span>
+frame.Last    <span class="cm">// last matching frame</span>
+frame.<span class="fn">Nth</span>(<span class="nu">0</span>) <span class="cm">// nth frame</span>
+frame.Owner   <span class="cm">// ILocator of the frame element</span></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IFrame (legacy)</span><span class="chip chip-purple">IFrame</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>page.MainFrame</td><td>Main document frame</td></tr>
+          <tr><td>page.Frames</td><td>All frames including iframes</td></tr>
+          <tr><td>page.Frame(name)</td><td>Frame by name attribute</td></tr>
+          <tr><td>page.FrameByUrl(url)</td><td>Frame by URL (string/regex/func)</td></tr>
+          <tr><td>frame.Url</td><td>Current URL</td></tr>
+          <tr><td>frame.Name</td><td>Name attribute</td></tr>
+          <tr><td>frame.ParentFrame</td><td>Parent frame or null</td></tr>
+          <tr><td>frame.ChildFrames</td><td>IReadOnlyList&lt;IFrame&gt;</td></tr>
+          <tr><td>frame.IsDetached()</td><td>bool</td></tr>
+          <tr><td>frame.GotoAsync(url, opts)</td><td>Navigate frame</td></tr>
+          <tr><td>frame.Locator(sel)</td><td>ILocator within frame</td></tr>
+          <tr><td>frame.GetByRole(...)</td><td>Same as page.GetBy* but scoped</td></tr>
+          <tr><td>frame.EvaluateAsync(expr)</td><td>Run JS in frame</td></tr>
+          <tr><td>frame.WaitForLoadStateAsync()</td><td>Wait for frame load</td></tr>
+          <tr><td>frame.WaitForURLAsync(url)</td><td>Wait for URL in frame</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ DIALOGS -->
+<section class="section" id="dialogs">
+  <div class="section-header">
+    <span class="section-icon">💬</span>
+    <h2>Dialogs, Popups &amp; Downloads</h2>
+    <span class="section-tag">browser events</span>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Dialogs (alert/confirm/prompt)</span><span class="chip chip-amber">IDialog</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Auto-accept all dialogs</span>
+page.Dialog += async (_, dialog) => await dialog.<span class="fn">AcceptAsync</span>();
+
+<span class="cm">// Auto-dismiss</span>
+page.Dialog += async (_, dialog) => await dialog.<span class="fn">DismissAsync</span>();
+
+<span class="cm">// Inspect before accepting</span>
+page.Dialog += async (_, dialog) => {
+    Console.<span class="fn">WriteLine</span>(dialog.Type);    <span class="cm">// alert|confirm|prompt|beforeunload</span>
+    Console.<span class="fn">WriteLine</span>(dialog.Message);
+    Console.<span class="fn">WriteLine</span>(dialog.DefaultValue); <span class="cm">// for prompt</span>
+    <span class="kw">if</span> (dialog.Type == <span class="st">"prompt"</span>)
+        <span class="kw">await</span> dialog.<span class="fn">AcceptAsync</span>(<span class="st">"my input"</span>);
+    <span class="kw">else</span>
+        <span class="kw">await</span> dialog.<span class="fn">AcceptAsync</span>();
+};</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Popups &amp; New Pages</span><span class="chip chip-green">popups</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Wait for popup opened by action</span>
+<span class="kw">var</span> popup = <span class="kw">await</span> page.<span class="fn">RunAndWaitForPopupAsync</span>(<span class="kw">async</span> () => {
+    <span class="kw">await</span> page.<span class="fn">GetByText</span>(<span class="st">"Open new tab"</span>).<span class="fn">ClickAsync</span>();
+});
+<span class="kw">await</span> popup.<span class="fn">WaitForLoadStateAsync</span>();
+Console.<span class="fn">WriteLine</span>(popup.Url);
+
+<span class="cm">// Wait for any new page in context</span>
+<span class="kw">var</span> newPage = <span class="kw">await</span> context.<span class="fn">WaitForPageAsync</span>();
+
+<span class="cm">// Context-level page event</span>
+context.Page += (_, page) => Console.<span class="fn">WriteLine</span>($<span class="st">"New page: {page.Url}"</span>);</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Downloads</span><span class="chip chip-blue">IDownload</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Wait for download triggered by action</span>
+<span class="kw">var</span> download = <span class="kw">await</span> page.<span class="fn">RunAndWaitForDownloadAsync</span>(<span class="kw">async</span> () => {
+    <span class="kw">await</span> page.<span class="fn">GetByText</span>(<span class="st">"Export CSV"</span>).<span class="fn">ClickAsync</span>();
+});
+
+<span class="cm">// Save to disk</span>
+<span class="kw">await</span> download.<span class="fn">SaveAsAsync</span>(<span class="st">"/tmp/export.csv"</span>);
+
+<span class="cm">// Get suggested filename</span>
+<span class="kw">var</span> name = download.SuggestedFilename;
+
+<span class="cm">// Get path (temp file)</span>
+<span class="kw">var</span> path = <span class="kw">await</span> download.<span class="fn">PathAsync</span>();
+
+<span class="cm">// Get URL</span>
+<span class="kw">var</span> url = download.Url;
+
+<span class="cm">// Read as stream</span>
+<span class="kw">var</span> stream = <span class="kw">await</span> download.<span class="fn">CreateReadStreamAsync</span>();
+
+<span class="cm">// If error during download</span>
+<span class="kw">var</span> failure = <span class="kw">await</span> download.<span class="fn">FailureAsync</span>(); <span class="cm">// null if ok</span></pre>
+        <div class="note">Requires <code style="font-family:IBM Plex Mono">AcceptDownloads = true</code> in context options (default: true).</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">File Chooser</span><span class="chip chip-pink">IFileChooser</span></div>
+      <div class="card-body">
+<pre><span class="kw">var</span> fileChooser = <span class="kw">await</span> page.<span class="fn">RunAndWaitForFileChooserAsync</span>(<span class="kw">async</span> () => {
+    <span class="kw">await</span> page.<span class="fn">GetByText</span>(<span class="st">"Upload"</span>).<span class="fn">ClickAsync</span>();
+});
+
+<span class="cm">// fileChooser.IsMultiple — whether multiple allowed</span>
+<span class="cm">// fileChooser.Element    — ILocator for &lt;input&gt;</span>
+<span class="kw">await</span> fileChooser.<span class="fn">SetFilesAsync</span>(<span class="kw">new</span>[] { <span class="st">"doc1.pdf"</span>, <span class="st">"doc2.pdf"</span> });</pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ NETWORK -->
+<section class="section" id="network">
+  <div class="section-header">
+    <span class="section-icon">📡</span>
+    <h2>Network — IRequest &amp; IResponse</h2>
+    <span class="section-tag">network inspection</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IRequest</span><span class="chip chip-blue">IRequest</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>Url</td><td>string — full URL</td></tr>
+          <tr><td>Method</td><td>string — GET/POST/etc</td></tr>
+          <tr><td>Headers</td><td>Dictionary&lt;string,string&gt;</td></tr>
+          <tr><td>HeadersArray()</td><td>Task&lt;IReadOnlyList&lt;Header&gt;&gt; — raw</td></tr>
+          <tr><td>HeaderValue(name)</td><td>Task&lt;string?&gt;</td></tr>
+          <tr><td>PostData</td><td>string? — request body</td></tr>
+          <tr><td>PostDataBuffer</td><td>byte[]? — binary body</td></tr>
+          <tr><td>PostDataJSON</td><td>JsonElement? (System.Text.Json)</td></tr>
+          <tr><td>IsNavigationRequest</td><td>bool</td></tr>
+          <tr><td>ResourceType</td><td>"document"|"script"|"image"|"xhr"|"fetch"…</td></tr>
+          <tr><td>Frame</td><td>IFrame — originating frame</td></tr>
+          <tr><td>Redirects()</td><td>Task&lt;IReadOnlyList&lt;IRequest&gt;&gt; — redirect chain</td></tr>
+          <tr><td>RedirectedFrom</td><td>IRequest? — original request</td></tr>
+          <tr><td>RedirectedTo</td><td>IRequest? — redirect target</td></tr>
+          <tr><td>Failure</td><td>RequestFailure? — error info</td></tr>
+          <tr><td>Timing</td><td>RequestTiming — DNS/connect/send timing</td></tr>
+          <tr><td>AllHeadersAsync()</td><td>Task&lt;Dictionary&lt;string,string&gt;&gt;</td></tr>
+          <tr><td>SizesAsync()</td><td>Task&lt;RequestSizesResult&gt; — body sizes</td></tr>
+          <tr><td>ResponseAsync()</td><td>Task&lt;IResponse?&gt;</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IResponse</span><span class="chip chip-green">IResponse</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>Url</td><td>string</td></tr>
+          <tr><td>Status</td><td>int — HTTP status code</td></tr>
+          <tr><td>StatusText</td><td>string — "OK", "Not Found"…</td></tr>
+          <tr><td>Ok</td><td>bool — Status in [200, 299]</td></tr>
+          <tr><td>Headers</td><td>Dictionary&lt;string,string&gt;</td></tr>
+          <tr><td>AllHeadersAsync()</td><td>Task&lt;Dictionary&lt;string,string&gt;&gt; including set-cookie</td></tr>
+          <tr><td>HeadersArray()</td><td>Task with raw headers (duplicates)</td></tr>
+          <tr><td>HeaderValue(name)</td><td>Task&lt;string?&gt;</td></tr>
+          <tr><td>BodyAsync()</td><td>Task&lt;byte[]&gt; — binary body</td></tr>
+          <tr><td>TextAsync()</td><td>Task&lt;string&gt; — decoded body</td></tr>
+          <tr><td>JsonAsync()</td><td>Task&lt;JsonElement?&gt;</td></tr>
+          <tr><td>JsonAsync&lt;T&gt;()</td><td>Task&lt;T?&gt; — deserialize to type</td></tr>
+          <tr><td>Request</td><td>IRequest — originating request</td></tr>
+          <tr><td>Frame</td><td>IFrame</td></tr>
+          <tr><td>FromServiceWorker</td><td>bool</td></tr>
+          <tr><td>ServerAddrAsync()</td><td>Task&lt;ServerAddr?&gt; (ip:port)</td></tr>
+          <tr><td>SecurityDetailsAsync()</td><td>Task&lt;SecurityDetails?&gt; TLS info</td></tr>
+          <tr><td>Finished()</td><td>Task&lt;string?&gt; — error or null</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card span-full">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Waiting for Network Events</span><span class="chip chip-teal">patterns</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Wait for request matching URL string, glob, or regex</span>
+<span class="kw">var</span> req = <span class="kw">await</span> page.<span class="fn">WaitForRequestAsync</span>(<span class="st">"**/api/users"</span>);
+<span class="kw">var</span> req = <span class="kw">await</span> page.<span class="fn">WaitForRequestAsync</span>(<span class="kw">new</span> <span class="am">Regex</span>(<span class="st">@"/api/users/\d+"</span>));
+
+<span class="cm">// Wait for response</span>
+<span class="kw">var</span> res = <span class="kw">await</span> page.<span class="fn">WaitForResponseAsync</span>(<span class="st">"**/api/users"</span>);
+<span class="kw">var</span> json = <span class="kw">await</span> res.<span class="fn">JsonAsync</span>();
+
+<span class="cm">// Action + wait (recommended pattern)</span>
+<span class="kw">var</span> response = <span class="kw">await</span> page.<span class="fn">RunAndWaitForResponseAsync</span>(
+    <span class="kw">async</span> () => <span class="kw">await</span> page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Button, <span class="kw">new</span>() { Name = <span class="st">"Save"</span> }).<span class="fn">ClickAsync</span>(),
+    res => res.Url.<span class="fn">Contains</span>(<span class="st">"/api/save"</span>) &amp;&amp; res.Status == <span class="nu">200</span>
+);
+
+<span class="cm">// Listen to all requests/responses</span>
+page.Request  += (_, req) => Console.<span class="fn">WriteLine</span>($<span class="st">"→ {req.Method} {req.Url}"</span>);
+page.Response += (_, res) => Console.<span class="fn">WriteLine</span>($<span class="st">"← {res.Status} {res.Url}"</span>);
+page.RequestFailed   += (_, req) => Console.<span class="fn">WriteLine</span>($<span class="st">"✗ {req.Url}"</span>);
+page.RequestFinished += (_, req) => { };</pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ INTERCEPT -->
+<section class="section" id="intercept">
+  <div class="section-header">
+    <span class="section-icon">🛡️</span>
+    <h2>Request Interception &amp; Mocking</h2>
+    <span class="section-tag">IRoute / HAR</span>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IRoute — Mock Responses</span><span class="chip chip-pink">IRoute</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Block images</span>
+<span class="kw">await</span> page.<span class="fn">RouteAsync</span>(<span class="st">"**/*.{png,jpg,jpeg,gif,svg}"</span>, route => route.<span class="fn">AbortAsync</span>());
+
+<span class="cm">// Return mock JSON</span>
+<span class="kw">await</span> page.<span class="fn">RouteAsync</span>(<span class="st">"**/api/users"</span>, <span class="kw">async</span> route => {
+    <span class="kw">await</span> route.<span class="fn">FulfillAsync</span>(<span class="kw">new</span>() {
+        Status      = <span class="nu">200</span>,
+        ContentType = <span class="st">"application/json"</span>,
+        Body        = <span class="st">"""[{"id":1,"name":"Alice"}]"""</span>
+    });
+});
+
+<span class="cm">// Modify request before sending</span>
+<span class="kw">await</span> page.<span class="fn">RouteAsync</span>(<span class="st">"**/api/**"</span>, <span class="kw">async</span> route => {
+    <span class="kw">var</span> headers = <span class="kw">new</span> <span class="am">Dictionary</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>&gt;(route.Request.Headers) {
+        [<span class="st">"Authorization"</span>] = <span class="st">"Bearer token123"</span>
+    };
+    <span class="kw">await</span> route.<span class="fn">ContinueAsync</span>(<span class="kw">new</span>() { Headers = headers });
+});
+
+<span class="cm">// Intercept and modify response</span>
+<span class="kw">await</span> page.<span class="fn">RouteAsync</span>(<span class="st">"**/api/data"</span>, <span class="kw">async</span> route => {
+    <span class="kw">var</span> response = <span class="kw">await</span> route.<span class="fn">FetchAsync</span>();        <span class="cm">// perform actual request</span>
+    <span class="kw">var</span> json     = <span class="kw">await</span> response.<span class="fn">JsonAsync</span>();
+    <span class="cm">// modify json...</span>
+    <span class="kw">await</span> route.<span class="fn">FulfillAsync</span>(<span class="kw">new</span>() {
+        Response = response,
+        Body = <span class="st">"""{"modified": true}"""</span>
+    });
+});</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IRoute Methods &amp; FulfillOptions</span><span class="chip chip-amber">options</span></div>
+      <div class="card-body">
+        <p style="font-size:0.75rem; color:var(--dim); margin-bottom:0.5rem">IRoute properties:</p>
+        <table class="tbl">
+          <tr><td>route.Request</td><td>IRequest — the intercepted request</td></tr>
+        </table>
+        <p style="font-size:0.75rem; color:var(--dim); margin:0.6rem 0 0.4rem">IRoute methods:</p>
+        <table class="tbl">
+          <tr><td>AbortAsync(errorCode)</td><td>"failed"|"aborted"|"timedout"|"accessdenied"|"connectionrefused"|"connectionreset"|"connectionclosed"|"connectionfailed"|"namenotresolved"|"internetdisconnected"|"addressunreachable"|"blockedbyclient"|"blockedbyresponse"</td></tr>
+          <tr><td>FulfillAsync(opts)</td><td>Return mock response</td></tr>
+          <tr><td>ContinueAsync(opts)</td><td>Forward with optional modifications</td></tr>
+          <tr><td>FetchAsync(opts)</td><td>Perform actual request, return IAPIResponse</td></tr>
+          <tr><td>FallbackAsync(opts)</td><td>Pass to next handler</td></tr>
+        </table>
+        <p style="font-size:0.75rem; color:var(--dim); margin:0.6rem 0 0.4rem">RouteFulfillOptions:</p>
+        <table class="tbl">
+          <tr><td>Status</td><td>int HTTP status code</td></tr>
+          <tr><td>Headers</td><td>Dictionary&lt;string,string&gt;</td></tr>
+          <tr><td>ContentType</td><td>string</td></tr>
+          <tr><td>Body</td><td>string</td></tr>
+          <tr><td>BodyBytes</td><td>byte[]</td></tr>
+          <tr><td>Path</td><td>string — file path to serve</td></tr>
+          <tr><td>Response</td><td>IAPIResponse — base response to modify</td></tr>
+          <tr><td>Json</td><td>object? — serialized as JSON</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">HAR Recording &amp; Replay</span><span class="chip chip-teal">HAR</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Record HAR for context</span>
+<span class="kw">var</span> ctx = <span class="kw">await</span> browser.<span class="fn">NewContextAsync</span>(<span class="kw">new</span>() {
+    RecordHarPath    = <span class="st">"recording.har"</span>,
+    RecordHarContent = <span class="am">HarContentPolicy</span>.Embed <span class="cm">// or Attach/Omit</span>
+});
+<span class="cm">// ... run tests ...</span>
+<span class="kw">await</span> ctx.<span class="fn">CloseAsync</span>(); <span class="cm">// HAR written on close</span>
+
+<span class="cm">// Replay from HAR file</span>
+<span class="kw">await</span> context.<span class="fn">RouteFromHARAsync</span>(<span class="st">"recording.har"</span>, <span class="kw">new</span>() {
+    Url      = <span class="st">"**/api/**"</span>,
+    UpdateContent = <span class="am">RouteFromHarUpdateContent</span>.Embed,
+    NotFound = <span class="am">HarNotFound</span>.Fallback <span class="cm">// or Abort</span>
+});
+
+<span class="cm">// Update HAR (re-record missing entries)</span>
+<span class="kw">await</span> context.<span class="fn">RouteFromHARAsync</span>(<span class="st">"recording.har"</span>, <span class="kw">new</span>() {
+    Update = <span class="nu">true</span>
+});</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IAPIRequest — Direct HTTP</span><span class="chip chip-purple">IAPIRequest</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Create standalone API context</span>
+<span class="kw">var</span> api = <span class="kw">await</span> playwright.APIRequest.<span class="fn">NewContextAsync</span>(<span class="kw">new</span>() {
+    BaseURL = <span class="st">"https://api.example.com"</span>,
+    ExtraHTTPHeaders = <span class="kw">new</span> <span class="am">Dictionary</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>&gt; {
+        [<span class="st">"Authorization"</span>] = <span class="st">"Bearer token"</span>
+    }
+});
+
+<span class="kw">var</span> res  = <span class="kw">await</span> api.<span class="fn">GetAsync</span>(<span class="st">"/users"</span>);
+<span class="kw">var</span> res  = <span class="kw">await</span> api.<span class="fn">PostAsync</span>(<span class="st">"/users"</span>, <span class="kw">new</span>() {
+    DataObject = <span class="kw">new</span> { name = <span class="st">"Alice"</span> }
+});
+<span class="kw">var</span> res  = <span class="kw">await</span> api.<span class="fn">PutAsync</span>(<span class="st">"/users/1"</span>, <span class="kw">new</span>() { DataString = <span class="st">"..."</span> });
+<span class="kw">var</span> res  = <span class="kw">await</span> api.<span class="fn">PatchAsync</span>(<span class="st">"/users/1"</span>, <span class="kw">new</span>() { ... });
+<span class="kw">var</span> res  = <span class="kw">await</span> api.<span class="fn">DeleteAsync</span>(<span class="st">"/users/1"</span>);
+<span class="kw">var</span> res  = <span class="kw">await</span> api.<span class="fn">FetchAsync</span>(<span class="st">"/upload"</span>, <span class="kw">new</span>() {
+    Method   = <span class="st">"POST"</span>,
+    Multipart = <span class="kw">new</span> <span class="am">FormData</span>()
+        .<span class="fn">Append</span>(<span class="st">"file"</span>, <span class="kw">new</span> <span class="am">FilePayload</span> { ... })
+});
+
+<span class="cm">// IAPIResponse methods</span>
+res.Ok; res.Status; res.Url; res.Headers;
+<span class="kw">await</span> res.<span class="fn">TextAsync</span>();
+<span class="kw">await</span> res.<span class="fn">JsonAsync</span>&lt;<span class="am">MyType</span>&gt;();
+<span class="kw">await</span> res.<span class="fn">BodyAsync</span>();
+<span class="kw">await</span> res.<span class="fn">DisposeAsync</span>();
+
+<span class="kw">await</span> api.<span class="fn">StorageStateAsync</span>(<span class="kw">new</span>() { Path = <span class="st">"api-state.json"</span> });
+<span class="kw">await</span> api.<span class="fn">DisposeAsync</span>();</pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ ASSERTIONS -->
+<section class="section" id="assertions">
+  <div class="section-header">
+    <span class="section-icon">✅</span>
+    <h2>Assertions — Expect</h2>
+    <span class="section-tag">Microsoft.Playwright.NUnit / MSTest / xUnit</span>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Locator Assertions</span><span class="chip chip-green">ILocatorAssertions</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><th>Assertion</th><th>Description</th></tr>
+          <tr><td>ToBeAttachedAsync(opts)</td><td>In DOM (visible or not)</td></tr>
+          <tr><td>ToBeCheckedAsync(opts)</td><td>Checkbox/radio is checked</td></tr>
+          <tr><td>ToBeDisabledAsync(opts)</td><td>Element is disabled</td></tr>
+          <tr><td>ToBeEditableAsync(opts)</td><td>Input is editable</td></tr>
+          <tr><td>ToBeEmptyAsync(opts)</td><td>Input has no value / element has no text</td></tr>
+          <tr><td>ToBeEnabledAsync(opts)</td><td>Element is enabled</td></tr>
+          <tr><td>ToBeFocusedAsync(opts)</td><td>Element has focus</td></tr>
+          <tr><td>ToBeHiddenAsync(opts)</td><td>Element is not visible</td></tr>
+          <tr><td>ToBeInViewportAsync(opts)</td><td>Visible in viewport (ratio option)</td></tr>
+          <tr><td>ToBeVisibleAsync(opts)</td><td>Element is visible</td></tr>
+          <tr><td>ToContainTextAsync(text, opts)</td><td>Text/regex in text content</td></tr>
+          <tr><td>ToHaveAccessibleDescriptionAsync(desc, opts)</td><td>ARIA description matches</td></tr>
+          <tr><td>ToHaveAccessibleErrorMessageAsync(msg, opts)</td><td>ARIA error message</td></tr>
+          <tr><td>ToHaveAccessibleNameAsync(name, opts)</td><td>ARIA name matches</td></tr>
+          <tr><td>ToHaveAttributeAsync(name, val, opts)</td><td>Attribute equals value/regex</td></tr>
+          <tr><td>ToHaveClassAsync(class, opts)</td><td>className matches</td></tr>
+          <tr><td>ToHaveCountAsync(count, opts)</td><td>Number of matching elements</td></tr>
+          <tr><td>ToHaveCSSAsync(prop, val, opts)</td><td>CSS property matches</td></tr>
+          <tr><td>ToHaveIdAsync(id, opts)</td><td>Element has id</td></tr>
+          <tr><td>ToHaveJSPropertyAsync(prop, val, opts)</td><td>JS property equals value</td></tr>
+          <tr><td>ToHaveRoleAsync(role, opts)</td><td>ARIA role matches</td></tr>
+          <tr><td>ToHaveTextAsync(text, opts)</td><td>Exact text content</td></tr>
+          <tr><td>ToHaveValueAsync(value, opts)</td><td>Input value matches</td></tr>
+          <tr><td>ToHaveValuesAsync(values, opts)</td><td>Multi-select values</td></tr>
+          <tr><td>ToMatchAriaSnapshotAsync(snapshot, opts)</td><td>Accessibility snapshot</td></tr>
+        </table>
+        <div class="note">Negate any assertion: <code style="font-family:IBM Plex Mono;color:var(--teal)">Expect(locator).Not.ToBeVisibleAsync()</code></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Page &amp; Response Assertions</span><span class="chip chip-blue">page/response</span></div>
+      <div class="card-body">
+        <p style="font-size:0.75rem; color:var(--dim); margin-bottom:0.5rem">IPageAssertions — Expect(page).*</p>
+        <table class="tbl">
+          <tr><td>ToHaveTitleAsync(title, opts)</td><td>string or Regex</td></tr>
+          <tr><td>ToHaveURLAsync(url, opts)</td><td>string, Regex, or predicate</td></tr>
+        </table>
+        <p style="font-size:0.75rem; color:var(--dim); margin:0.7rem 0 0.5rem">IAPIResponseAssertions — Expect(response).*</p>
+        <table class="tbl">
+          <tr><td>ToBeOKAsync()</td><td>Status in 200–299</td></tr>
+        </table>
+<pre style="margin-top:0.6rem"><span class="cm">// Usage examples</span>
+<span class="kw">await</span> <span class="fn">Expect</span>(page).<span class="fn">ToHaveTitleAsync</span>(<span class="st">"Dashboard"</span>);
+<span class="kw">await</span> <span class="fn">Expect</span>(page).<span class="fn">ToHaveURLAsync</span>(<span class="kw">new</span> <span class="am">Regex</span>(<span class="st">@"/dashboard"</span>));
+<span class="kw">await</span> <span class="fn">Expect</span>(page).<span class="fn">ToHaveURLAsync</span>(url => url.<span class="fn">Contains</span>(<span class="st">"dashboard"</span>));
+
+<span class="cm">// Locator examples</span>
+<span class="kw">await</span> <span class="fn">Expect</span>(page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Heading))
+    .<span class="fn">ToHaveTextAsync</span>(<span class="st">"Welcome"</span>);
+
+<span class="kw">await</span> <span class="fn">Expect</span>(page.<span class="fn">Locator</span>(<span class="st">".item"</span>))
+    .<span class="fn">ToHaveCountAsync</span>(<span class="nu">5</span>);
+
+<span class="cm">// Custom timeout</span>
+<span class="kw">await</span> <span class="fn">Expect</span>(locator).<span class="fn">ToBeVisibleAsync</span>(<span class="kw">new</span>() { Timeout = <span class="nu">10_000</span> });
+
+<span class="cm">// Soft assertions (NUnit PageTest)</span>
+<span class="fn">Expect</span>(locator).ToBeVisible(); <span class="cm">// non-async soft assertion</span></pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ SCREENSHOTS -->
+<section class="section" id="screenshots">
+  <div class="section-header">
+    <span class="section-icon">📸</span>
+    <h2>Screenshots &amp; PDF</h2>
+    <span class="section-tag">visual output</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Page Screenshots</span><span class="chip chip-amber">screenshots</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Basic screenshot to file</span>
+<span class="kw">await</span> page.<span class="fn">ScreenshotAsync</span>(<span class="kw">new</span>() { Path = <span class="st">"screen.png"</span> });
+
+<span class="cm">// Full page</span>
+<span class="kw">await</span> page.<span class="fn">ScreenshotAsync</span>(<span class="kw">new</span>() {
+    Path    = <span class="st">"full.png"</span>,
+    FullPage = <span class="nu">true</span>
+});
+
+<span class="cm">// As bytes</span>
+<span class="kw">var</span> bytes = <span class="kw">await</span> page.<span class="fn">ScreenshotAsync</span>();
+
+<span class="cm">// JPEG with quality</span>
+<span class="kw">var</span> bytes = <span class="kw">await</span> page.<span class="fn">ScreenshotAsync</span>(<span class="kw">new</span>() {
+    Type    = <span class="am">ScreenshotType</span>.Jpeg,
+    Quality = <span class="nu">80</span>
+});
+
+<span class="cm">// Clip to region</span>
+<span class="kw">await</span> page.<span class="fn">ScreenshotAsync</span>(<span class="kw">new</span>() {
+    Clip = <span class="kw">new</span> <span class="am">Clip</span> { X=<span class="nu">0</span>, Y=<span class="nu">0</span>, Width=<span class="nu">800</span>, Height=<span class="nu">600</span> }
+});
+
+<span class="cm">// Mask elements (fill with pink)</span>
+<span class="kw">await</span> page.<span class="fn">ScreenshotAsync</span>(<span class="kw">new</span>() {
+    Mask = <span class="kw">new</span>[] { page.<span class="fn">Locator</span>(<span class="st">".avatar"</span>) }
+});
+
+<span class="cm">// Omit background (PNG only)</span>
+<span class="kw">await</span> page.<span class="fn">ScreenshotAsync</span>(<span class="kw">new</span>() {
+    OmitBackground = <span class="nu">true</span>,
+    Path = <span class="st">"transparent.png"</span>
+});
+
+<span class="cm">// Element screenshot</span>
+<span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"#chart"</span>).<span class="fn">ScreenshotAsync</span>(<span class="kw">new</span>() {
+    Path = <span class="st">"chart.png"</span>
+});</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">PDF Generation (Chromium)</span><span class="chip chip-pink">PDF</span></div>
+      <div class="card-body">
+<pre><span class="kw">var</span> pdf = <span class="kw">await</span> page.<span class="fn">PdfAsync</span>(<span class="kw">new</span>() {
+    Path            = <span class="st">"document.pdf"</span>,
+    Format          = <span class="st">"A4"</span>,      <span class="cm">// Letter, Legal, A0-A6…</span>
+    Landscape       = <span class="nu">false</span>,
+    PrintBackground = <span class="nu">true</span>,
+    Scale           = <span class="nu">1.0f</span>,
+    PageRanges      = <span class="st">"1-5"</span>,
+    DisplayHeaderFooter = <span class="nu">true</span>,
+    HeaderTemplate  = <span class="st">"&lt;div class='title'&gt;&lt;/div&gt;"</span>,
+    FooterTemplate  = <span class="st">"&lt;div class='pageNumber'&gt;&lt;/div&gt;"</span>,
+    Margin = <span class="kw">new</span>() {
+        Top = <span class="st">"20mm"</span>, Bottom = <span class="st">"20mm"</span>,
+        Left = <span class="st">"15mm"</span>, Right = <span class="st">"15mm"</span>
+    },
+    Width  = <span class="st">"210mm"</span>,
+    Height = <span class="st">"297mm"</span>,
+    Tagged = <span class="nu">true</span>,
+    Outline = <span class="nu">false</span>
+});</pre>
+        <div class="note">PDF is Chromium-only. Headless mode required.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ VIDEO/TRACE -->
+<section class="section" id="video">
+  <div class="section-header">
+    <span class="section-icon">🎬</span>
+    <h2>Video &amp; Tracing</h2>
+    <span class="section-tag">debugging tools</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Video Recording</span><span class="chip chip-blue">IVideo</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Enable via context options</span>
+<span class="kw">var</span> ctx = <span class="kw">await</span> browser.<span class="fn">NewContextAsync</span>(<span class="kw">new</span>() {
+    RecordVideoDir  = <span class="st">"videos/"</span>,
+    RecordVideoSize = <span class="kw">new</span>() { Width = <span class="nu">1280</span>, Height = <span class="nu">720</span> }
+});
+
+<span class="kw">var</span> page = <span class="kw">await</span> ctx.<span class="fn">NewPageAsync</span>();
+<span class="cm">// ... test ...</span>
+
+<span class="cm">// Must close page/context to finalize video</span>
+<span class="kw">await</span> page.<span class="fn">CloseAsync</span>();
+
+<span class="cm">// Get video path</span>
+<span class="kw">var</span> path = <span class="kw">await</span> page.Video!.<span class="fn">PathAsync</span>();
+
+<span class="cm">// Save to specific location</span>
+<span class="kw">await</span> page.Video!.<span class="fn">SaveAsAsync</span>(<span class="st">"test-recording.webm"</span>);
+
+<span class="cm">// Delete (e.g. if test passed)</span>
+<span class="kw">await</span> page.Video!.<span class="fn">DeleteAsync</span>();</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">ITracing</span><span class="chip chip-teal">ITracing</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Start tracing</span>
+<span class="kw">await</span> context.Tracing.<span class="fn">StartAsync</span>(<span class="kw">new</span>() {
+    Screenshots = <span class="nu">true</span>,
+    Snapshots   = <span class="nu">true</span>,
+    Sources     = <span class="nu">true</span>,
+    Title       = <span class="st">"My Test"</span>,
+    Name        = <span class="st">"trace"</span>
+});
+
+<span class="cm">// Capture chunk during test</span>
+<span class="kw">await</span> context.Tracing.<span class="fn">StartChunkAsync</span>(<span class="kw">new</span>() { Title = <span class="st">"Login step"</span> });
+<span class="cm">// ... actions ...</span>
+<span class="kw">await</span> context.Tracing.<span class="fn">StopChunkAsync</span>(<span class="kw">new</span>() { Path = <span class="st">"login.zip"</span> });
+
+<span class="cm">// Stop and save</span>
+<span class="kw">await</span> context.Tracing.<span class="fn">StopAsync</span>(<span class="kw">new</span>() { Path = <span class="st">"trace.zip"</span> });
+
+<span class="cm">// View trace:</span>
+<span class="cm">// npx playwright show-trace trace.zip</span>
+<span class="cm">// or: https://trace.playwright.dev</span></pre>
+        <div class="note info">NUnit PageTest automatically captures traces on failure when configured via .runsettings.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ JS EVAL -->
+<section class="section" id="js">
+  <div class="section-header">
+    <span class="section-icon">⚡</span>
+    <h2>JavaScript Evaluation</h2>
+    <span class="section-tag">EvaluateAsync / EvalOnSelectorAsync</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">page.EvaluateAsync</span><span class="chip chip-purple">JS eval</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Expression → JSON-serializable return</span>
+<span class="kw">var</span> result = <span class="kw">await</span> page.<span class="fn">EvaluateAsync</span>&lt;<span class="ty">int</span>&gt;(<span class="st">"1 + 2"</span>);
+
+<span class="cm">// Function with argument</span>
+<span class="kw">var</span> result = <span class="kw">await</span> page.<span class="fn">EvaluateAsync</span>&lt;<span class="ty">string</span>&gt;(
+    <span class="st">"([a, b]) => a + b"</span>, <span class="kw">new</span>[] { <span class="st">"Hello, "</span>, <span class="st">"World"</span> }
+);
+
+<span class="cm">// Modify DOM</span>
+<span class="kw">await</span> page.<span class="fn">EvaluateAsync</span>(<span class="st">"document.title = 'Modified'"</span>);
+
+<span class="cm">// Handle → JS element</span>
+<span class="kw">var</span> handle = <span class="kw">await</span> page.<span class="fn">EvaluateHandleAsync</span>(<span class="st">"window"</span>);
+<span class="kw">var</span> title  = <span class="kw">await</span> page.<span class="fn">EvaluateHandleAsync</span>(<span class="st">"document.title"</span>);
+
+<span class="cm">// Evaluate on page with IElementHandle</span>
+<span class="kw">var</span> text = <span class="kw">await</span> page.<span class="fn">EvalOnSelectorAsync</span>&lt;<span class="ty">string</span>&gt;(
+    <span class="st">"h1"</span>, <span class="st">"el => el.textContent"</span>
+);
+
+<span class="cm">// Evaluate on all matching elements</span>
+<span class="kw">var</span> texts = <span class="kw">await</span> page.<span class="fn">EvalOnSelectorAllAsync</span>&lt;IEnumerable&lt;<span class="ty">string</span>&gt;&gt;(
+    <span class="st">"li"</span>, <span class="st">"els => els.map(e => e.textContent)"</span>
+);
+
+<span class="cm">// Via ILocator (recommended)</span>
+<span class="kw">var</span> val = <span class="kw">await</span> page.<span class="fn">Locator</span>(<span class="st">"input"</span>).<span class="fn">EvaluateAsync</span>&lt;<span class="ty">string</span>&gt;(
+    <span class="st">"el => el.value"</span>
+);
+
+<span class="cm">// WaitForFunction (polls until truthy)</span>
+<span class="kw">await</span> page.<span class="fn">WaitForFunctionAsync</span>(
+    <span class="st">"count => document.querySelectorAll('.item').length >= count"</span>,
+    <span class="nu">5</span>
+);</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IJSHandle &amp; IElementHandle</span><span class="chip chip-pink">handles</span></div>
+      <div class="card-body">
+        <p style="font-size:0.75rem; color:var(--dim); margin-bottom:0.5rem">IJSHandle methods:</p>
+        <table class="tbl">
+          <tr><td>GetPropertyAsync(name)</td><td>Get JS property as IJSHandle</td></tr>
+          <tr><td>GetPropertiesAsync()</td><td>Dictionary of all properties</td></tr>
+          <tr><td>EvaluateAsync(expr, arg)</td><td>Run JS with this handle as arg</td></tr>
+          <tr><td>EvaluateHandleAsync(expr, arg)</td><td>Run JS, return IJSHandle</td></tr>
+          <tr><td>JsonValueAsync&lt;T&gt;()</td><td>Serialize to T</td></tr>
+          <tr><td>AsElement()</td><td>IElementHandle? if element</td></tr>
+          <tr><td>DisposeAsync()</td><td>Release reference</td></tr>
+        </table>
+        <p style="font-size:0.75rem; color:var(--dim); margin:0.6rem 0 0.4rem">IElementHandle extra methods:</p>
+        <table class="tbl">
+          <tr><td>ClickAsync(opts)</td><td>Click element</td></tr>
+          <tr><td>FillAsync(value)</td><td>Fill input</td></tr>
+          <tr><td>TypeAsync(text, opts)</td><td>Type text</td></tr>
+          <tr><td>SelectOptionAsync(vals)</td><td>Select option</td></tr>
+          <tr><td>CheckAsync / UncheckAsync</td><td>Checkbox</td></tr>
+          <tr><td>HoverAsync / FocusAsync</td><td>Mouse/focus</td></tr>
+          <tr><td>ScreenshotAsync(opts)</td><td>Element screenshot</td></tr>
+          <tr><td>BoundingBoxAsync()</td><td>Position and size</td></tr>
+          <tr><td>IsVisibleAsync()</td><td>Visibility check</td></tr>
+          <tr><td>QuerySelectorAsync(sel)</td><td>Find child</td></tr>
+          <tr><td>QuerySelectorAllAsync(sel)</td><td>Find all children</td></tr>
+          <tr><td>WaitForElementStateAsync(state)</td><td>stable|visible|hidden|enabled|disabled|editable</td></tr>
+          <tr><td>WaitForSelectorAsync(sel)</td><td>Wait for descendant</td></tr>
+          <tr><td>OwnerFrameAsync()</td><td>IFrame owning this element</td></tr>
+          <tr><td>ContentFrameAsync()</td><td>IFrame if &lt;iframe&gt; element</td></tr>
+          <tr><td>ScrollIntoViewIfNeededAsync()</td><td>Scroll into viewport</td></tr>
+          <tr><td>DispatchEventAsync(type, detail)</td><td>Fire DOM event</td></tr>
+        </table>
+        <div class="note warn">Prefer ILocator over IElementHandle when possible — handles can become stale after navigation.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ EVENTS -->
+<section class="section" id="events">
+  <div class="section-header">
+    <span class="section-icon">📢</span>
+    <h2>Events</h2>
+    <span class="section-tag">C# events / async wait</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Page Events</span><span class="chip chip-teal">IPage events</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>Close</td><td>Page closed</td></tr>
+          <tr><td>Crash</td><td>Page crashed</td></tr>
+          <tr><td>Console</td><td>IConsoleMessage — console.log etc.</td></tr>
+          <tr><td>Dialog</td><td>IDialog — alert/confirm/prompt</td></tr>
+          <tr><td>DOMContentLoaded</td><td>DOMContentLoaded fired</td></tr>
+          <tr><td>Download</td><td>IDownload started</td></tr>
+          <tr><td>FileChooser</td><td>IFileChooser opened</td></tr>
+          <tr><td>FrameAttached</td><td>IFrame attached</td></tr>
+          <tr><td>FrameDetached</td><td>IFrame removed</td></tr>
+          <tr><td>FrameNavigated</td><td>IFrame navigated</td></tr>
+          <tr><td>Load</td><td>load event fired</td></tr>
+          <tr><td>PageError</td><td>string — unhandled exception</td></tr>
+          <tr><td>Popup</td><td>IPage — new popup</td></tr>
+          <tr><td>Request</td><td>IRequest — request sent</td></tr>
+          <tr><td>RequestFailed</td><td>IRequest — request failed</td></tr>
+          <tr><td>RequestFinished</td><td>IRequest — request finished</td></tr>
+          <tr><td>Response</td><td>IResponse — response received</td></tr>
+          <tr><td>WebSocket</td><td>IWebSocket — WS opened</td></tr>
+          <tr><td>Worker</td><td>IWorker — worker created</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Context &amp; Browser Events</span><span class="chip chip-purple">events</span></div>
+      <div class="card-body">
+        <p style="font-size:0.75rem; color:var(--dim); margin-bottom:0.4rem">IBrowserContext events:</p>
+        <table class="tbl">
+          <tr><td>Close</td><td>Context closed</td></tr>
+          <tr><td>Page</td><td>IPage — new page created</td></tr>
+          <tr><td>Request</td><td>IRequest — any request in context</td></tr>
+          <tr><td>Response</td><td>IResponse — any response</td></tr>
+          <tr><td>RequestFailed</td><td>IRequest failed</td></tr>
+          <tr><td>RequestFinished</td><td>IRequest finished</td></tr>
+          <tr><td>WebSocket</td><td>IWebSocket opened</td></tr>
+          <tr><td>ServiceWorker</td><td>IWorker — service worker</td></tr>
+          <tr><td>BackgroundPage</td><td>IPage — extension background page</td></tr>
+        </table>
+        <p style="font-size:0.75rem; color:var(--dim); margin:0.6rem 0 0.4rem">IBrowser events:</p>
+        <table class="tbl">
+          <tr><td>Disconnected</td><td>Browser disconnected</td></tr>
+        </table>
+<pre style="margin-top:0.5rem"><span class="cm">// Subscribe pattern</span>
+page.Console += (_, msg) => {
+    Console.<span class="fn">WriteLine</span>($<span class="st">"[{msg.Type}] {msg.Text}"</span>);
+    <span class="cm">// msg.Args → IReadOnlyList&lt;IJSHandle&gt;</span>
+    <span class="cm">// msg.Location → (url, lineNumber, columnNumber)</span>
+};
+
+page.PageError += (_, ex) =>
+    Console.<span class="fn">WriteLine</span>($<span class="st">"Error: {ex}"</span>);</pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ MISC -->
+<section class="section" id="misc">
+  <div class="section-header">
+    <span class="section-icon">🔧</span>
+    <h2>Misc — Clock, Accessibility, Coverage, Workers</h2>
+    <span class="section-tag">advanced APIs</span>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IClock — Time Control</span><span class="chip chip-amber">IClock</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>InstallAsync(opts)</td><td>Install fake clock (InitTime option)</td></tr>
+          <tr><td>SetFixedTimeAsync(time)</td><td>Fix Date.now() to value</td></tr>
+          <tr><td>SetSystemTimeAsync(time)</td><td>Set system time without freezing</td></tr>
+          <tr><td>RunForAsync(ticks)</td><td>Advance time by ms</td></tr>
+          <tr><td>FastForwardAsync(ticks)</td><td>Jump time (skip timer callbacks)</td></tr>
+          <tr><td>PauseAtAsync(time)</td><td>Pause at specific time</td></tr>
+          <tr><td>ResumeAsync()</td><td>Resume automatic time</td></tr>
+          <tr><td>TickAsync(ticks)</td><td>Advance and fire timers</td></tr>
+        </table>
+<pre style="margin-top:0.5rem"><span class="kw">await</span> page.Clock.<span class="fn">InstallAsync</span>(<span class="kw">new</span>() {
+    Time = <span class="kw">new</span> <span class="am">DateTimeOffset</span>(<span class="nu">2024</span>, <span class="nu">1</span>, <span class="nu">1</span>, <span class="nu">0</span>, <span class="nu">0</span>, <span class="nu">0</span>, <span class="am">TimeSpan</span>.Zero)
+});
+<span class="kw">await</span> page.Clock.<span class="fn">FastForwardAsync</span>(<span class="st">"1:00"</span>); <span class="cm">// 1 minute</span></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IAccessibility</span><span class="chip chip-green">a11y</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>SnapshotAsync(opts)</td><td>AccessibilitySnapshotResult — full a11y tree</td></tr>
+        </table>
+<pre style="margin-top:0.5rem"><span class="kw">var</span> snapshot = <span class="kw">await</span> page.Accessibility.<span class="fn">SnapshotAsync</span>(<span class="kw">new</span>() {
+    Root = page.<span class="fn">Locator</span>(<span class="st">"main"</span>),
+    InterestingOnly = <span class="nu">false</span> <span class="cm">// include all nodes</span>
+});
+<span class="cm">// snapshot.Role, .Name, .Value, .Description</span>
+<span class="cm">// snapshot.Children → IReadOnlyList&lt;AccessibilitySnapshotResult&gt;</span></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">ICoverage (Chromium only)</span><span class="chip chip-blue">coverage</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>StartJSCoverageAsync(opts)</td><td>Start JS coverage</td></tr>
+          <tr><td>StopJSCoverageAsync()</td><td>Task&lt;IReadOnlyList&lt;CoverageEntry&gt;&gt;</td></tr>
+          <tr><td>StartCSSCoverageAsync(opts)</td><td>Start CSS coverage</td></tr>
+          <tr><td>StopCSSCoverageAsync()</td><td>Task&lt;IReadOnlyList&lt;CoverageEntry&gt;&gt;</td></tr>
+        </table>
+<pre style="margin-top:0.5rem"><span class="kw">await</span> page.Coverage.<span class="fn">StartJSCoverageAsync</span>();
+<span class="cm">// ... run test ...</span>
+<span class="kw">var</span> coverage = <span class="kw">await</span> page.Coverage.<span class="fn">StopJSCoverageAsync</span>();
+<span class="kw">foreach</span> (<span class="kw">var</span> entry <span class="kw">in</span> coverage) {
+    Console.<span class="fn">WriteLine</span>($<span class="st">"{entry.Url}: {entry.Text?.Length} chars"</span>);
+    <span class="cm">// entry.Ranges → covered ranges</span>
+}</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">IWorker &amp; IWebSocket</span><span class="chip chip-pink">workers</span></div>
+      <div class="card-body">
+        <p style="font-size:0.75rem; color:var(--dim); margin-bottom:0.4rem">IWorker:</p>
+        <table class="tbl">
+          <tr><td>Url</td><td>string — worker URL</td></tr>
+          <tr><td>EvaluateAsync(expr, arg)</td><td>Run JS in worker context</td></tr>
+          <tr><td>EvaluateHandleAsync(expr, arg)</td><td>JS handle in worker</td></tr>
+          <tr><td>Close (event)</td><td>Worker was closed</td></tr>
+        </table>
+        <p style="font-size:0.75rem; color:var(--dim); margin:0.6rem 0 0.4rem">IWebSocket:</p>
+        <table class="tbl">
+          <tr><td>Url</td><td>string — WebSocket URL</td></tr>
+          <tr><td>IsClosed</td><td>bool</td></tr>
+          <tr><td>Close (event)</td><td>WS closed</td></tr>
+          <tr><td>FrameReceived (event)</td><td>IWebSocketFrame — received frame</td></tr>
+          <tr><td>FrameSent (event)</td><td>IWebSocketFrame — sent frame</td></tr>
+          <tr><td>SocketError (event)</td><td>string — error message</td></tr>
+          <tr><td>WaitForEventAsync(event, opts)</td><td>Wait for WS event</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">ICDPSession (Chrome DevTools Protocol)</span><span class="chip chip-teal">CDP</span></div>
+      <div class="card-body">
+        <table class="tbl">
+          <tr><td>SendAsync(method, args)</td><td>Task&lt;JsonElement&gt; — send CDP command</td></tr>
+          <tr><td>DetachAsync()</td><td>Detach session</td></tr>
+          <tr><td>Event (event)</td><td>EventArgs&lt;(string, JsonElement)&gt;</td></tr>
+        </table>
+<pre style="margin-top:0.5rem"><span class="kw">var</span> cdp = <span class="kw">await</span> context.<span class="fn">NewCDPSessionAsync</span>(page);
+
+<span class="cm">// Enable network domain</span>
+<span class="kw">await</span> cdp.<span class="fn">SendAsync</span>(<span class="st">"Network.enable"</span>);
+
+<span class="cm">// Override user agent</span>
+<span class="kw">await</span> cdp.<span class="fn">SendAsync</span>(<span class="st">"Network.setUserAgentOverride"</span>,
+    <span class="kw">new</span> { userAgent = <span class="st">"MyBot/1.0"</span> }
+);
+
+<span class="cm">// Listen to CDP events</span>
+cdp.Event += (_, args) => {
+    <span class="kw">var</span> (eventName, payload) = args;
+    Console.<span class="fn">WriteLine</span>(eventName);
+};
+
+<span class="kw">await</span> cdp.<span class="fn">DetachAsync</span>();</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Devices &amp; Emulation</span><span class="chip chip-purple">emulation</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Use built-in device descriptors</span>
+<span class="kw">var</span> iPhone = playwright.Devices[<span class="st">"iPhone 13"</span>];
+<span class="kw">var</span> ctx = <span class="kw">await</span> browser.<span class="fn">NewContextAsync</span>(iPhone);
+
+<span class="cm">// Common device names:</span>
+<span class="cm">// "Desktop Chrome", "Desktop Firefox"</span>
+<span class="cm">// "iPhone 13", "iPhone 14 Pro"</span>
+<span class="cm">// "Pixel 7", "Galaxy S9+"</span>
+<span class="cm">// "iPad Pro 11", "iPad Mini"</span>
+<span class="cm">// "Nexus 10"</span>
+
+<span class="cm">// Override media features</span>
+<span class="kw">await</span> page.<span class="fn">EmulateMediaAsync</span>(<span class="kw">new</span>() {
+    Media       = <span class="am">Media</span>.Print,
+    ColorScheme = <span class="am">ColorScheme</span>.Dark,
+    ForcedColors = <span class="am">ForcedColors</span>.Active,
+    ReducedMotion = <span class="am">ReducedMotion</span>.Reduce
+});
+
+<span class="cm">// Network throttling (via CDP)</span>
+<span class="kw">var</span> cdp = <span class="kw">await</span> context.<span class="fn">NewCDPSessionAsync</span>(page);
+<span class="kw">await</span> cdp.<span class="fn">SendAsync</span>(<span class="st">"Network.emulateNetworkConditions"</span>, <span class="kw">new</span> {
+    offline = <span class="nu">false</span>, latency = <span class="nu">200</span>,
+    downloadThroughput = <span class="nu">500_000</span>, uploadThroughput = <span class="nu">500_000</span>
+});</pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ PATTERNS -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-icon">💡</span>
+    <h2>Patterns &amp; Best Practices</h2>
+    <span class="section-tag">recipes</span>
+  </div>
+  <div class="cards cols-2">
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Page Object Model</span><span class="chip chip-green">POM</span></div>
+      <div class="card-body">
+<pre><span class="kw">public class</span> <span class="am">LoginPage</span>(<span class="am">IPage</span> page)
+{
+    <span class="kw">private readonly</span> <span class="am">ILocator</span> _email    = page.<span class="fn">GetByLabel</span>(<span class="st">"Email"</span>);
+    <span class="kw">private readonly</span> <span class="am">ILocator</span> _password = page.<span class="fn">GetByLabel</span>(<span class="st">"Password"</span>);
+    <span class="kw">private readonly</span> <span class="am">ILocator</span> _submit   = page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Button, <span class="kw">new</span>() { Name = <span class="st">"Sign in"</span> });
+
+    <span class="kw">public async</span> <span class="ty">Task</span> <span class="fn">GotoAsync</span>() =>
+        <span class="kw">await</span> page.<span class="fn">GotoAsync</span>(<span class="st">"/login"</span>);
+
+    <span class="kw">public async</span> <span class="ty">Task</span> <span class="fn">LoginAsync</span>(<span class="ty">string</span> email, <span class="ty">string</span> password)
+    {
+        <span class="kw">await</span> _email.<span class="fn">FillAsync</span>(email);
+        <span class="kw">await</span> _password.<span class="fn">FillAsync</span>(password);
+        <span class="kw">await</span> _submit.<span class="fn">ClickAsync</span>();
+    }
+}
+
+<span class="cm">// In test:</span>
+<span class="kw">var</span> loginPage = <span class="kw">new</span> <span class="am">LoginPage</span>(Page);
+<span class="kw">await</span> loginPage.<span class="fn">GotoAsync</span>();
+<span class="kw">await</span> loginPage.<span class="fn">LoginAsync</span>(<span class="st">"user@test.com"</span>, <span class="st">"secret"</span>);</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="dot"></div><span class="card-head-title">Common Timeout &amp; Wait Patterns</span><span class="chip chip-amber">timeouts</span></div>
+      <div class="card-body">
+<pre><span class="cm">// Default timeouts (ms)</span>
+page.<span class="fn">SetDefaultTimeout</span>(<span class="nu">30_000</span>);           <span class="cm">// actions</span>
+page.<span class="fn">SetDefaultNavigationTimeout</span>(<span class="nu">60_000</span>); <span class="cm">// navigation</span>
+
+<span class="cm">// Per-action timeout</span>
+<span class="kw">await</span> page.<span class="fn">GetByText</span>(<span class="st">"Load"</span>).<span class="fn">ClickAsync</span>(<span class="kw">new</span>() { Timeout = <span class="nu">5_000</span> });
+
+<span class="cm">// Wait for network to be idle</span>
+<span class="kw">await</span> page.<span class="fn">WaitForLoadStateAsync</span>(<span class="am">LoadState</span>.NetworkIdle);
+
+<span class="cm">// Wait for specific API call to complete</span>
+<span class="kw">await</span> page.<span class="fn">RunAndWaitForResponseAsync</span>(
+    <span class="kw">async</span> () => <span class="kw">await</span> page.<span class="fn">GetByRole</span>(<span class="am">AriaRole</span>.Button).<span class="fn">ClickAsync</span>(),
+    res => res.Url.<span class="fn">Contains</span>(<span class="st">"/api"</span>) &amp;&amp; res.Status == <span class="nu">200</span>,
+    <span class="kw">new</span>() { Timeout = <span class="nu">10_000</span> }
+);
+
+<span class="cm">// Retry pattern</span>
+<span class="kw">await</span> <span class="fn">Expect</span>(page.<span class="fn">Locator</span>(<span class="st">".spinner"</span>)).<span class="fn">ToBeHiddenAsync</span>(<span class="kw">new</span>() {
+    Timeout = <span class="nu">20_000</span>
+});
+
+<span class="cm">// Avoid hard waits — if you must:</span>
+<span class="kw">await</span> page.<span class="fn">WaitForTimeoutAsync</span>(<span class="nu">500</span>); <span class="cm">// use sparingly!</span></pre>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</div><!-- end page -->
+
+<div style="text-align:center; padding: 2rem; color: var(--muted); font-size: 0.72rem; font-family: 'IBM Plex Mono', monospace; border-top: 1px solid var(--border);">
+  Microsoft.Playwright · C# · .NET 6+ · https://playwright.dev/dotnet
+</div>
+
+</body>
+</html>

@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XPath 1.0 Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a25;
+    --border: #2a2a3f;
+    --accent: #7c6af7;
+    --accent2: #f76ac8;
+    --accent3: #6af7c8;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --code-bg: #0d0d15;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(124,106,247,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(247,106,200,0.08) 0%, transparent 60%);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 70%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .card-header {
+    padding: 0.85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .card-icon {
+    font-size: 1.1rem;
+  }
+
+  .card-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .tag {
+    margin-left: auto;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .tag-purple { background: rgba(124,106,247,0.2); color: var(--accent); border: 1px solid rgba(124,106,247,0.3); }
+  .tag-pink { background: rgba(247,106,200,0.2); color: var(--accent2); border: 1px solid rgba(247,106,200,0.3); }
+  .tag-teal { background: rgba(106,247,200,0.2); color: var(--accent3); border: 1px solid rgba(106,247,200,0.3); }
+
+  .card-body { padding: 1rem 1.25rem; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 0.45rem 0.3rem;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent3);
+    white-space: nowrap;
+    padding-right: 0.8rem;
+    min-width: 130px;
+  }
+
+  td:last-child {
+    color: #b0b0c8;
+    font-size: 0.78rem;
+  }
+
+  .example {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.4rem;
+    color: #c8c8e8;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.6;
+  }
+
+  .note {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border-left: 2px solid var(--accent);
+    background: rgba(124,106,247,0.05);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .highlight-row td:first-child { color: var(--accent2); }
+
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin: 0.75rem 0 0.4rem;
+  }
+
+  .card.wide {
+    grid-column: span 2;
+  }
+
+  @media (max-width: 740px) {
+    .card.wide { grid-column: span 1; }
+    body { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>XPath 1.0</h1>
+  <p class="subtitle">Complete Reference Cheatsheet</p>
+</header>
+
+<div class="grid">
+
+  <!-- AXES -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🧭</span>
+      <span class="card-title">Axes</span>
+      <span class="tag tag-purple">navigation</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>child::</td><td>Direct children of context node</td></tr>
+        <tr><td>parent::</td><td>Parent of context node</td></tr>
+        <tr><td>self::</td><td>The context node itself</td></tr>
+        <tr><td>ancestor::</td><td>All ancestors (parent, grandparent…)</td></tr>
+        <tr><td>ancestor-or-self::</td><td>Ancestors plus context node</td></tr>
+        <tr><td>descendant::</td><td>All descendants (children, grandchildren…)</td></tr>
+        <tr><td>descendant-or-self::</td><td>Descendants plus context node</td></tr>
+        <tr><td>following::</td><td>All nodes after context node (doc order)</td></tr>
+        <tr><td>following-sibling::</td><td>Siblings after context node</td></tr>
+        <tr><td>preceding::</td><td>All nodes before context node (doc order)</td></tr>
+        <tr><td>preceding-sibling::</td><td>Siblings before context node</td></tr>
+        <tr><td>attribute::</td><td>Attributes of context node</td></tr>
+        <tr><td>namespace::</td><td>Namespace nodes of context node</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ABBREVIATED SYNTAX -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">⚡</span>
+      <span class="card-title">Abbreviated Syntax</span>
+      <span class="tag tag-teal">shortcuts</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>nodename</td><td>child::nodename</td></tr>
+        <tr><td>@attr</td><td>attribute::attr</td></tr>
+        <tr><td>.</td><td>self::node()</td></tr>
+        <tr><td>..</td><td>parent::node()</td></tr>
+        <tr><td>//</td><td>descendant-or-self::node()/</td></tr>
+        <tr><td>*</td><td>Any element (child::*)</td></tr>
+        <tr><td>@*</td><td>Any attribute</td></tr>
+        <tr><td>node()</td><td>Any node (all types)</td></tr>
+        <tr><td>text()</td><td>Text node children</td></tr>
+        <tr><td>comment()</td><td>Comment nodes</td></tr>
+        <tr><td>processing-instruction()</td><td>PI nodes</td></tr>
+      </table>
+      <div class="example">/bookstore/book       → absolute path
+//book               → any book anywhere
+book[1]              → first book child
+book[last()]         → last book child
+book[@lang]          → books with lang attr
+book[@lang='en']     → books where lang=en
+book/title | //price → union of two paths</div>
+    </div>
+  </div>
+
+  <!-- PATH EXPRESSIONS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🛤️</span>
+      <span class="card-title">Path Expressions</span>
+      <span class="tag tag-purple">paths</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>/root</td><td>Root element</td></tr>
+        <tr><td>/a/b/c</td><td>Absolute path</td></tr>
+        <tr><td>a/b</td><td>Relative path from context</td></tr>
+        <tr><td>//c</td><td>c anywhere in document</td></tr>
+        <tr><td>./b</td><td>b child of context</td></tr>
+        <tr><td>../b</td><td>b sibling (via parent)</td></tr>
+        <tr><td>a | b</td><td>Union of a and b nodes</td></tr>
+      </table>
+      <div class="note">Paths are composed of steps separated by /. Each step: axis::nodetest[predicates]</div>
+    </div>
+  </div>
+
+  <!-- PREDICATES -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🔍</span>
+      <span class="card-title">Predicates</span>
+      <span class="tag tag-pink">filtering</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>item[1]</td><td>First item (1-indexed!)</td></tr>
+        <tr><td>item[last()]</td><td>Last item</td></tr>
+        <tr><td>item[last()-1]</td><td>Second-to-last</td></tr>
+        <tr><td>item[position()&lt;3]</td><td>First two items</td></tr>
+        <tr><td>item[@id]</td><td>Has id attribute</td></tr>
+        <tr><td>item[@id='x']</td><td>Attribute equals value</td></tr>
+        <tr><td>item[price&gt;10]</td><td>Child element value comparison</td></tr>
+        <tr><td>item[a][b]</td><td>Has both a and b children</td></tr>
+        <tr><td>item[a or b]</td><td>Has a or b child</td></tr>
+        <tr><td>item[not(@x)]</td><td>Does NOT have attribute x</td></tr>
+        <tr><td>item[.='val']</td><td>String value equals val</td></tr>
+        <tr><td>item[contains(@c,'x')]</td><td>Attribute contains string</td></tr>
+      </table>
+      <div class="note">Predicates can be chained: item[1][@active] — first item that is also active.</div>
+    </div>
+  </div>
+
+  <!-- NODE TESTS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🧪</span>
+      <span class="card-title">Node Tests</span>
+      <span class="tag tag-teal">nodes</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>name</td><td>Element with that name</td></tr>
+        <tr><td>*</td><td>Any element</td></tr>
+        <tr><td>node()</td><td>Any node (elements, text, comments, PI…)</td></tr>
+        <tr><td>text()</td><td>Text nodes only</td></tr>
+        <tr><td>comment()</td><td>Comment nodes</td></tr>
+        <tr><td>processing-instruction()</td><td>Any PI node</td></tr>
+        <tr><td>processing-instruction('name')</td><td>PI with specific target</td></tr>
+        <tr><td>ns:*</td><td>Any element in namespace ns</td></tr>
+        <tr><td>ns:name</td><td>Named element in namespace ns</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- OPERATORS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">⚙️</span>
+      <span class="card-title">Operators</span>
+      <span class="tag tag-purple">logic</span>
+    </div>
+    <div class="card-body">
+      <p class="section-label">Comparison</p>
+      <table>
+        <tr><td>=</td><td>Equal</td></tr>
+        <tr><td>!=</td><td>Not equal</td></tr>
+        <tr><td>&lt;  &lt;=</td><td>Less than / less or equal</td></tr>
+        <tr><td>&gt;  &gt;=</td><td>Greater than / greater or equal</td></tr>
+      </table>
+      <p class="section-label">Boolean</p>
+      <table>
+        <tr><td>and</td><td>Logical AND</td></tr>
+        <tr><td>or</td><td>Logical OR</td></tr>
+        <tr><td>not(expr)</td><td>Logical NOT (function)</td></tr>
+      </table>
+      <p class="section-label">Arithmetic</p>
+      <table>
+        <tr><td>+  -  *</td><td>Add, subtract, multiply</td></tr>
+        <tr><td>div</td><td>Division (not /)</td></tr>
+        <tr><td>mod</td><td>Modulo</td></tr>
+      </table>
+      <p class="section-label">Other</p>
+      <table>
+        <tr><td>|</td><td>Union of node-sets</td></tr>
+        <tr><td>-expr</td><td>Unary minus</td></tr>
+      </table>
+      <div class="note">In XML, use &amp;lt; for &lt; and &amp;gt; for &gt; inside attribute values.</div>
+    </div>
+  </div>
+
+  <!-- STRING FUNCTIONS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🔤</span>
+      <span class="card-title">String Functions</span>
+      <span class="tag tag-teal">functions</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>string(obj)</td><td>Convert to string</td></tr>
+        <tr><td>concat(s1,s2,…)</td><td>Concatenate strings</td></tr>
+        <tr><td>string-length(s)</td><td>Length of string</td></tr>
+        <tr><td>contains(s,sub)</td><td>True if s contains sub</td></tr>
+        <tr><td>starts-with(s,pre)</td><td>True if s starts with pre</td></tr>
+        <tr><td>substring(s,pos,len)</td><td>Substring (1-indexed, len optional)</td></tr>
+        <tr><td>substring-before(s,c)</td><td>Part of s before first c</td></tr>
+        <tr><td>substring-after(s,c)</td><td>Part of s after first c</td></tr>
+        <tr><td>normalize-space(s)</td><td>Trim + collapse whitespace</td></tr>
+        <tr><td>translate(s,from,to)</td><td>Char-by-char replacement</td></tr>
+      </table>
+      <div class="example">contains(@class,'active')
+starts-with(@id,'btn')
+substring('Hello',2,3)    → 'ell'
+substring-before('a:b',':') → 'a'
+translate('ABC','ABC','abc') → 'abc'
+normalize-space('  hi  ')  → 'hi'</div>
+    </div>
+  </div>
+
+  <!-- NUMBER FUNCTIONS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🔢</span>
+      <span class="card-title">Number Functions</span>
+      <span class="tag tag-pink">functions</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>number(obj)</td><td>Convert to number</td></tr>
+        <tr><td>sum(node-set)</td><td>Sum of node string values</td></tr>
+        <tr><td>floor(n)</td><td>Round down</td></tr>
+        <tr><td>ceiling(n)</td><td>Round up</td></tr>
+        <tr><td>round(n)</td><td>Round to nearest integer</td></tr>
+      </table>
+      <div class="example">sum(//price)           → sum all prices
+number('3.14')         → 3.14
+floor(3.9)             → 3
+ceiling(3.1)           → 4
+round(3.5)             → 4</div>
+      <div class="note">number() on a boolean: true→1, false→0. On a nodeset: string value of first node parsed as number.</div>
+    </div>
+  </div>
+
+  <!-- BOOLEAN FUNCTIONS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">✅</span>
+      <span class="card-title">Boolean Functions</span>
+      <span class="tag tag-purple">functions</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>boolean(obj)</td><td>Convert to boolean</td></tr>
+        <tr><td>not(bool)</td><td>Negate boolean</td></tr>
+        <tr><td>true()</td><td>Always returns true</td></tr>
+        <tr><td>false()</td><td>Always returns false</td></tr>
+        <tr><td>lang(string)</td><td>True if context node is in language</td></tr>
+      </table>
+      <div class="note">Truthiness rules: number→non-zero &amp; non-NaN; string→non-empty; nodeset→non-empty.</div>
+      <div class="example">boolean(0)         → false
+boolean('')        → false
+boolean(//item)    → true if any exist
+not(@disabled)     → true if no disabled attr</div>
+    </div>
+  </div>
+
+  <!-- NODE-SET FUNCTIONS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">📦</span>
+      <span class="card-title">Node-Set Functions</span>
+      <span class="tag tag-teal">functions</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>last()</td><td>Size of context node-set (last position)</td></tr>
+        <tr><td>position()</td><td>Position of context node (1-based)</td></tr>
+        <tr><td>count(node-set)</td><td>Number of nodes in set</td></tr>
+        <tr><td>id(string)</td><td>Nodes with given ID(s)</td></tr>
+        <tr><td>local-name(node?)</td><td>Local part of name (no prefix)</td></tr>
+        <tr><td>namespace-uri(node?)</td><td>Namespace URI of node</td></tr>
+        <tr><td>name(node?)</td><td>Qualified name (prefix:local)</td></tr>
+      </table>
+      <div class="example">count(//item)
+last()                 → last position in context
+position() mod 2 = 0   → even-positioned nodes
+id('myId')             → element with id="myId"
+local-name()           → name without ns prefix</div>
+    </div>
+  </div>
+
+  <!-- DATA TYPES -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🏷️</span>
+      <span class="card-title">Data Types</span>
+      <span class="tag tag-pink">types</span>
+    </div>
+    <div class="card-body">
+      <table>
+        <tr><td>node-set</td><td>Unordered set of nodes</td></tr>
+        <tr><td>boolean</td><td>true or false</td></tr>
+        <tr><td>number</td><td>IEEE 754 double (NaN, Infinity valid)</td></tr>
+        <tr><td>string</td><td>Sequence of Unicode characters</td></tr>
+      </table>
+      <div class="note">XPath 1.0 has only these 4 types. No integers, no dates, no null. Automatic coercion occurs in comparisons between node-sets and literals.</div>
+      <div class="example">-- Numeric literals
+42,  3.14,  .5
+
+-- String literals (single or double quotes)
+'hello',  "world"
+
+-- Node-set string value
+string(//title[1])   → text content of first title</div>
+    </div>
+  </div>
+
+  <!-- COMMON PATTERNS -->
+  <div class="card wide">
+    <div class="card-header">
+      <span class="card-icon">📋</span>
+      <span class="card-title">Common Patterns & Recipes</span>
+      <span class="tag tag-purple">patterns</span>
+    </div>
+    <div class="card-body">
+      <div class="example">-- Select all elements with a specific attribute value
+//*[@class='active']
+
+-- Elements whose text contains a substring
+//p[contains(text(),'hello')]
+
+-- Nth child of a type
+//ul/li[3]
+
+-- Last child
+//ul/li[last()]
+
+-- All but first
+//ul/li[position() > 1]
+
+-- Even/odd rows
+//tr[position() mod 2 = 0]   (even)
+//tr[position() mod 2 = 1]   (odd)
+
+-- Parent of matching node
+//span[@id='x']/parent::*
+//span[@id='x']/..
+
+-- Following sibling
+//h2[.='Intro']/following-sibling::p[1]
+
+-- Ancestor element
+//span/ancestor::div[@id='main']
+
+-- Nodes that have a specific child
+//section[h2]
+
+-- Nodes that do NOT have a child
+//section[not(h2)]
+
+-- Attribute is one of multiple values
+//*[@type='text' or @type='email']
+
+-- Elements with multiple class words (workaround — no contains-word in XPath 1.0)
+//*[contains(concat(' ',normalize-space(@class),' '),' btn ')]
+
+-- Count siblings
+//li[count(preceding-sibling::li) = 2]   (third li)
+
+-- Select text nodes only
+//p/text()
+
+-- Self-closing / empty elements
+//*[not(*) and not(normalize-space(text()))]
+
+-- Deepest element matching name
+(//h1)[last()]
+
+-- Multiple conditions chained
+//product[@available='true'][price &lt; 50][rating &gt;= 4]
+
+-- Union of different paths
+//input | //textarea | //select</div>
+    </div>
+  </div>
+
+  <!-- COMPARISON SEMANTICS -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">⚖️</span>
+      <span class="card-title">Comparison Semantics</span>
+      <span class="tag tag-pink">gotchas</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:0.8rem; color:#b0b0c8; margin-bottom:0.6rem;">XPath comparisons between node-sets are existential:</p>
+      <div class="example">-- True if ANY node in set equals 'x'
+//item[@val='x']
+
+-- Comparing two node-sets:
+-- True if ANY node from A equals ANY node from B
+$a = $b
+
+-- Number comparison coerces string values:
+//price[. > 10]   → string '15' compared as 15
+
+-- String comparison uses Unicode code points:
+//name[. > 'M']   → lexicographic</div>
+      <div class="note">⚠️ node-set = string checks if ANY node has that string value. Use count() and string() when you need exact set behavior.</div>
+    </div>
+  </div>
+
+  <!-- LOCATION PATH ANATOMY -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🔬</span>
+      <span class="card-title">Location Step Anatomy</span>
+      <span class="tag tag-teal">syntax</span>
+    </div>
+    <div class="card-body">
+      <div class="example">axis :: nodetest [ predicate ] [ predicate ]
+
+Examples:
+child::book[1]
+attribute::lang
+descendant-or-self::node()
+following-sibling::*[1]
+ancestor::div[@id]
+
+Full verbose path:
+/child::html/child::body
+  /descendant::div[attribute::class='wrap']
+    /child::p[position()=1]</div>
+      <div class="note">Every step evaluates relative to the context node established by the previous step.</div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT ORDER & AXES DIRECTION -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">📄</span>
+      <span class="card-title">Document Order</span>
+      <span class="tag tag-purple">concepts</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:0.8rem; color:#b0b0c8; margin-bottom:0.6rem;">Axes in <strong style="color:#c8c8e8">forward direction</strong> (document order):</p>
+      <p style="font-size:0.8rem; color:var(--accent3)">child, descendant, descendant-or-self, following, following-sibling, self</p>
+      <p style="font-size:0.8rem; color:#b0b0c8; margin:0.6rem 0 0.3rem">Axes in <strong style="color:#c8c8e8">reverse direction</strong>:</p>
+      <p style="font-size:0.8rem; color:var(--accent2)">parent, ancestor, ancestor-or-self, preceding, preceding-sibling</p>
+      <div class="note">position() and last() are sensitive to axis direction. In reverse axes, position(1) is the closest ancestor/sibling.</div>
+      <div class="example">-- Nearest ancestor div:
+ancestor::div[1]
+
+-- Immediately preceding sibling:
+preceding-sibling::*[1]</div>
+    </div>
+  </div>
+
+  <!-- TRANSLATE TRICK / CASE INSENSITIVE -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🛠️</span>
+      <span class="card-title">Useful Tricks</span>
+      <span class="tag tag-teal">tricks</span>
+    </div>
+    <div class="card-body">
+      <div class="example">-- Case-insensitive match (XPath 1.0 has no lower-case())
+translate(@attr,'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+               'abcdefghijklmnopqrstuvwxyz') = 'hello'
+
+-- Class word boundary check
+contains(
+  concat(' ', normalize-space(@class), ' '),
+  ' myclass '
+)
+
+-- Select deepest element (no children)
+//*[not(*)]
+
+-- Select elements with exactly N children
+//*[count(*) = 3]
+
+-- Sum of attribute values across nodes
+sum(//item/@price)
+
+-- Count distinct values (no distinct in XPath 1.0 — workaround):
+count(//category[not(. = preceding::category)])
+
+-- Get root element name
+name(/*)
+
+-- Select based on sibling content
+//li[following-sibling::li[.='End']]</div>
+    </div>
+  </div>
+
+  <!-- QUICK REFERENCE TABLE -->
+  <div class="card wide">
+    <div class="card-header">
+      <span class="card-icon">🗺️</span>
+      <span class="card-title">Quick Reference — All Functions at a Glance</span>
+      <span class="tag tag-pink">reference</span>
+    </div>
+    <div class="card-body">
+      <div class="example">STRING:    string()  concat()  string-length()  contains()  starts-with()
+           substring()  substring-before()  substring-after()
+           normalize-space()  translate()
+
+NUMBER:    number()  sum()  floor()  ceiling()  round()
+
+BOOLEAN:   boolean()  not()  true()  false()  lang()
+
+NODE-SET:  last()  position()  count()  id()
+           local-name()  namespace-uri()  name()
+
+AXES:      child  parent  self  attribute  namespace
+           ancestor  ancestor-or-self
+           descendant  descendant-or-self
+           following  following-sibling
+           preceding  preceding-sibling
+
+NODE TESTS: name  *  node()  text()  comment()  processing-instruction()
+
+OPERATORS: = != &lt; &lt;= > >=     and or not()     + - * div mod     |
+
+ABBREVIATIONS:
+  .       self::node()
+  ..      parent::node()
+  //      /descendant-or-self::node()/
+  @attr   attribute::attr
+  *       child::*</div>
+    </div>
+  </div>
+
+</div>
+
+<div style="text-align:center; margin-top:2.5rem; color:var(--muted); font-size:0.75rem; letter-spacing:0.05em;">
+  XPath 1.0 · W3C Recommendation November 1999
+</div>
+
+</body>
+</html>
