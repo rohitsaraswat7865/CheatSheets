@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C# 14 — In-Depth Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Fraunces:ital,wght@0,300;0,700;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #f5f0e8;
+  --bg2:      #ede7d9;
+  --bg3:      #e2d9c8;
+  --ink:      #1a1410;
+  --ink2:     #3d3328;
+  --muted:    #7a6e60;
+  --border:   #c8bfb0;
+  --accent:   #c0392b;
+  --accent2:  #2980b9;
+  --accent3:  #27ae60;
+  --accent4:  #d35400;
+  --stack:    #c0392b;
+  --heap:     #2980b9;
+  --static:   #8e44ad;
+  --code-bg:  #1e1a14;
+  --code-text:#e8e0d0;
+  --kw:       #e06c75;
+  --ty:       #61afef;
+  --st:       #98c379;
+  --cm:       #5c6370;
+  --fn:       #56b6c2;
+  --nu:       #d19a66;
+  --at:       #e5c07b;
+  --pl:       #c678dd;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 4rem 3rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: 'C#';
+  position: absolute;
+  right: -0.1em;
+  top: -0.15em;
+  font-family: 'Fraunces', serif;
+  font-size: 22vw;
+  font-weight: 700;
+  color: rgba(255,255,255,0.04);
+  pointer-events: none;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.header-inner { max-width: 1300px; margin: 0 auto; position: relative; }
+.badge {
+  display: inline-block;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.6);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+h1 em { color: var(--accent); font-style: normal; }
+.subtitle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.05em;
+  max-width: 700px;
+  line-height: 1.7;
+}
+
+/* ── MEMORY LEGEND ── */
+.mem-legend {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.mem-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.6);
+}
+.mem-dot {
+  width: 12px; height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.dot-stack  { background: var(--stack); }
+.dot-heap   { background: var(--heap); }
+.dot-static { background: var(--static); }
+
+/* ── NAV ── */
+.nav-wrap {
+  background: var(--ink2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 0 3rem;
+  border-bottom: 2px solid var(--accent);
+}
+.nav {
+  max-width: 1300px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+.nav a {
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  padding: 0.8rem 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color 0.15s, background 0.15s;
+  border-right: 1px solid rgba(255,255,255,0.07);
+}
+.nav a:hover { color: #fff; background: rgba(255,255,255,0.05); }
+
+/* ── LAYOUT ── */
+.container { max-width: 1300px; margin: 0 auto; padding: 3rem; }
+
+/* ── SECTION ── */
+.section {
+  margin-bottom: 4rem;
+  padding-bottom: 4rem;
+  border-bottom: 1px solid var(--border);
+}
+.section:last-child { border-bottom: none; }
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.section-num {
+  font-family: 'Fraunces', serif;
+  font-size: 4rem;
+  font-weight: 300;
+  color: var(--border);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.section-title-wrap h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.section-title-wrap .tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── GRID ── */
+.grid { display: grid; gap: 1.25rem; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.g-full { grid-template-columns: 1fr; }
+
+/* ── CARD ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 2px 2px 0 var(--border);
+}
+.card-head {
+  padding: 0.6rem 1rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.card-head.red    { color: var(--accent);  background: rgba(192,57,43,0.06); }
+.card-head.blue   { color: var(--accent2); background: rgba(41,128,185,0.06); }
+.card-head.green  { color: var(--accent3); background: rgba(39,174,96,0.06); }
+.card-head.orange { color: var(--accent4); background: rgba(211,84,0,0.06); }
+.card-head.purple { color: var(--static);  background: rgba(142,68,173,0.06); }
+.card-head.ink    { color: #fff; background: var(--ink); }
+
+.card-body { padding: 1rem; }
+.prose { font-size: 0.85rem; color: var(--ink2); line-height: 1.7; }
+.prose p + p { margin-top: 0.6rem; }
+.prose strong { color: var(--ink); }
+
+/* ── CODE ── */
+pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.76rem;
+  line-height: 1.75;
+  margin: 0;
+}
+code { font-family: 'IBM Plex Mono', monospace; font-size: 0.82em; }
+.ic { /* inline code */
+  background: var(--bg3);
+  color: var(--ink);
+  padding: 0.1em 0.4em;
+  border-radius: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82em;
+}
+
+/* syntax */
+.kw { color: var(--kw); }
+.ty { color: var(--ty); }
+.st { color: var(--st); }
+.cm { color: var(--cm); font-style: italic; }
+.fn { color: var(--fn); }
+.nu { color: var(--nu); }
+.at { color: var(--at); }
+.pl { color: var(--pl); }
+.op { color: #abb2bf; }
+
+/* ── MEMORY DIAGRAM ── */
+.mem-diagram {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+}
+.mem-region {
+  flex: 1;
+  min-width: 160px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.mem-region-head {
+  padding: 0.4rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.mem-region-head.stack  { background: var(--stack); }
+.mem-region-head.heap   { background: var(--heap); }
+.mem-region-head.static { background: var(--static); }
+.mem-row {
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.mem-row:last-child { border-bottom: none; }
+.mem-addr { color: var(--muted); font-size: 0.65rem; }
+.mem-val { color: var(--ink); font-weight: 600; }
+.mem-ref { color: var(--heap); }
+.mem-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--muted);
+  align-self: center;
+}
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+th {
+  background: var(--ink);
+  color: var(--bg);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+}
+td {
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--bg3);
+  vertical-align: top;
+  color: var(--ink2);
+}
+td:first-child {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+tr:hover td { background: var(--bg2); }
+
+/* ── CALLOUT ── */
+.callout {
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid;
+  font-size: 0.83rem;
+  line-height: 1.6;
+  margin-top: 0.75rem;
+  border-radius: 0 2px 2px 0;
+}
+.callout.stack  { border-color: var(--stack);  background: rgba(192,57,43,0.06);  color: #7a1f18; }
+.callout.heap   { border-color: var(--heap);   background: rgba(41,128,185,0.06); color: #1a4f73; }
+.callout.static { border-color: var(--static); background: rgba(142,68,173,0.06); color: #5b2c6f; }
+.callout.tip    { border-color: var(--accent3);background: rgba(39,174,96,0.06);  color: #1a5e34; }
+.callout.warn   { border-color: var(--accent4);background: rgba(211,84,0,0.06);   color: #7e2a00; }
+.callout strong { font-weight: 600; }
+
+/* ── PILLS ── */
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: 1px;
+  letter-spacing: 0.05em;
+}
+.pill-stack  { background: var(--stack);  color: #fff; }
+.pill-heap   { background: var(--heap);   color: #fff; }
+.pill-static { background: var(--static); color: #fff; }
+.pill-new    { background: var(--accent3); color: #fff; }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--ink);
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  padding: 2rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 700px) {
+  header { padding: 2.5rem 1.5rem 2rem; }
+  .container { padding: 2rem 1.5rem; }
+  .nav-wrap { padding: 0 1.5rem; }
+  .g2, .g3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="badge">C# 14 · .NET 10 · In-Depth Reference</div>
+    <h1>C# <em>14</em><br>Cheatsheet</h1>
+    <p class="subtitle">
+      // complete language reference with memory model analysis —<br>
+      // stack, heap, static storage, value types, reference types, new C# 14 features
+    </p>
+    <div class="mem-legend">
+      <div class="mem-item"><div class="mem-dot dot-stack"></div>STACK — value types, local vars, method frames</div>
+      <div class="mem-item"><div class="mem-dot dot-heap"></div>HEAP — reference types, objects, arrays</div>
+      <div class="mem-item"><div class="mem-dot dot-static"></div>STATIC — static fields, interned strings, type metadata</div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-wrap">
+  <div class="nav">
+    <a href="#types">Types</a>
+    <a href="#memory">Memory Model</a>
+    <a href="#value-ref">Value vs Ref</a>
+    <a href="#strings">Strings</a>
+    <a href="#collections">Collections</a>
+    <a href="#generics">Generics</a>
+    <a href="#pattern">Patterns</a>
+    <a href="#records">Records</a>
+    <a href="#spans">Spans</a>
+    <a href="#async">Async</a>
+    <a href="#extensions">Extensions C#14</a>
+    <a href="#field">field C#14</a>
+    <a href="#delegates">Delegates</a>
+    <a href="#unsafe">Unsafe</a>
+    <a href="#gc">GC</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════
+     §1  TYPE SYSTEM
+══════════════════════════════════════════════════ -->
+<section class="section" id="types">
+  <div class="section-head">
+    <div class="section-num">01</div>
+    <div class="section-title-wrap">
+      <h2>Type System</h2>
+      <div class="tag">CTS · VALUE TYPES · REFERENCE TYPES</div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head ink">Value Types — live on the STACK <span class="pill pill-stack">STACK</span></div>
+      <pre><code><span class="cm">// Primitive value types — all structs under the hood</span>
+<span class="ty">bool</span>    b    = <span class="kw">true</span>;        <span class="cm">// 1 byte</span>
+<span class="ty">byte</span>    u8   = <span class="nu">255</span>;         <span class="cm">// 1 byte, 0-255</span>
+<span class="ty">sbyte</span>   i8   = -<span class="nu">128</span>;        <span class="cm">// 1 byte, signed</span>
+<span class="ty">short</span>   i16  = <span class="nu">32767</span>;       <span class="cm">// 2 bytes</span>
+<span class="ty">int</span>     i32  = <span class="nu">2_147_483_647</span>;<span class="cm">// 4 bytes  ← most common</span>
+<span class="ty">long</span>    i64  = <span class="nu">9_223_372L</span>;  <span class="cm">// 8 bytes</span>
+<span class="ty">float</span>   f32  = <span class="nu">3.14f</span>;       <span class="cm">// 4 bytes, ~7 digits</span>
+<span class="ty">double</span>  f64  = <span class="nu">3.14159</span>;     <span class="cm">// 8 bytes, ~15 digits</span>
+<span class="ty">decimal</span> m    = <span class="nu">9.99m</span>;       <span class="cm">// 16 bytes, exact (money)</span>
+<span class="ty">char</span>    c    = <span class="st">'A'</span>;         <span class="cm">// 2 bytes, UTF-16</span>
+
+<span class="cm">// Struct — value type you define</span>
+<span class="kw">struct</span> <span class="ty">Point</span> { <span class="kw">public</span> <span class="ty">int</span> X, Y; }
+<span class="ty">Point</span> p = <span class="kw">new</span>(<span class="nu">3</span>, <span class="nu">7</span>);  <span class="cm">// entirely on stack</span>
+
+<span class="cm">// Enum — backed by int by default</span>
+<span class="kw">enum</span> <span class="ty">Color</span> : <span class="ty">byte</span> { Red, Green, Blue }
+
+<span class="cm">// Nullable value type (wraps T in Nullable&lt;T&gt;)</span>
+<span class="ty">int</span>? maybe = <span class="kw">null</span>;
+<span class="cm">// Nullable&lt;int&gt; on stack: HasValue=false, Value=0</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head ink">Reference Types — live on the HEAP <span class="pill pill-heap">HEAP</span></div>
+      <pre><code><span class="cm">// class — reference type</span>
+<span class="kw">class</span> <span class="ty">Person</span> { <span class="kw">public string</span> Name = <span class="st">""</span>; }
+
+<span class="ty">Person</span> a = <span class="kw">new</span> <span class="ty">Person</span> { Name = <span class="st">"Alice"</span> };
+<span class="ty">Person</span> b = a;       <span class="cm">// b POINTS to same heap object</span>
+b.Name = <span class="st">"Bob"</span>;    <span class="cm">// a.Name is NOW "Bob" too!</span>
+
+<span class="cm">// Array — always ref type on heap</span>
+<span class="ty">int</span>[] arr = <span class="kw">new</span> <span class="ty">int</span>[<span class="nu">3</span>];  <span class="cm">// arr → [0,0,0] on heap</span>
+
+<span class="cm">// string — special immutable ref type</span>
+<span class="ty">string</span> s = <span class="st">"hello"</span>;      <span class="cm">// interned in static pool</span>
+
+<span class="cm">// object — root of all types</span>
+<span class="kw">object</span> o = <span class="nu">42</span>;           <span class="cm">// boxing: int → heap object</span>
+<span class="ty">int</span>    v = (<span class="ty">int</span>)o;       <span class="cm">// unboxing: heap → stack copy</span>
+
+<span class="cm">// interface / delegate / dynamic</span>
+<span class="kw">interface</span> <span class="ty">IFly</span> { <span class="kw">void</span> <span class="fn">Fly</span>(); }
+<span class="kw">dynamic</span> d = <span class="kw">new</span> <span class="ty">ExpandoObject</span>();
+
+<span class="cm">// Nullable reference types (NRT) — C# 8+</span>
+<span class="cm">// Enabled via &lt;Nullable&gt;enable&lt;/Nullable&gt; in .csproj</span>
+<span class="ty">string</span>? nullable = <span class="kw">null</span>;  <span class="cm">// OK</span>
+<span class="ty">string</span>  nonnull  = <span class="st">""</span>;    <span class="cm">// compiler warns if null assigned</span></code></pre>
+    </div>
+  </div>
+
+  <!-- Memory diagram -->
+  <div style="margin-top:1.25rem">
+    <div class="card">
+      <div class="card-head blue">Memory Layout — Value vs Reference Type</div>
+      <div class="card-body">
+        <div class="mem-diagram">
+          <div class="mem-region">
+            <div class="mem-region-head stack">Stack (Thread-local)</div>
+            <div class="mem-row"><span class="mem-addr">0x...F8</span><span class="mem-val">i32 = 42</span></div>
+            <div class="mem-row"><span class="mem-addr">0x...F0</span><span class="mem-val">p.X = 3</span></div>
+            <div class="mem-row"><span class="mem-addr">0x...EC</span><span class="mem-val">p.Y = 7</span></div>
+            <div class="mem-row"><span class="mem-addr">0x...E8</span><span class="mem-val mem-ref">ref → 0x20A0</span></div>
+            <div class="mem-row"><span class="mem-addr">0x...E0</span><span class="mem-val mem-ref">ref → 0x20A0</span></div>
+          </div>
+          <div class="mem-arrow">→</div>
+          <div class="mem-region">
+            <div class="mem-region-head heap">Managed Heap (GC-controlled)</div>
+            <div class="mem-row"><span class="mem-addr">0x20A0</span><span class="mem-val">Person object { Name → 0x3100 }</span></div>
+            <div class="mem-row"><span class="mem-addr">0x3100</span><span class="mem-val">string "Alice" (char[5])</span></div>
+            <div class="mem-row"><span class="mem-addr">0x3200</span><span class="mem-val">int[] [0, 0, 0]</span></div>
+          </div>
+          <div class="mem-arrow">←</div>
+          <div class="mem-region">
+            <div class="mem-region-head static">Static / Type Data</div>
+            <div class="mem-row"><span class="mem-addr">intern</span><span class="mem-val">"hello" (literal)</span></div>
+            <div class="mem-row"><span class="mem-addr">meta</span><span class="mem-val">Person type metadata</span></div>
+            <div class="mem-row"><span class="mem-addr">vtbl</span><span class="mem-val">Person vtable</span></div>
+          </div>
+        </div>
+        <div class="callout heap">
+          <strong>Note:</strong> Variables <ic>a</ic> and <ic>b</ic> both hold the <em>same heap address</em> (0x20A0). Mutating via either changes the single object. This is aliasing — a key source of bugs when not understood.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Type table -->
+  <div style="margin-top:1.25rem" class="card">
+    <div class="card-head orange">Complete Type Taxonomy</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Category</th><th>Examples</th><th>Storage</th><th>Copy Semantics</th><th>GC-Managed</th></tr>
+        <tr><td>Primitive structs</td><td>int, bool, double, char</td><td>Stack</td><td>Full copy</td><td>No</td></tr>
+        <tr><td>User struct</td><td>struct Point, struct Guid</td><td>Stack (or inline in class)</td><td>Full copy</td><td>No</td></tr>
+        <tr><td>Enum</td><td>enum Color</td><td>Stack</td><td>Full copy</td><td>No</td></tr>
+        <tr><td>Nullable&lt;T&gt;</td><td>int?, bool?</td><td>Stack</td><td>Full copy</td><td>No</td></tr>
+        <tr><td>class</td><td>Person, List&lt;T&gt;</td><td>Heap</td><td>Reference copy</td><td>Yes</td></tr>
+        <tr><td>string</td><td>"hello"</td><td>Heap (interned in static)</td><td>Reference copy (immutable)</td><td>Yes</td></tr>
+        <tr><td>Array</td><td>int[], string[]</td><td>Heap</td><td>Reference copy</td><td>Yes</td></tr>
+        <tr><td>delegate/Action/Func</td><td>Func&lt;int,bool&gt;</td><td>Heap</td><td>Reference copy</td><td>Yes</td></tr>
+        <tr><td>record struct</td><td>record struct Pt</td><td>Stack</td><td>Full copy (value equality)</td><td>No</td></tr>
+        <tr><td>record class</td><td>record Person</td><td>Heap</td><td>Reference copy (value equality)</td><td>Yes</td></tr>
+        <tr><td>ref struct</td><td>Span&lt;T&gt;, ReadOnlySpan&lt;T&gt;</td><td>Stack only</td><td>Full copy</td><td>Never</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §2  MEMORY MODEL DEEP DIVE
+══════════════════════════════════════════════════ -->
+<section class="section" id="memory">
+  <div class="section-head">
+    <div class="section-num">02</div>
+    <div class="section-title-wrap">
+      <h2>Memory Model Deep Dive</h2>
+      <div class="tag">STACK · HEAP · STATIC · BOXING</div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head red">Stack Memory <span class="pill pill-stack">STACK</span></div>
+      <div class="card-body">
+        <p class="prose">The stack is a <strong>LIFO (Last In, First Out)</strong> memory region allocated per-thread. Each method call pushes a <strong>stack frame</strong> containing local variables and parameters. When the method returns, the frame is popped — instant deallocation, no GC needed.</p>
+      </div>
+      <pre><code><span class="kw">void</span> <span class="fn">Outer</span>()
+{
+    <span class="ty">int</span> x = <span class="nu">10</span>;           <span class="cm">// pushed to stack frame</span>
+    <span class="fn">Inner</span>(x);            <span class="cm">// new frame pushed on top</span>
+}                        <span class="cm">// x's frame popped here</span>
+
+<span class="kw">void</span> <span class="fn">Inner</span>(<span class="ty">int</span> val)
+{
+    <span class="ty">int</span> y = val * <span class="nu">2</span>;     <span class="cm">// y in Inner's frame</span>
+    <span class="cm">// Stack: [Outer: x=10] → [Inner: val=10, y=20]</span>
+}                        <span class="cm">// Inner frame popped, y gone</span>
+
+<span class="cm">// Recursion — each call = new frame</span>
+<span class="ty">int</span> <span class="fn">Fib</span>(<span class="ty">int</span> n) => n &lt;= <span class="nu">1</span> ? n : <span class="fn">Fib</span>(n-<span class="nu">1</span>) + <span class="fn">Fib</span>(n-<span class="nu">2</span>);
+<span class="cm">// Fib(5): 5 nested frames → StackOverflowException
+// if recursion is too deep (~1MB default stack)</span></code></pre>
+      <div class="callout stack"><strong>Stack facts:</strong> ~1MB per thread (configurable). Extremely fast — just moves a stack pointer. No GC involvement. Value types on stack are <em>cache-friendly</em> (sequential memory).</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head blue">Heap Memory <span class="pill pill-heap">HEAP</span></div>
+      <div class="card-body">
+        <p class="prose">The managed heap is a large memory region managed by the <strong>Garbage Collector (GC)</strong>. Objects are allocated here with <span class="ic">new</span>. The GC periodically identifies unreachable objects and reclaims their memory in <strong>generations (Gen0, Gen1, Gen2)</strong>.</p>
+      </div>
+      <pre><code><span class="cm">// Object allocation on heap</span>
+<span class="kw">var</span> list = <span class="kw">new</span> <span class="ty">List</span>&lt;<span class="ty">int</span>&gt;();   <span class="cm">// heap: List object + int[]</span>
+list.<span class="fn">Add</span>(<span class="nu">1</span>);                   <span class="cm">// int stored INSIDE the array</span>
+
+<span class="cm">// Large Object Heap (LOH) — objects ≥ 85,000 bytes</span>
+<span class="kw">var</span> big = <span class="kw">new</span> <span class="ty">byte</span>[<span class="nu">100_000</span>];   <span class="cm">// → LOH, rarely compacted</span>
+
+<span class="cm">// GC Generations</span>
+<span class="cm">// Gen0: new short-lived objects (~256KB)</span>
+<span class="cm">// Gen1: survived one collection (~2MB)</span>
+<span class="cm">// Gen2: long-lived objects (unlimited)</span>
+
+<span class="kw">var</span> cache = <span class="kw">new</span> <span class="ty">Dictionary</span>&lt;<span class="ty">string</span>,<span class="ty">object</span>&gt;();
+<span class="cm">// static field → GC root → cache stays in Gen2 forever</span>
+<span class="cm">// until no more references reach it</span>
+
+<span class="cm">// Force GC (testing only — never in prod!)</span>
+<span class="ty">GC</span>.<span class="fn">Collect</span>();
+<span class="ty">GC</span>.<span class="fn">WaitForPendingFinalizers</span>();</code></pre>
+      <div class="callout heap"><strong>Heap facts:</strong> Managed by GC. ~<em>10x slower allocation</em> than stack. Fragmentation possible. Gen0 collections are very fast (&lt;1ms). Gen2 (full) collections can pause the app (but .NET 6+ has mostly background GC).</div>
+    </div>
+  </div>
+
+  <!-- Boxing -->
+  <div class="grid g2" style="margin-top:1.25rem">
+    <div class="card">
+      <div class="card-head orange">Boxing &amp; Unboxing — Stack ↔ Heap Transitions</div>
+      <pre><code><span class="cm">// BOXING: value type → object on heap</span>
+<span class="ty">int</span> x = <span class="nu">42</span>;           <span class="cm">// stack: 4 bytes</span>
+<span class="kw">object</span> o = x;         <span class="cm">// heap: new int-wrapper object</span>
+<span class="cm">// Stack: [x=42] [o=ref→0x1000]</span>
+<span class="cm">// Heap:  0x1000 → { type-header | value=42 }</span>
+
+<span class="cm">// UNBOXING: heap object → value type copy on stack</span>
+<span class="ty">int</span> y = (<span class="ty">int</span>)o;        <span class="cm">// copies 42 from heap to stack</span>
+<span class="cm">// y is a SEPARATE copy — mutating y doesn't change o</span>
+
+<span class="cm">// HIDDEN boxing — common performance trap</span>
+<span class="ty">ArrayList</span> list = <span class="kw">new</span>();
+list.<span class="fn">Add</span>(<span class="nu">1</span>);            <span class="cm">// boxes int → avoid ArrayList!</span>
+list.<span class="fn">Add</span>(<span class="nu">2</span>);            <span class="cm">// another allocation</span>
+
+<span class="cm">// AVOID boxing: use generics</span>
+<span class="ty">List</span>&lt;<span class="ty">int</span>&gt; typed = <span class="kw">new</span>();
+typed.<span class="fn">Add</span>(<span class="nu">1</span>);           <span class="cm">// NO boxing — ints stored directly</span>
+
+<span class="cm">// Interface boxing</span>
+<span class="ty">IComparable</span> ic = <span class="nu">42</span>;   <span class="cm">// boxes int!</span>
+<span class="cm">// Fix: use generic constraints instead</span>
+<span class="ty">T</span> <span class="fn">Max</span>&lt;<span class="ty">T</span>&gt;(<span class="ty">T</span> a, <span class="ty">T</span> b) <span class="kw">where</span> <span class="ty">T</span> : <span class="ty">IComparable</span>&lt;<span class="ty">T</span>&gt;
+    => a.CompareTo(b) &gt; <span class="nu">0</span> ? a : b;  <span class="cm">// no boxing</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head purple">Static Storage <span class="pill pill-static">STATIC</span></div>
+      <pre><code><span class="cm">// Static fields — live in "High Frequency Heap"
+// (actually Type Object / Method Table in CLR)
+// They are GC roots — never collected while type is loaded</span>
+
+<span class="kw">class</span> <span class="ty">Config</span>
+{
+    <span class="kw">public static readonly string</span> Version = <span class="st">"1.0"</span>;
+    <span class="cm">// "1.0" interned in string intern pool (static)</span>
+
+    <span class="kw">public static int</span> Count = <span class="nu">0</span>;
+    <span class="cm">// int stored directly in Type Object — no GC</span>
+
+    <span class="kw">public static</span> <span class="ty">List</span>&lt;<span class="ty">string</span>&gt; Items = <span class="kw">new</span>();
+    <span class="cm">// reference stored statically → List on heap
+    // List stays alive forever (static ref = GC root)</span>
+}
+
+<span class="cm">// String interning</span>
+<span class="ty">string</span> a = <span class="st">"hello"</span>;           <span class="cm">// → intern pool</span>
+<span class="ty">string</span> b = <span class="st">"hello"</span>;           <span class="cm">// same reference!</span>
+<span class="kw">bool</span>   r = <span class="ty">object</span>.<span class="fn">ReferenceEquals</span>(a, b); <span class="cm">// true</span>
+
+<span class="ty">string</span> c = <span class="kw">new</span> <span class="ty">string</span>(<span class="st">'h'</span>,<span class="nu">1</span>);  <span class="cm">// forced new heap obj</span>
+<span class="ty">string</span> d = <span class="ty">string</span>.<span class="fn">Intern</span>(c);  <span class="cm">// now same as "h" in pool</span>
+
+<span class="cm">// Thread-static: one copy per thread</span>
+[<span class="at">ThreadStatic</span>]
+<span class="kw">private static int</span> _threadId;  <span class="cm">// stack-like per thread</span></code></pre>
+      <div class="callout static"><strong>Memory leak risk:</strong> Static collections (List, Dictionary) that grow but are never cleared will cause memory leaks — they're GC roots so the GC can never collect them.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §3  VALUE vs REFERENCE SEMANTICS
+══════════════════════════════════════════════════ -->
+<section class="section" id="value-ref">
+  <div class="section-head">
+    <div class="section-num">03</div>
+    <div class="section-title-wrap">
+      <h2>Value vs Reference Semantics</h2>
+      <div class="tag">REF · OUT · IN · REF RETURNS</div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head red">Passing by Value vs by Reference</div>
+      <pre><code><span class="cm">// BY VALUE — a copy is made (default for structs)</span>
+<span class="kw">void</span> <span class="fn">DoubleIt</span>(<span class="ty">int</span> x) => x *= <span class="nu">2</span>;   <span class="cm">// x is a copy</span>
+<span class="ty">int</span> n = <span class="nu">5</span>;
+<span class="fn">DoubleIt</span>(n);                         <span class="cm">// n is STILL 5</span>
+
+<span class="cm">// BY REFERENCE — alias to same stack location</span>
+<span class="kw">void</span> <span class="fn">DoubleRef</span>(<span class="kw">ref</span> <span class="ty">int</span> x) => x *= <span class="nu">2</span>;
+<span class="fn">DoubleRef</span>(<span class="kw">ref</span> n);                    <span class="cm">// n is NOW 10</span>
+
+<span class="cm">// OUT — must assign before returning</span>
+<span class="kw">bool</span> <span class="fn">TryParse</span>(<span class="ty">string</span> s, <span class="kw">out</span> <span class="ty">int</span> result)
+{
+    result = <span class="nu">0</span>;                       <span class="cm">// must init</span>
+    <span class="kw">return</span> <span class="ty">int</span>.<span class="fn">TryParse</span>(s, <span class="kw">out</span> result);
+}
+<span class="fn">TryParse</span>(<span class="st">"42"</span>, <span class="kw">out var</span> val);        <span class="cm">// inline declaration</span>
+
+<span class="cm">// IN — readonly reference (avoids copy, prevents mutation)</span>
+<span class="kw">void</span> <span class="fn">Print</span>(<span class="kw">in</span> <span class="ty">Matrix4x4</span> m)          <span class="cm">// 64-byte struct, no copy!</span>
+    => <span class="ty">Console</span>.<span class="fn">WriteLine</span>(m.M11);
+<span class="cm">// 'in' is ideal for large structs you only READ</span>
+
+<span class="cm">// REF return — return reference to storage</span>
+<span class="kw">ref int</span> <span class="fn">First</span>(<span class="ty">int</span>[] arr) => <span class="kw">ref</span> arr[<span class="nu">0</span>];
+<span class="kw">ref var</span> elem = <span class="kw">ref</span> <span class="fn">First</span>(arr);
+elem = <span class="nu">99</span>;    <span class="cm">// modifies arr[0] directly!</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head green">Struct Design Guidelines</div>
+      <pre><code><span class="cm">// GOOD struct: small, immutable, value-equal</span>
+<span class="kw">readonly struct</span> <span class="ty">Money</span>
+{
+    <span class="kw">public</span> <span class="ty">decimal</span> Amount { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="ty">string</span>  Currency { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="fn">Money</span>(<span class="ty">decimal</span> amount, <span class="ty">string</span> currency)
+        => (Amount, Currency) = (amount, currency);
+    <span class="kw">public static</span> <span class="ty">Money</span> <span class="kw">operator</span> +(<span class="ty">Money</span> a, <span class="ty">Money</span> b)
+        => <span class="kw">new</span>(a.Amount + b.Amount, a.Currency);
+}
+<span class="cm">// 'readonly struct' — compiler enforces immutability
+// avoids defensive copies when passed 'in'</span>
+
+<span class="cm">// BAD struct: mutable, large, has reference fields</span>
+<span class="kw">struct</span> <span class="ty">BadIdea</span>
+{
+    <span class="kw">public</span> <span class="ty">List</span>&lt;<span class="ty">int</span>&gt; Items;  <span class="cm">// ref field in struct → confusion</span>
+    <span class="kw">public</span> <span class="ty">string</span> Name;       <span class="cm">// 16+ fields → costly copies</span>
+    <span class="kw">public void</span> <span class="fn">Mutate</span>() { Name = <span class="st">"X"</span>; }  <span class="cm">// mutable = bugs</span>
+}
+
+<span class="cm">// ref struct — stack ONLY (cannot be on heap)</span>
+<span class="kw">ref struct</span> <span class="ty">StackBuffer</span>
+{
+    <span class="kw">private</span> <span class="ty">Span</span>&lt;<span class="ty">byte</span>&gt; _buf;
+    <span class="kw">public</span> <span class="fn">StackBuffer</span>(<span class="ty">Span</span>&lt;<span class="ty">byte</span>&gt; buf) => _buf = buf;
+    <span class="cm">// Cannot: be boxed, implement interfaces (mostly),
+    //         be async field, be in arrays, be a class field</span>
+}</code></pre>
+      <div class="callout tip"><strong>Rule:</strong> Use structs when size ≤ 16 bytes, the type is logically immutable, and it won't be frequently boxed. Otherwise use a class.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §4  STRINGS
+══════════════════════════════════════════════════ -->
+<section class="section" id="strings">
+  <div class="section-head">
+    <div class="section-num">04</div>
+    <div class="section-title-wrap">
+      <h2>Strings — Immutable, Interned, Heap-Allocated</h2>
+      <div class="tag">STRING · SPAN · STRINGBUILDER · INTERPOLATION</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head blue">String Internals</div>
+      <pre><code><span class="cm">// string = sealed class, immutable, UTF-16 chars
+// Layout: [object header][length][char0][char1]...</span>
+
+<span class="ty">string</span> s = <span class="st">"Hello"</span>;
+<span class="cm">// Heap: s → [TypePtr|SyncBlock|5|H|e|l|l|o]
+// String literals → intern pool (static region)</span>
+
+<span class="cm">// Immutability: every "modification" = new allocation</span>
+<span class="ty">string</span> a = <span class="st">"foo"</span>;
+<span class="ty">string</span> b = a + <span class="st">"bar"</span>;  <span class="cm">// new string on heap: "foobar"</span>
+<span class="cm">// a still points to "foo" — a is unchanged</span>
+
+<span class="cm">// Concatenation in loops = O(n²) — avoid!</span>
+<span class="kw">var</span> sb = <span class="kw">new</span> <span class="ty">StringBuilder</span>();      <span class="cm">// single heap allocation</span>
+<span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">1000</span>; i++)
+    sb.<span class="fn">Append</span>(i);                  <span class="cm">// amortized O(n)</span>
+<span class="ty">string</span> result = sb.<span class="fn">ToString</span>();    <span class="cm">// final allocation</span>
+
+<span class="cm">// Zero-allocation: stackalloc + Span</span>
+<span class="ty">Span</span>&lt;<span class="ty">char</span>&gt; buf = <span class="kw">stackalloc</span> <span class="ty">char</span>[<span class="nu">64</span>];
+<span class="ty">int</span> written = <span class="nu">42</span>.<span class="fn">TryFormat</span>(buf, <span class="kw">out</span> <span class="ty">int</span> n) ? n : <span class="nu">0</span>;
+<span class="ty">ReadOnlySpan</span>&lt;<span class="ty">char</span>&gt; num = buf[..<span class="nu">2</span>];<span class="cm">// slice — no allocation</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head green">String Formatting &amp; C# 14 Patterns</div>
+      <pre><code><span class="cm">// Interpolation — compiles to DefaultInterpolatedStringHandler</span>
+<span class="ty">string</span> name = <span class="st">"Alice"</span>;
+<span class="ty">int</span>    age  = <span class="nu">30</span>;
+<span class="ty">string</span> msg  = <span class="st">$"Name: {name}, Age: {age:D3}"</span>;
+
+<span class="cm">// Raw string literals (C# 11+)</span>
+<span class="ty">string</span> json = <span class="st">"""
+    {
+      "name": "Alice",
+      "age": 30
+    }
+    """</span>;
+<span class="cm">// No escaping needed — great for JSON/SQL/HTML</span>
+
+<span class="cm">// UTF-8 literals (C# 11+) — zero allocation, static</span>
+<span class="ty">ReadOnlySpan</span>&lt;<span class="ty">byte</span>&gt; utf8 = <span class="st">"hello"u8</span>;
+<span class="cm">// Lives in static data section — NO heap allocation!</span>
+
+<span class="cm">// String comparison — always use Ordinal for performance</span>
+<span class="ty">bool</span> eq = <span class="ty">string</span>.<span class="fn">Equals</span>(a, b, <span class="ty">StringComparison</span>.OrdinalIgnoreCase);
+<span class="ty">int</span>  cp = <span class="ty">string</span>.<span class="fn">Compare</span>(a, b, <span class="ty">StringComparison</span>.Ordinal);
+
+<span class="cm">// Span-based slicing — no copy, no allocation</span>
+<span class="ty">ReadOnlySpan</span>&lt;<span class="ty">char</span>&gt; full = <span class="st">"Hello, World!"</span>;
+<span class="ty">ReadOnlySpan</span>&lt;<span class="ty">char</span>&gt; hello = full[..<span class="nu">5</span>];  <span class="cm">// "Hello", no alloc</span>
+<span class="ty">ReadOnlySpan</span>&lt;<span class="ty">char</span>&gt; world = full[<span class="nu">7</span>..^<span class="nu">1</span>]; <span class="cm">// "World"</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §5  COLLECTIONS & DATA STRUCTURES
+══════════════════════════════════════════════════ -->
+<section class="section" id="collections">
+  <div class="section-head">
+    <div class="section-num">05</div>
+    <div class="section-title-wrap">
+      <h2>Collections &amp; Data Structures</h2>
+      <div class="tag">LIST · DICT · QUEUE · STACK · HASHTABLE</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head ink">Collection Complexity &amp; Memory Layout</div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Type</th><th>Internal Structure</th><th>Memory</th><th>Get</th><th>Add</th><th>Remove</th><th>Contains</th></tr>
+        <tr><td>List&lt;T&gt;</td><td>Dynamic array (T[])</td><td>Heap: array + overhead</td><td>O(1)</td><td>O(1) amortized</td><td>O(n)</td><td>O(n)</td></tr>
+        <tr><td>Dictionary&lt;K,V&gt;</td><td>Hash table: int[] buckets + Entry[]</td><td>Heap: 2 arrays</td><td>O(1)</td><td>O(1)</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>HashSet&lt;T&gt;</td><td>Hash table (values only)</td><td>Heap: buckets + slots</td><td>N/A</td><td>O(1)</td><td>O(1)</td><td>O(1)</td></tr>
+        <tr><td>SortedDictionary&lt;K,V&gt;</td><td>Red-Black tree (TreeSet)</td><td>Heap: node objects</td><td>O(log n)</td><td>O(log n)</td><td>O(log n)</td><td>O(log n)</td></tr>
+        <tr><td>SortedList&lt;K,V&gt;</td><td>Two parallel arrays</td><td>Heap: 2 arrays, dense</td><td>O(log n)</td><td>O(n)</td><td>O(n)</td><td>O(log n)</td></tr>
+        <tr><td>Queue&lt;T&gt;</td><td>Circular array</td><td>Heap: T[]</td><td>O(1) Peek</td><td>O(1) Enqueue</td><td>O(1) Dequeue</td><td>O(n)</td></tr>
+        <tr><td>Stack&lt;T&gt;</td><td>Array (LIFO)</td><td>Heap: T[]</td><td>O(1) Peek</td><td>O(1) Push</td><td>O(1) Pop</td><td>O(n)</td></tr>
+        <tr><td>LinkedList&lt;T&gt;</td><td>Doubly-linked nodes</td><td>Heap: N node objects</td><td>O(n)</td><td>O(1) at ends</td><td>O(1) with node</td><td>O(n)</td></tr>
+        <tr><td>ImmutableList&lt;T&gt;</td><td>AVL tree</td><td>Heap: shared nodes</td><td>O(log n)</td><td>O(log n) new ver</td><td>O(log n) new ver</td><td>O(log n)</td></tr>
+        <tr><td>ArrayPool&lt;T&gt;</td><td>Pool of reusable arrays</td><td>Static buckets (heap)</td><td>O(1) Rent</td><td>N/A</td><td>O(1) Return</td><td>N/A</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:1.25rem">
+    <div class="card">
+      <div class="card-head blue">List&lt;T&gt; — Dynamic Array Internals</div>
+      <pre><code><span class="cm">// List&lt;T&gt; wraps a T[] with doubling growth strategy</span>
+<span class="kw">var</span> list = <span class="kw">new</span> <span class="ty">List</span>&lt;<span class="ty">int</span>&gt;();
+<span class="cm">// Heap: List object { _items=int[0], _size=0 }</span>
+
+list.<span class="fn">Add</span>(<span class="nu">1</span>);  <span class="cm">// _items reallocated to int[4]</span>
+list.<span class="fn">Add</span>(<span class="nu">2</span>);
+list.<span class="fn">Add</span>(<span class="nu">3</span>);
+list.<span class="fn">Add</span>(<span class="nu">4</span>);
+list.<span class="fn">Add</span>(<span class="nu">5</span>);  <span class="cm">// triggers: new int[8], copy, old GC'd</span>
+
+<span class="cm">// Pre-allocate to avoid copies</span>
+<span class="kw">var</span> presized = <span class="kw">new</span> <span class="ty">List</span>&lt;<span class="ty">int</span>&gt;(capacity: <span class="nu">1000</span>);
+<span class="cm">// Heap: int[1000] allocated once, no reallocations</span>
+
+<span class="cm">// CollectionsMarshal — unsafe but zero-copy span</span>
+<span class="ty">Span</span>&lt;<span class="ty">int</span>&gt; span = <span class="ty">CollectionsMarshal</span>.<span class="fn">AsSpan</span>(list);
+<span class="cm">// Direct access to backing array — no allocation</span>
+<span class="cm">// DANGER: don't Add/Remove while holding this span!</span>
+
+<span class="cm">// Struct lists stay on heap BUT inside contiguous array
+// (no boxing since T is generic, not object)</span>
+<span class="kw">var</span> points = <span class="kw">new</span> <span class="ty">List</span>&lt;<span class="ty">Point</span>&gt;(); <span class="cm">// Point[] — dense, fast</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head orange">Dictionary&lt;K,V&gt; — Hash Table Internals</div>
+      <pre><code><span class="cm">// Dictionary internals:
+// int[] _buckets   — array of bucket indices
+// Entry[] _entries — struct array {hash, next, key, value}
+// All on the heap, but entries are value-type structs</span>
+
+<span class="kw">var</span> d = <span class="kw">new</span> <span class="ty">Dictionary</span>&lt;<span class="ty">string</span>, <span class="ty">int</span>&gt;();
+d[<span class="st">"a"</span>] = <span class="nu">1</span>;
+
+<span class="cm">// Lookup steps:
+// 1. hash = "a".GetHashCode()
+// 2. bucket = hash % _buckets.Length
+// 3. walk chain via entry.next until key matches</span>
+
+<span class="cm">// Collision handling — separate chaining (linked list in Entry)</span>
+<span class="cm">// .NET uses open addressing from .NET 6+ (in some scenarios)</span>
+
+<span class="cm">// Custom IEqualityComparer to avoid boxing</span>
+<span class="kw">var</span> fast = <span class="kw">new</span> <span class="ty">Dictionary</span>&lt;<span class="ty">int</span>,<span class="ty">string</span>&gt;(
+    <span class="ty">EqualityComparer</span>&lt;<span class="ty">int</span>&gt;.Default);  <span class="cm">// avoids IEquatable boxing</span>
+
+<span class="cm">// GetOrAdd pattern</span>
+<span class="kw">ref var</span> val = <span class="kw">ref</span> <span class="ty">CollectionsMarshal</span>
+    .<span class="fn">GetValueRefOrAddDefault</span>(d, <span class="st">"key"</span>, <span class="kw">out bool</span> exists);
+<span class="kw">if</span> (!exists) val = <span class="nu">42</span>;  <span class="cm">// one lookup, not two!</span></code></pre>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:1.25rem">
+    <div class="card">
+      <div class="card-head red">Stack&lt;T&gt; and Queue&lt;T&gt;</div>
+      <pre><code><span class="cm">// Stack&lt;T&gt; — LIFO, backed by T[] on heap
+// (different from the call stack — this is a data structure)</span>
+<span class="kw">var</span> stack = <span class="kw">new</span> <span class="ty">Stack</span>&lt;<span class="ty">int</span>&gt;();
+stack.<span class="fn">Push</span>(<span class="nu">1</span>);   <span class="cm">// _array[0]=1, _size=1</span>
+stack.<span class="fn">Push</span>(<span class="nu">2</span>);   <span class="cm">// _array[1]=2, _size=2</span>
+<span class="ty">int</span> top = stack.<span class="fn">Peek</span>();   <span class="cm">// 2, no removal</span>
+<span class="ty">int</span> val = stack.<span class="fn">Pop</span>();    <span class="cm">// 2, _size=1</span>
+
+<span class="cm">// Queue&lt;T&gt; — FIFO, circular array on heap</span>
+<span class="kw">var</span> q = <span class="kw">new</span> <span class="ty">Queue</span>&lt;<span class="ty">string</span>&gt;();
+q.<span class="fn">Enqueue</span>(<span class="st">"A"</span>);  <span class="cm">// head=0, tail=1</span>
+q.<span class="fn">Enqueue</span>(<span class="st">"B"</span>);  <span class="cm">// head=0, tail=2</span>
+<span class="ty">string</span> first = q.<span class="fn">Dequeue</span>(); <span class="cm">// "A", head=1</span>
+<span class="cm">// Circular: when tail wraps around, no reallocation needed</span>
+
+<span class="cm">// PriorityQueue&lt;T,TPriority&gt; (.NET 6+) — binary heap</span>
+<span class="kw">var</span> pq = <span class="kw">new</span> <span class="ty">PriorityQueue</span>&lt;<span class="ty">string</span>,<span class="ty">int</span>&gt;();
+pq.<span class="fn">Enqueue</span>(<span class="st">"low"</span>,  <span class="nu">3</span>);
+pq.<span class="fn">Enqueue</span>(<span class="st">"high"</span>, <span class="nu">1</span>);
+pq.<span class="fn">Enqueue</span>(<span class="st">"med"</span>,  <span class="nu">2</span>);
+<span class="ty">string</span> next = pq.<span class="fn">Dequeue</span>(); <span class="cm">// "high" (lowest priority int wins)</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head green">ArrayPool&lt;T&gt; — Rent, Use, Return</div>
+      <pre><code><span class="cm">// ArrayPool avoids repeated heap allocations
+// for temporary large arrays</span>
+<span class="kw">using</span> <span class="ty">System</span>.Buffers;
+
+<span class="cm">// Rent array from pool — may be LARGER than requested!</span>
+<span class="ty">byte</span>[] buffer = <span class="ty">ArrayPool</span>&lt;<span class="ty">byte</span>&gt;.Shared.<span class="fn">Rent</span>(<span class="nu">1024</span>);
+<span class="kw">try</span>
+{
+    <span class="cm">// Use buffer[0..1024] — ignore extra bytes</span>
+    <span class="kw">var</span> span = buffer.<span class="fn">AsSpan</span>(<span class="nu">0</span>, <span class="nu">1024</span>);
+    <span class="fn">ProcessData</span>(span);
+}
+<span class="kw">finally</span>
+{
+    <span class="ty">ArrayPool</span>&lt;<span class="ty">byte</span>&gt;.Shared.<span class="fn">Return</span>(buffer, clearArray: <span class="kw">true</span>);
+    <span class="cm">// clearArray=true: zero out before returning (security)</span>
+}
+
+<span class="cm">// Pool buckets (powers of 2): 16,32,64,128...1M+
+// Requests over 1M → new array, not pooled
+// Each thread has a TLS cache slot for speed</span>
+
+<span class="cm">// Custom pool for domain objects</span>
+<span class="kw">var</span> pool = <span class="ty">ObjectPool</span>.<span class="fn">Create</span>&lt;<span class="ty">StringBuilder</span>&gt;(
+    <span class="kw">new</span> <span class="ty">StringBuilderPooledObjectPolicy</span>());</code></pre>
+      <div class="callout tip"><strong>Use ArrayPool when:</strong> you need temporary buffers (&gt;1KB) in hot paths. Returns to pool keep Gen0 GC pressure low — critical for high-throughput APIs.</div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════
+     §6  GENERICS
+══════════════════════════════════════════════════ -->
+<section class="section" id="generics">
+  <div class="section-head">
+    <div class="section-num">06</div>
+    <div class="section-title-wrap">
+      <h2>Generics &amp; Constraints</h2>
+      <div class="tag">TYPE PARAMS · CONSTRAINTS · COVARIANCE</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head blue">Generic Types &amp; Constraints</div>
+      <pre><code><span class="cm">// Generic method — ONE JIT compile per value type T
+// (class T reuse the same JIT code with object pointers)</span>
+<span class="ty">T</span> <span class="fn">Max</span>&lt;<span class="ty">T</span>&gt;(<span class="ty">T</span> a, <span class="ty">T</span> b) <span class="kw">where</span> <span class="ty">T</span> : <span class="ty">IComparable</span>&lt;<span class="ty">T</span>&gt;
+    => a.<span class="fn">CompareTo</span>(b) >= <span class="nu">0</span> ? a : b;
+
+<span class="cm">// Constraints</span>
+<span class="kw">where</span> <span class="ty">T</span> : <span class="kw">class</span>           <span class="cm">// ref type</span>
+<span class="kw">where</span> <span class="ty">T</span> : <span class="kw">struct</span>          <span class="cm">// value type, non-nullable</span>
+<span class="kw">where</span> <span class="ty">T</span> : <span class="kw">new</span>()            <span class="cm">// has parameterless ctor</span>
+<span class="kw">where</span> <span class="ty">T</span> : <span class="ty">BaseClass</span>        <span class="cm">// inherits BaseClass</span>
+<span class="kw">where</span> <span class="ty">T</span> : <span class="ty">IInterface</span>       <span class="cm">// implements interface</span>
+<span class="kw">where</span> <span class="ty">T</span> : <span class="ty">notnull</span>          <span class="cm">// non-nullable (C# 8)</span>
+<span class="kw">where</span> <span class="ty">T</span> : <span class="kw">unmanaged</span>        <span class="cm">// blittable, no refs (C# 7.3)</span>
+<span class="kw">where</span> <span class="ty">T</span> : <span class="kw">allows ref struct</span><span class="cm">// C# 13 anti-constraint</span>
+
+<span class="cm">// Generic class — memory: one Type Object per T</span>
+<span class="kw">class</span> <span class="ty">Repository</span>&lt;<span class="ty">T</span>&gt; <span class="kw">where</span> <span class="ty">T</span> : <span class="kw">class</span>
+{
+    <span class="kw">private readonly</span> <span class="ty">List</span>&lt;<span class="ty">T</span>&gt; _store = <span class="kw">new</span>();
+    <span class="kw">public void</span> <span class="fn">Add</span>(<span class="ty">T</span> item) => _store.<span class="fn">Add</span>(item);
+    <span class="kw">public</span> <span class="ty">T</span>? <span class="fn">Find</span>(<span class="ty">Func</span>&lt;<span class="ty">T</span>, <span class="kw">bool</span>&gt; pred) => _store.<span class="fn">FirstOrDefault</span>(pred);
+}</code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head purple">Covariance, Contravariance &amp; Static Abstracts</div>
+      <pre><code><span class="cm">// Covariance (out) — IEnumerable&lt;Dog&gt; IS-A IEnumerable&lt;Animal&gt;</span>
+<span class="kw">interface</span> <span class="ty">IProducer</span>&lt;<span class="kw">out</span> <span class="ty">T</span>&gt; { <span class="ty">T</span> <span class="fn">Produce</span>(); }
+<span class="ty">IProducer</span>&lt;<span class="ty">string</span>&gt; strProd = <span class="kw">null</span>!;
+<span class="ty">IProducer</span>&lt;<span class="kw">object</span>&gt; objProd = strProd;   <span class="cm">// safe: string IS object</span>
+
+<span class="cm">// Contravariance (in) — Action&lt;Animal&gt; IS-A Action&lt;Dog&gt;</span>
+<span class="kw">interface</span> <span class="ty">IConsumer</span>&lt;<span class="kw">in</span> <span class="ty">T</span>&gt; { <span class="kw">void</span> <span class="fn">Consume</span>(<span class="ty">T</span> item); }
+<span class="ty">IConsumer</span>&lt;<span class="kw">object</span>&gt; objCon = <span class="kw">null</span>!;
+<span class="ty">IConsumer</span>&lt;<span class="ty">string</span>&gt; strCon = objCon;    <span class="cm">// safe</span>
+
+<span class="cm">// Static abstract members (C# 11) — generic math!</span>
+<span class="kw">interface</span> <span class="ty">IAddable</span>&lt;<span class="ty">T</span>&gt;
+{
+    <span class="kw">static abstract</span> <span class="ty">T</span> <span class="kw">operator</span> +(<span class="ty">T</span> a, <span class="ty">T</span> b);
+    <span class="kw">static abstract</span> <span class="ty">T</span> Zero { <span class="kw">get</span>; }
+}
+<span class="ty">T</span> <span class="fn">Sum</span>&lt;<span class="ty">T</span>&gt;(<span class="ty">IEnumerable</span>&lt;<span class="ty">T</span>&gt; src) <span class="kw">where</span> <span class="ty">T</span> : <span class="ty">IAddable</span>&lt;<span class="ty">T</span>&gt;
+{
+    <span class="ty">T</span> acc = <span class="ty">T</span>.Zero;
+    <span class="kw">foreach</span> (<span class="kw">var</span> x <span class="kw">in</span> src) acc = acc + x;
+    <span class="kw">return</span> acc;
+}
+<span class="cm">// Used by System.Numerics.INumber&lt;T&gt; for generic math</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §7  PATTERN MATCHING
+══════════════════════════════════════════════════ -->
+<section class="section" id="pattern">
+  <div class="section-head">
+    <div class="section-num">07</div>
+    <div class="section-title-wrap">
+      <h2>Pattern Matching</h2>
+      <div class="tag">SWITCH · WHEN · LIST · PROPERTY PATTERNS</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head green">All Pattern Types</div>
+      <pre><code><span class="kw">object</span> val = <span class="fn">GetSomething</span>();
+
+<span class="kw">var</span> desc = val <span class="kw">switch</span>
+{
+    <span class="kw">null</span>                 => <span class="st">"null"</span>,           <span class="cm">// null</span>
+    <span class="kw">int</span> i                => <span class="st">$"int: {i}"</span>,        <span class="cm">// type</span>
+    <span class="kw">int</span> i <span class="kw">and</span> > <span class="nu">0</span>        => <span class="st">"positive int"</span>,    <span class="cm">// conjunction</span>
+    <span class="ty">string</span> { Length: <span class="nu">0</span> } => <span class="st">"empty string"</span>,    <span class="cm">// property</span>
+    <span class="ty">string</span> s <span class="kw">when</span> s.<span class="fn">StartsWith</span>(<span class="st">"A"</span>) => <span class="st">"A-string"</span>, <span class="cm">// guard</span>
+    <span class="ty">string</span> s             => <span class="st">$"string: {s}"</span>,    <span class="cm">// var</span>
+    <span class="ty">Point</span> { X: <span class="nu">0</span>, Y: <span class="nu">0</span> } => <span class="st">"origin"</span>,         <span class="cm">// positional</span>
+    <span class="ty">Point</span>(> <span class="nu">0</span>, > <span class="nu">0</span>)      => <span class="st">"Q1"</span>,              <span class="cm">// deconstruct</span>
+    [.., <span class="nu">0</span>]             => <span class="st">"ends in zero"</span>,   <span class="cm">// list (C#11)</span>
+    [<span class="kw">var</span> first, ..]      => <span class="st">$"first={first}"</span>, <span class="cm">// list slice</span>
+    <span class="kw">not null</span>             => <span class="st">"something"</span>,      <span class="cm">// negation</span>
+    _                    => <span class="st">"default"</span>          <span class="cm">// discard</span>
+};
+
+<span class="cm">// Relational patterns</span>
+<span class="ty">string</span> <span class="fn">Grade</span>(<span class="ty">int</span> score) => score <span class="kw">switch</span>
+{
+    >= <span class="nu">90</span>              => <span class="st">"A"</span>,
+    >= <span class="nu">80</span> <span class="kw">and</span> &lt; <span class="nu">90</span>    => <span class="st">"B"</span>,
+    >= <span class="nu">70</span>              => <span class="st">"C"</span>,
+    _                  => <span class="st">"F"</span>
+};</code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head orange">Pattern Matching in Conditions &amp; is</div>
+      <pre><code><span class="cm">// is pattern — inline type check + binding</span>
+<span class="kw">if</span> (animal <span class="kw">is</span> <span class="ty">Dog</span> { Name: <span class="st">"Rex"</span> } dog)
+    dog.<span class="fn">Bark</span>();
+
+<span class="cm">// Negation</span>
+<span class="kw">if</span> (animal <span class="kw">is not</span> <span class="ty">Cat</span>) <span class="fn">HandleNonCat</span>(animal);
+
+<span class="cm">// Multiple conditions</span>
+<span class="kw">if</span> (shape <span class="kw">is</span> <span class="ty">Rectangle</span> { Width: > <span class="nu">10</span>, Height: > <span class="nu">5</span> } r)
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">$"Big rect: {r.Area}"</span>);
+
+<span class="cm">// Switch statement with when guard</span>
+<span class="kw">switch</span> (request)
+{
+    <span class="kw">case</span> { Method: <span class="st">"GET"</span>, Path: <span class="kw">var</span> p } <span class="kw">when</span> p.<span class="fn">StartsWith</span>(<span class="st">"/api"</span>):
+        <span class="fn">HandleApi</span>(p); <span class="kw">break</span>;
+    <span class="kw">case</span> { Method: <span class="st">"POST"</span> }:
+        <span class="fn">HandlePost</span>(request); <span class="kw">break</span>;
+}
+
+<span class="cm">// List patterns (C# 11)</span>
+<span class="ty">int</span>[] nums = { <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span> };
+<span class="kw">if</span> (nums <span class="kw">is</span> [<span class="nu">1</span>, .., <span class="nu">3</span>]) <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"Starts 1, ends 3"</span>);
+<span class="kw">if</span> (nums <span class="kw">is</span> [<span class="kw">var</span> a, <span class="kw">var</span> b, <span class="kw">var</span> c]) <span class="cm">// exactly 3 elements</span>
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">$"{a},{b},{c}"</span>);  <span class="cm">// 1,2,3</span>
+
+<span class="cm">// Tuple patterns</span>
+<span class="ty">string</span> <span class="fn">Traffic</span>(<span class="ty">bool</span> on, <span class="ty">bool</span> fast) => (on, fast) <span class="kw">switch</span>
+{
+    (<span class="kw">true</span>,  <span class="kw">true</span>)  => <span class="st">"green"</span>,
+    (<span class="kw">true</span>,  <span class="kw">false</span>) => <span class="st">"yellow"</span>,
+    (<span class="kw">false</span>, _)     => <span class="st">"red"</span>
+};</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §8  RECORDS
+══════════════════════════════════════════════════ -->
+<section class="section" id="records">
+  <div class="section-head">
+    <div class="section-num">08</div>
+    <div class="section-title-wrap">
+      <h2>Records</h2>
+      <div class="tag">VALUE EQUALITY · IMMUTABILITY · WITH EXPRESSIONS</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head blue">record class — Heap, Value Equality</div>
+      <pre><code><span class="cm">// Concise positional record</span>
+<span class="kw">record</span> <span class="ty">Person</span>(<span class="ty">string</span> Name, <span class="ty">int</span> Age);
+<span class="cm">// Compiler generates:
+//  - primary constructor
+//  - init-only properties: Name, Age
+//  - Equals() based on all properties
+//  - GetHashCode() based on all properties
+//  - ToString() → "Person { Name = Alice, Age = 30 }"
+//  - Deconstruct(out Name, out Age)
+//  - with-expression support via copy constructor</span>
+
+<span class="ty">Person</span> a = <span class="kw">new</span>(<span class="st">"Alice"</span>, <span class="nu">30</span>);
+<span class="ty">Person</span> b = <span class="kw">new</span>(<span class="st">"Alice"</span>, <span class="nu">30</span>);
+<span class="kw">bool</span>   eq = a == b;  <span class="cm">// true — value equality!</span>
+
+<span class="cm">// with expression — non-destructive mutation</span>
+<span class="ty">Person</span> older = a <span class="kw">with</span> { Age = <span class="nu">31</span> };
+<span class="cm">// Creates new Person("Alice", 31) on heap
+// 'a' is unchanged — immutability preserved</span>
+
+<span class="cm">// Inheritance</span>
+<span class="kw">record</span> <span class="ty">Employee</span>(<span class="ty">string</span> Name, <span class="ty">int</span> Age, <span class="ty">string</span> Dept)
+    : <span class="ty">Person</span>(Name, Age);
+
+<span class="cm">// Additional members on records</span>
+<span class="kw">record</span> <span class="ty">Point</span>(<span class="ty">double</span> X, <span class="ty">double</span> Y)
+{
+    <span class="kw">public double</span> Distance => <span class="ty">Math</span>.<span class="fn">Sqrt</span>(X*X + Y*Y);
+    <span class="kw">public void</span> <span class="fn">Deconstruct</span>(<span class="kw">out double</span> x, <span class="kw">out double</span> y)
+        => (x, y) = (X, Y);
+}</code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head red">record struct — Stack, Value Semantics</div>
+      <pre><code><span class="cm">// record struct = struct + value equality + with expression</span>
+<span class="kw">record struct</span> <span class="ty">Color</span>(<span class="ty">byte</span> R, <span class="ty">byte</span> G, <span class="ty">byte</span> B);
+<span class="cm">// Lives on STACK — no GC, cache friendly
+// Mutable by default (unlike record class)</span>
+
+<span class="ty">Color</span> red   = <span class="kw">new</span>(<span class="nu">255</span>, <span class="nu">0</span>, <span class="nu">0</span>);
+<span class="ty">Color</span> pink  = red <span class="kw">with</span> { G = <span class="nu">100</span> };  <span class="cm">// stack copy</span>
+<span class="ty">Color</span> red2  = <span class="kw">new</span>(<span class="nu">255</span>, <span class="nu">0</span>, <span class="nu">0</span>);
+<span class="kw">bool</span>  same  = red == red2;             <span class="cm">// true</span>
+
+<span class="cm">// readonly record struct — fully immutable</span>
+<span class="kw">readonly record struct</span> <span class="ty">Measurement</span>(<span class="ty">double</span> Value, <span class="ty">string</span> Unit);
+
+<span class="cm">// Choosing between record class vs record struct:
+//
+// record class:
+//   - reference semantics (heap allocation)
+//   - supports inheritance
+//   - nullable reference type support
+//   - use for domain entities, DTOs
+//
+// record struct:
+//   - value semantics (stack allocation)
+//   - no inheritance
+//   - use for small immutable data (coordinates, measurements)
+//   - ideal for return types avoiding heap alloc
+//
+// When to use neither:
+//   - Mutable state → class or mutable struct
+//   - Complex object graphs → class</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §9  SPANS & MEMORY
+══════════════════════════════════════════════════ -->
+<section class="section" id="spans">
+  <div class="section-head">
+    <div class="section-num">09</div>
+    <div class="section-title-wrap">
+      <h2>Spans, Memory&lt;T&gt; &amp; Zero-Allocation Patterns</h2>
+      <div class="tag">SPAN · MEMORY · STACKALLOC · UNSAFE</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head green">Span&lt;T&gt; — Stack-Only View</div>
+      <pre><code><span class="cm">// Span&lt;T&gt; is a ref struct — lives ONLY on stack
+// It's a (pointer, length) pair pointing into:
+//   - arrays (heap)
+//   - stack memory (stackalloc)
+//   - native memory
+//   - string characters</span>
+
+<span class="cm">// From array — no allocation, just a view</span>
+<span class="ty">int</span>[] arr  = { <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>, <span class="nu">4</span>, <span class="nu">5</span> };
+<span class="ty">Span</span>&lt;<span class="ty">int</span>&gt; span  = arr;           <span class="cm">// whole array</span>
+<span class="ty">Span</span>&lt;<span class="ty">int</span>&gt; slice = arr[<span class="nu">1</span>..<span class="nu">4</span>];      <span class="cm">// [2,3,4] — no copy</span>
+
+<span class="cm">// Stack allocation — purely on stack, zero GC pressure</span>
+<span class="ty">Span</span>&lt;<span class="ty">int</span>&gt; buf = <span class="kw">stackalloc</span> <span class="ty">int</span>[<span class="nu">8</span>]; <span class="cm">// max ~256 bytes!</span>
+buf.<span class="fn">Fill</span>(<span class="nu">0</span>);
+buf[<span class="nu">0</span>] = <span class="nu">42</span>;
+
+<span class="cm">// Safe parsing without allocations</span>
+<span class="ty">ReadOnlySpan</span>&lt;<span class="ty">char</span>&gt; csv = <span class="st">"10,20,30"</span>;
+<span class="kw">while</span> (csv.<span class="fn">Length</span> > <span class="nu">0</span>)
+{
+    <span class="ty">int</span> comma = csv.<span class="fn">IndexOf</span>(<span class="st">','</span>);
+    <span class="kw">var</span> part = comma >= <span class="nu">0</span> ? csv[..comma] : csv;
+    <span class="ty">int</span>.<span class="fn">TryParse</span>(part, <span class="kw">out var</span> num);
+    <span class="ty">Console</span>.<span class="fn">WriteLine</span>(num);
+    csv = comma >= <span class="nu">0</span> ? csv[(comma+<span class="nu">1</span>)..] : default;
+}
+<span class="cm">// Zero string allocations in this entire loop!</span>
+
+<span class="cm">// C# 14: implicit Span conversions (new!)</span>
+<span class="ty">Span</span>&lt;<span class="ty">int</span>&gt; s = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>];  <span class="cm">// collection expression → stackalloc</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head blue">Memory&lt;T&gt; — Heap-Compatible View</div>
+      <pre><code><span class="cm">// Memory&lt;T&gt; = Span&lt;T&gt; but CAN be stored on heap
+// Use when you need to pass slices across async boundaries</span>
+
+<span class="ty">Memory</span>&lt;<span class="ty">byte</span>&gt; mem = <span class="kw">new</span> <span class="ty">byte</span>[<span class="nu">4096</span>];
+<span class="ty">Memory</span>&lt;<span class="ty">byte</span>&gt; seg = mem[..<span class="nu">1024</span>];      <span class="cm">// no copy</span>
+
+<span class="cm">// async — can use Memory (not Span) across await</span>
+<span class="kw">async</span> <span class="ty">Task</span> <span class="fn">ReadAsync</span>(<span class="ty">Stream</span> s, <span class="ty">Memory</span>&lt;<span class="ty">byte</span>&gt; buf)
+{
+    <span class="ty">int</span> n = <span class="kw">await</span> s.<span class="fn">ReadAsync</span>(buf);  <span class="cm">// no allocation!</span>
+    <span class="fn">Process</span>(buf.Span[..n]);           <span class="cm">// Span for sync ops</span>
+}
+
+<span class="cm">// MemoryPool — similar to ArrayPool but Memory-based</span>
+<span class="kw">using</span> <span class="ty">IMemoryOwner</span>&lt;<span class="ty">byte</span>&gt; owner
+    = <span class="ty">MemoryPool</span>&lt;<span class="ty">byte</span>&gt;.Shared.<span class="fn">Rent</span>(<span class="nu">1024</span>);
+<span class="ty">Memory</span>&lt;<span class="ty">byte</span>&gt; memory = owner.Memory;
+<span class="cm">// Automatically returned when owner is disposed</span>
+
+<span class="cm">// Summary of Span vs Memory:
+//  Span&lt;T&gt;   → fast, stack-only, use in sync code
+//  Memory&lt;T&gt; → heap-storable, use across await
+//  ReadOnlySpan / ReadOnlyMemory → for read-only access</span></code></pre>
+      <div class="callout tip"><strong>C# 14 improvement:</strong> Implicit conversions between <span class="ic">Span&lt;T&gt;</span> and <span class="ic">ReadOnlySpan&lt;T&gt;</span>, and for collection expressions, are now first-class. This reduces boilerplate when passing spans to APIs.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §10 ASYNC / AWAIT
+══════════════════════════════════════════════════ -->
+<section class="section" id="async">
+  <div class="section-head">
+    <div class="section-num">10</div>
+    <div class="section-title-wrap">
+      <h2>Async / Await &amp; Task Memory</h2>
+      <div class="tag">TASK · VALUETASK · STATE MACHINE · THREADPOOL</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head blue">How async/await Works Internally</div>
+      <pre><code><span class="cm">// The compiler transforms async methods into a STATE MACHINE
+// class (heap-allocated!) with captured local variables</span>
+
+<span class="kw">async</span> <span class="ty">Task</span>&lt;<span class="ty">int</span>&gt; <span class="fn">FetchAsync</span>(<span class="ty">string</span> url)
+{
+    <span class="ty">int</span> retries = <span class="nu">3</span>;                   <span class="cm">// captured in state machine</span>
+    <span class="kw">var</span> response = <span class="kw">await</span> _http.<span class="fn">GetAsync</span>(url); <span class="cm">// suspension point</span>
+    <span class="cm">// Thread returns to pool here ↑, resumes on any thread ↓</span>
+    <span class="kw">return</span> (<span class="ty">int</span>)response.StatusCode;
+}
+<span class="cm">// Compiles to roughly:
+// class FetchAsyncStateMachine {
+//   int retries;              // local vars as fields (heap!)
+//   string url;
+//   HttpResponseMessage response;
+//   int _state;
+//   void MoveNext() { ... }
+// }</span>
+
+<span class="cm">// Task vs ValueTask — choose wisely!</span>
+<span class="cm">// Task: always allocates on heap (~200 bytes)</span>
+<span class="kw">async</span> <span class="ty">Task</span>&lt;<span class="ty">int</span>&gt; <span class="fn">GetFromCache</span>()
+{
+    <span class="kw">if</span> (_cache.<span class="fn">TryGetValue</span>(<span class="st">"k"</span>, <span class="kw">out var</span> v))
+        <span class="kw">return</span> v;  <span class="cm">// still allocates a Task wrapping the int</span>
+    <span class="kw">return await</span> <span class="fn">FetchAsync</span>(<span class="st">"..."</span>);
+}
+
+<span class="cm">// ValueTask: zero alloc when result is synchronous</span>
+<span class="kw">async</span> <span class="ty">ValueTask</span>&lt;<span class="ty">int</span>&gt; <span class="fn">GetFromCacheV</span>()
+{
+    <span class="kw">if</span> (_cache.<span class="fn">TryGetValue</span>(<span class="st">"k"</span>, <span class="kw">out var</span> v))
+        <span class="kw">return</span> v;  <span class="cm">// NO heap allocation — value in struct</span>
+    <span class="kw">return await</span> <span class="fn">FetchAsync</span>(<span class="st">"..."</span>);  <span class="cm">// only allocs if truly async</span>
+}</code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head orange">Async Best Practices &amp; ConfigureAwait</div>
+      <pre><code><span class="cm">// ConfigureAwait(false) — don't capture SynchronizationContext
+// Use in library code to avoid deadlocks and improve perf</span>
+<span class="kw">async</span> <span class="ty">Task</span>&lt;<span class="ty">string</span>&gt; <span class="fn">LibraryMethodAsync</span>()
+{
+    <span class="kw">var</span> data = <span class="kw">await</span> <span class="fn">FetchDataAsync</span>()
+        .<span class="fn">ConfigureAwait</span>(<span class="kw">false</span>);      <span class="cm">// perf: no context capture</span>
+    <span class="kw">return</span> data.<span class="fn">Trim</span>();
+}
+
+<span class="cm">// Parallel async — concurrent, not sequential</span>
+<span class="kw">var</span> t1 = <span class="fn">FetchUserAsync</span>(id);
+<span class="kw">var</span> t2 = <span class="fn">FetchOrdersAsync</span>(id);
+<span class="kw">await</span> <span class="ty">Task</span>.<span class="fn">WhenAll</span>(t1, t2);        <span class="cm">// both run concurrently</span>
+<span class="cm">// (vs) await t1; await t2; → sequential, slower</span>
+
+<span class="cm">// CancellationToken — propagate everywhere</span>
+<span class="kw">async</span> <span class="ty">Task</span> <span class="fn">ProcessAsync</span>(<span class="ty">CancellationToken</span> ct)
+{
+    ct.<span class="fn">ThrowIfCancellationRequested</span>();
+    <span class="kw">await</span> <span class="fn">Step1Async</span>(ct);
+    <span class="kw">await</span> <span class="fn">Step2Async</span>(ct);
+}
+
+<span class="cm">// IAsyncEnumerable — streaming async sequences</span>
+<span class="kw">async</span> <span class="ty">IAsyncEnumerable</span>&lt;<span class="ty">int</span>&gt; <span class="fn">StreamAsync</span>()
+{
+    <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">100</span>; i++)
+    {
+        <span class="kw">await</span> <span class="ty">Task</span>.<span class="fn">Delay</span>(<span class="nu">10</span>);
+        <span class="kw">yield return</span> i;             <span class="cm">// each item on demand</span>
+    }
+}
+<span class="kw">await foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> <span class="fn">StreamAsync</span>()) { }
+
+<span class="cm">// Avoid sync-over-async deadlock!</span>
+<span class="cm">// NEVER: var result = GetAsync().Result;  ← deadlock in ASP.NET</span>
+<span class="cm">// ALWAYS: var result = await GetAsync();</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §11 C# 14 — EXTENSION MEMBERS (NEW!)
+══════════════════════════════════════════════════ -->
+<section class="section" id="extensions">
+  <div class="section-head">
+    <div class="section-num">11</div>
+    <div class="section-title-wrap">
+      <h2>C# 14: Extension Members <span class="pill pill-new">NEW IN 14</span></h2>
+      <div class="tag">EXTENSION PROPERTIES · EXTENSION OPERATORS · STATIC EXTENSIONS</div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head ink">The New extension Block</div>
+      <div class="card-body">
+        <p class="prose">C# 14 introduces a unified <strong>extension block</strong> syntax. Previously, only extension <em>methods</em> existed (static methods in static classes). Now you can also add <strong>extension properties</strong>, <strong>extension operators</strong>, and <strong>static extension members</strong> without modifying the original type.</p>
+        <p class="prose">Memory-wise: extension members add <strong>zero overhead</strong> to the extended type — they're syntactic sugar resolved at compile time. No additional heap allocation, no vtable entry.</p>
+      </div>
+      <pre><code><span class="cm">// OLD way (C# 3+): extension method only</span>
+<span class="kw">public static class</span> <span class="ty">StringExtensionsOld</span>
+{
+    <span class="kw">public static bool</span> <span class="fn">IsEmpty</span>(<span class="kw">this string</span> s)
+        => s.<span class="fn">Length</span> == <span class="nu">0</span>;
+}
+
+<span class="cm">// NEW way (C# 14): full extension block</span>
+<span class="kw">public implicit extension</span> <span class="ty">StringExtensions</span> <span class="kw">for</span> <span class="ty">string</span>
+{
+    <span class="cm">// Extension PROPERTY (not possible before C# 14!)</span>
+    <span class="kw">public bool</span> IsEmpty => <span class="kw">this</span>.Length == <span class="nu">0</span>;
+    <span class="kw">public bool</span> HasContent => !<span class="kw">string</span>.<span class="fn">IsNullOrWhiteSpace</span>(<span class="kw">this</span>);
+    <span class="kw">public</span> <span class="ty">ReadOnlySpan</span>&lt;<span class="ty">char</span>&gt; AsSpan => <span class="kw">this</span>.<span class="fn">AsSpan</span>();
+
+    <span class="cm">// Extension METHOD (same as before, cleaner syntax)</span>
+    <span class="kw">public string</span> <span class="fn">Truncate</span>(<span class="ty">int</span> max)
+        => <span class="kw">this</span>.Length > max ? <span class="kw">this</span>[..max] + <span class="st">"…"</span> : <span class="kw">this</span>;
+
+    <span class="cm">// Extension INDEXER</span>
+    <span class="kw">public char this</span>[<span class="ty">Index</span> i] => <span class="kw">this</span>[i];
+}
+
+<span class="cm">// Usage — looks like native member!</span>
+<span class="ty">string</span> s = <span class="st">"Hello, World"</span>;
+<span class="kw">bool</span>   e = s.IsEmpty;       <span class="cm">// false</span>
+<span class="ty">string</span> t = s.<span class="fn">Truncate</span>(<span class="nu">5</span>); <span class="cm">// "Hello…"</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head ink">Static &amp; Operator Extensions</div>
+      <pre><code><span class="cm">// Static extension members — extend type itself, not instances</span>
+<span class="kw">public implicit extension</span> <span class="ty">IntExtensions</span> <span class="kw">for</span> <span class="ty">int</span>
+{
+    <span class="cm">// Static extension method</span>
+    <span class="kw">public static int</span> <span class="fn">Clamp</span>(<span class="ty">int</span> val, <span class="ty">int</span> min, <span class="ty">int</span> max)
+        => <span class="ty">Math</span>.<span class="fn">Clamp</span>(val, min, max);
+
+    <span class="cm">// Extension OPERATOR — adds operators to types you don't own!</span>
+    <span class="kw">public static string</span> <span class="kw">operator</span> *(<span class="ty">string</span> s, <span class="ty">int</span> n)
+        => <span class="ty">string</span>.<span class="fn">Concat</span>(<span class="ty">Enumerable</span>.<span class="fn">Repeat</span>(s, n));
+}
+
+<span class="cm">// Usage</span>
+<span class="ty">string</span> repeated = <span class="st">"ha"</span> * <span class="nu">3</span>;   <span class="cm">// "hahaha"</span>
+<span class="ty">int</span> clamped = <span class="ty">int</span>.<span class="fn">Clamp</span>(<span class="nu">150</span>, <span class="nu">0</span>, <span class="nu">100</span>); <span class="cm">// 100</span>
+
+<span class="cm">// Extending a generic type</span>
+<span class="kw">public implicit extension</span> <span class="ty">SpanExtensions</span>&lt;<span class="ty">T</span>&gt; <span class="kw">for</span> <span class="ty">Span</span>&lt;<span class="ty">T</span>&gt;
+    <span class="kw">where</span> <span class="ty">T</span> : <span class="ty">INumber</span>&lt;<span class="ty">T</span>&gt;
+{
+    <span class="kw">public</span> <span class="ty">T</span> Sum()
+    {
+        <span class="ty">T</span> total = <span class="ty">T</span>.Zero;
+        <span class="kw">foreach</span> (<span class="kw">var</span> x <span class="kw">in</span> <span class="kw">this</span>) total += x;
+        <span class="kw">return</span> total;
+    }
+}
+
+<span class="cm">// Explicit extension — requires explicit conversion
+// (vs implicit: auto-applies to the type)</span>
+<span class="kw">public explicit extension</span> <span class="ty">SafeList</span>&lt;<span class="ty">T</span>&gt; <span class="kw">for</span> <span class="ty">List</span>&lt;<span class="ty">T</span>&gt;
+{
+    <span class="kw">public</span> <span class="ty">T</span>? <span class="fn">SafeGet</span>(<span class="ty">int</span> i)
+        => i >= <span class="nu">0</span> && i &lt; <span class="kw">this</span>.Count ? <span class="kw">this</span>[i] : <span class="kw">default</span>;
+}
+<span class="ty">SafeList</span>&lt;<span class="ty">int</span>&gt; safe = (<span class="ty">SafeList</span>&lt;<span class="ty">int</span>&gt;)myList; <span class="cm">// explicit cast needed</span></code></pre>
+      <div class="callout tip"><strong>Memory note:</strong> Extension members are <em>zero-cost abstractions</em>. They compile to regular static method calls — no vtable, no extra allocation, no performance penalty.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §12 C# 14 — field KEYWORD (NEW!)
+══════════════════════════════════════════════════ -->
+<section class="section" id="field">
+  <div class="section-head">
+    <div class="section-num">12</div>
+    <div class="section-title-wrap">
+      <h2>C# 14: The <code>field</code> Keyword <span class="pill pill-new">NEW IN 14</span></h2>
+      <div class="tag">AUTO-PROPERTY · BACKING FIELD · VALIDATION</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head ink">field — Implicit Backing Field Access</div>
+      <div class="card-body">
+        <p class="prose">The <strong><span class="ic">field</span></strong> keyword in C# 14 gives you access to a property's compiler-generated backing field inside a property accessor — without declaring an explicit field. This eliminates the common pattern of declaring a private field just to add validation logic.</p>
+        <p class="prose">In memory terms: the backing field lives wherever the containing type lives — on the <strong>stack</strong> (for structs) or the <strong>heap</strong> (for classes), as part of the object's layout.</p>
+      </div>
+      <pre><code><span class="cm">// BEFORE C# 14: had to declare explicit backing field</span>
+<span class="kw">class</span> <span class="ty">PersonOld</span>
+{
+    <span class="kw">private string</span> _name = <span class="st">""</span>;          <span class="cm">// explicit backing field</span>
+    <span class="kw">public string</span> Name
+    {
+        <span class="kw">get</span> => _name;
+        <span class="kw">set</span> => _name = value?.<span class="fn">Trim</span>()
+            ?? <span class="kw">throw new</span> <span class="ty">ArgumentNullException</span>(<span class="kw">nameof</span>(value));
+    }
+}
+
+<span class="cm">// C# 14: use 'field' to access the synthesized backing field</span>
+<span class="kw">class</span> <span class="ty">Person</span>
+{
+    <span class="kw">public string</span> Name
+    {
+        <span class="kw">get</span>;
+        <span class="kw">set</span> => field = value?.<span class="fn">Trim</span>()
+            ?? <span class="kw">throw new</span> <span class="ty">ArgumentNullException</span>(<span class="kw">nameof</span>(value));
+    } = <span class="st">"Unknown"</span>;               <span class="cm">// initializer still works</span>
+
+    <span class="kw">public int</span> Age
+    {
+        <span class="kw">get</span>;
+        <span class="kw">set</span>
+        {
+            <span class="kw">if</span> (value &lt; <span class="nu">0</span> || value > <span class="nu">150</span>)
+                <span class="kw">throw new</span> <span class="ty">ArgumentOutOfRangeException</span>(<span class="kw">nameof</span>(value));
+            field = value;       <span class="cm">// 'field' = the hidden backing field</span>
+        }
+    }
+}
+
+<span class="cm">// Works in structs too — field on stack</span>
+<span class="kw">struct</span> <span class="ty">Temperature</span>
+{
+    <span class="kw">public double</span> Celsius
+    {
+        <span class="kw">get</span>;
+        <span class="kw">set</span> => field = value >= <span class="nu">-273.15</span>
+            ? value
+            : <span class="kw">throw new</span> <span class="ty">ArgumentException</span>(<span class="st">"Below absolute zero!"</span>);
+    }
+    <span class="kw">public double</span> Fahrenheit => Celsius * <span class="nu">9</span>/<span class="nu">5</span> + <span class="nu">32</span>;
+}</code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head blue">field Memory Layout</div>
+      <pre><code><span class="cm">// What the compiler generates for 'field' properties:
+// (conceptually — actual IL varies)</span>
+
+<span class="cm">// class Person in memory (heap object layout):
+// [TypePtr: 8 bytes]
+// [SyncBlock: 8 bytes]
+// [&lt;Name&gt;k__BackingField: string ref 8 bytes]  ← 'field'
+// [&lt;Age&gt;k__BackingField:  int 4 bytes]         ← 'field'
+// = 28 bytes per instance on heap</span>
+
+<span class="cm">// Lazy initialization pattern with 'field'</span>
+<span class="kw">class</span> <span class="ty">ExpensiveService</span>
+{
+    <span class="kw">public</span> <span class="ty">Connection</span> Conn
+    {
+        <span class="kw">get</span>
+        {
+            <span class="kw">if</span> (field <span class="kw">is null</span>)
+                field = <span class="kw">new</span> <span class="ty">Connection</span>(<span class="st">"db"</span>);  <span class="cm">// lazy init</span>
+            <span class="kw">return</span> field;
+        }
+    }
+}
+<span class="cm">// No separate _conn declaration needed!</span>
+
+<span class="cm">// Computed + cached property</span>
+<span class="kw">class</span> <span class="ty">DataProcessor</span>
+{
+    <span class="kw">private bool</span> _dirty = <span class="kw">true</span>;
+    <span class="kw">public</span> <span class="ty">List</span>&lt;<span class="ty">int</span>&gt; Processed
+    {
+        <span class="kw">get</span>
+        {
+            <span class="kw">if</span> (_dirty || field <span class="kw">is null</span>)
+            {
+                field = <span class="fn">ComputeExpensive</span>();
+                _dirty = <span class="kw">false</span>;
+            }
+            <span class="kw">return</span> field;
+        }
+    }
+}
+
+<span class="cm">// NOT allowed: field in init-only auto-property</span>
+<span class="cm">// public string X { get; init; }  ← 'field' not available here</span>
+<span class="cm">// (init doesn't support 'field' accessor body in C# 14)</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §13 DELEGATES, LAMBDAS & EVENTS
+══════════════════════════════════════════════════ -->
+<section class="section" id="delegates">
+  <div class="section-head">
+    <div class="section-num">13</div>
+    <div class="section-title-wrap">
+      <h2>Delegates, Lambdas &amp; Events</h2>
+      <div class="tag">FUNC · ACTION · CLOSURE · EVENTS</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head purple">Delegates &amp; Closures — Memory Implications</div>
+      <pre><code><span class="cm">// Delegate = strongly typed function pointer (heap object)</span>
+<span class="ty">Func</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt; square = x => x * x;
+<span class="cm">// Heap: delegate object { Target=null, Method=ptr }</span>
+
+<span class="cm">// CLOSURE — captures local variable
+// Compiler creates a display class on the HEAP</span>
+<span class="ty">int</span> multiplier = <span class="nu">3</span>;                    <span class="cm">// would be on stack...</span>
+<span class="ty">Func</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt; mult = x => x * multiplier;
+<span class="cm">// ...but 'multiplier' is LIFTED to heap:
+// class &lt;&gt;c__DisplayClass0 { public int multiplier; }
+// Heap: new &lt;&gt;c__DisplayClass0 { multiplier=3 }
+// The lambda holds a reference to this display class</span>
+
+multiplier = <span class="nu">5</span>;
+<span class="kw">var</span> result = <span class="fn">mult</span>(<span class="nu">4</span>);  <span class="cm">// 20! (sees updated value)</span>
+
+<span class="cm">// Static lambda — NO closure, NO allocation</span>
+<span class="ty">Func</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt; pure = <span class="kw">static</span> x => x * x;
+<span class="cm">// Cached as a static delegate — single allocation at startup</span>
+
+<span class="cm">// Multicast delegate</span>
+<span class="ty">Action</span> log = () => <span class="ty">Console</span>.<span class="fn">Write</span>(<span class="st">"A"</span>);
+log += () => <span class="ty">Console</span>.<span class="fn">Write</span>(<span class="st">"B"</span>);  <span class="cm">// invocation list on heap</span>
+<span class="fn">log</span>();  <span class="cm">// prints "AB"</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head red">Events &amp; Lambda Best Practices</div>
+      <pre><code><span class="cm">// Events — publisher/subscriber pattern</span>
+<span class="kw">class</span> <span class="ty">Button</span>
+{
+    <span class="kw">public event</span> <span class="ty">EventHandler</span>&lt;<span class="ty">ClickArgs</span>&gt;? Clicked;
+
+    <span class="kw">protected virtual void</span> <span class="fn">OnClicked</span>(<span class="ty">ClickArgs</span> e)
+        => Clicked?.Invoke(<span class="kw">this</span>, e);  <span class="cm">// thread-safe null check</span>
+}
+
+<span class="kw">var</span> btn = <span class="kw">new</span> <span class="ty">Button</span>();
+btn.Clicked += (<span class="kw">s</span>, e) => <span class="ty">Console</span>.<span class="fn">WriteLine</span>(<span class="st">"Clicked!"</span>);
+
+<span class="cm">// Memory leak: if 'btn' is GC-rooted and handler references
+// long-lived object, that object won't be collected!</span>
+<span class="cm">// Always unsubscribe:</span>
+<span class="ty">EventHandler</span>&lt;<span class="ty">ClickArgs</span>&gt; handler = (s, e) => { };
+btn.Clicked += handler;
+btn.Clicked -= handler;  <span class="cm">// explicit unsubscribe</span>
+<span class="cm">// OR use WeakReference&lt;T&gt; for weak subscriptions</span>
+
+<span class="cm">// C# 14: lambda parameter modifiers without types</span>
+<span class="ty">Func</span>&lt;<span class="ty">int</span>, <span class="ty">int</span>&gt; f = (<span class="kw">ref</span> x) => x++;  <span class="cm">// NEW in C#14!</span>
+<span class="cm">// Before, you had to write: (ref int x) => x++</span>
+
+<span class="ty">Action</span>&lt;<span class="ty">string</span>&gt; pr = (<span class="kw">scoped</span> s) => <span class="ty">Console</span>.<span class="fn">Write</span>(s);
+<span class="cm">// 'scoped' modifier without repeating the type</span>
+
+<span class="cm">// Func vs Action summary:
+// Action&lt;T&gt;    → void return
+// Func&lt;T,R&gt;   → returns R (last type param)
+// Predicate&lt;T&gt; → Func&lt;T, bool&gt;
+// Comparison&lt;T&gt;→ Func&lt;T, T, int&gt;</span></code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §14 UNSAFE CODE & POINTERS
+══════════════════════════════════════════════════ -->
+<section class="section" id="unsafe">
+  <div class="section-head">
+    <div class="section-num">14</div>
+    <div class="section-title-wrap">
+      <h2>Unsafe Code &amp; Pointers</h2>
+      <div class="tag">UNSAFE · FIXED · STACKALLOC · MARSHAL</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head orange">Unsafe Pointer Operations</div>
+      <pre><code><span class="cm">// Requires: &lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;
+// and 'unsafe' keyword on method/block</span>
+
+<span class="kw">unsafe</span>
+{
+    <span class="cm">// Pointer to stack variable</span>
+    <span class="ty">int</span> x = <span class="nu">42</span>;
+    <span class="ty">int</span>* ptr = &amp;x;       <span class="cm">// ptr = address of x on stack</span>
+    *ptr = <span class="nu">99</span>;           <span class="cm">// x is now 99</span>
+
+    <span class="cm">// Pinned heap object — tell GC: don't move this!</span>
+    <span class="ty">int</span>[] arr = { <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span> };
+    <span class="kw">fixed</span> (<span class="ty">int</span>* p = arr)  <span class="cm">// arr pinned during fixed block</span>
+    {
+        <span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">0</span>; i &lt; <span class="nu">3</span>; i++)
+            <span class="ty">Console</span>.<span class="fn">Write</span>(p[i]);  <span class="cm">// 123</span>
+    }  <span class="cm">// arr unpinned — GC can move it again</span>
+
+    <span class="cm">// Pointer arithmetic</span>
+    <span class="ty">byte</span>* buf = <span class="kw">stackalloc</span> <span class="ty">byte</span>[<span class="nu">16</span>];
+    <span class="ty">byte</span>* end = buf + <span class="nu">16</span>;
+    <span class="kw">for</span> (<span class="ty">byte</span>* p = buf; p &lt; end; p++)
+        *p = <span class="nu">0xFF</span>;
+
+    <span class="cm">// sizeof — compile-time struct size</span>
+    <span class="ty">int</span> size = <span class="kw">sizeof</span>(<span class="ty">int</span>);           <span class="cm">// 4</span>
+    <span class="ty">int</span> ps   = <span class="kw">sizeof</span>(<span class="ty">Point</span>);         <span class="cm">// depends on fields</span>
+}</code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head red">Interop &amp; NativeMemory</div>
+      <pre><code><span class="kw">using</span> System.Runtime.InteropServices;
+
+<span class="cm">// Native (unmanaged) memory allocation — outside GC heap</span>
+<span class="kw">unsafe</span>
+{
+    <span class="ty">byte</span>* native = (<span class="ty">byte</span>*)<span class="ty">NativeMemory</span>.<span class="fn">Alloc</span>(<span class="nu">1024</span>);
+    <span class="kw">try</span>
+    {
+        <span class="ty">NativeMemory</span>.<span class="fn">Fill</span>(native, <span class="nu">1024</span>, <span class="nu">0</span>);
+        <span class="ty">Span</span>&lt;<span class="ty">byte</span>&gt; span = <span class="kw">new</span>(native, <span class="nu">1024</span>);
+        <span class="fn">ProcessData</span>(span);
+    }
+    <span class="kw">finally</span>
+    {
+        <span class="ty">NativeMemory</span>.<span class="fn">Free</span>(native);  <span class="cm">// MUST free manually!</span>
+    }
+}
+
+<span class="cm">// Struct layout for P/Invoke</span>
+[<span class="at">StructLayout</span>(LayoutKind.Sequential, Pack = <span class="nu">1</span>)]
+<span class="kw">struct</span> <span class="ty">NativePoint</span>
+{
+    <span class="kw">public</span> <span class="ty">int</span> X;     <span class="cm">// at offset 0</span>
+    <span class="kw">public</span> <span class="ty">int</span> Y;     <span class="cm">// at offset 4</span>
+}
+<span class="cm">// Sequential: C-compatible layout
+// Explicit: manual field offsets via [FieldOffset(n)]</span>
+
+<span class="cm">// P/Invoke — call native DLL</span>
+[<span class="at">DllImport</span>(<span class="st">"kernel32.dll"</span>)]
+<span class="kw">static extern bool</span> <span class="fn">Beep</span>(<span class="ty">uint</span> freq, <span class="ty">uint</span> duration);
+
+<span class="cm">// Modern: [LibraryImport] (source-gen, no reflection)</span>
+[<span class="at">LibraryImport</span>(<span class="st">"libc"</span>, EntryPoint = <span class="st">"getpid"</span>)]
+<span class="kw">static partial int</span> <span class="fn">GetPid</span>();</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     §15 GARBAGE COLLECTOR
+══════════════════════════════════════════════════ -->
+<section class="section" id="gc">
+  <div class="section-head">
+    <div class="section-num">15</div>
+    <div class="section-title-wrap">
+      <h2>Garbage Collector — How Objects Die</h2>
+      <div class="tag">GEN0 · GEN1 · GEN2 · LOH · FINALIZE · IIDISPOSABLE</div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head blue">GC Lifecycle &amp; Generations</div>
+      <div class="card-body prose">
+        <p>The .NET GC is a <strong>generational, compacting, concurrent</strong> collector. Objects start in <strong>Gen0</strong>. If they survive a collection, they're promoted. Gen0 collects frequently (fast). Gen2 collects rarely (slow full GC).</p>
+      </div>
+      <pre><code><span class="cm">// Object lifecycle:</span>
+<span class="cm">// 1. new Foo() → allocated in Gen0</span>
+<span class="cm">// 2. Gen0 full → collect: unreachable objects freed</span>
+<span class="cm">// 3. Reachable objects → promoted to Gen1</span>
+<span class="cm">// 4. Gen1 full → collect: survivors → Gen2</span>
+<span class="cm">// 5. Gen2: long-lived objects (static, caches, singletons)</span>
+
+<span class="cm">// Large Object Heap (≥85,000 bytes)</span>
+<span class="kw">var</span> big = <span class="kw">new</span> <span class="ty">byte</span>[<span class="nu">100_000</span>]; <span class="cm">// → LOH, not compacted by default</span>
+<span class="cm">// LOH fragmentation = performance problem
+// Solution: ArrayPool&lt;byte&gt;.Shared.Rent()</span>
+
+<span class="cm">// GC roots — objects that keep others alive:</span>
+<span class="cm">// • Static fields</span>
+<span class="cm">// • Local variables on active stack frames</span>
+<span class="cm">// • CPU registers</span>
+<span class="cm">// • GC handles (pinned objects, WeakReference targets)</span>
+<span class="cm">// • Finalization queue</span>
+
+<span class="cm">// Weak references — allow GC to collect</span>
+<span class="kw">var</span> weak = <span class="kw">new</span> <span class="ty">WeakReference</span>&lt;<span class="ty">MyObject</span>&gt;(<span class="kw">new</span> <span class="ty">MyObject</span>());
+<span class="kw">if</span> (weak.<span class="fn">TryGetTarget</span>(<span class="kw">out var</span> obj))
+    <span class="fn">Use</span>(obj);   <span class="cm">// obj may have been collected!</span>
+<span class="cm">// Useful for caches that should yield under memory pressure</span></code></pre>
+    </div>
+    <div class="card">
+      <div class="card-head green">IDisposable — Deterministic Cleanup</div>
+      <pre><code><span class="cm">// Finalizer (destructor) — runs on GC thread, non-deterministic
+// Use ONLY when owning unmanaged resources</span>
+<span class="kw">class</span> <span class="ty">FileWrapper</span> : <span class="ty">IDisposable</span>
+{
+    <span class="kw">private</span> <span class="ty">IntPtr</span> _handle;    <span class="cm">// unmanaged resource</span>
+    <span class="kw">private bool</span> _disposed;
+
+    <span class="kw">public</span> <span class="fn">FileWrapper</span>(<span class="ty">string</span> path)
+        => _handle = <span class="fn">OpenFile</span>(path);
+
+    <span class="kw">public void</span> <span class="fn">Dispose</span>()
+    {
+        <span class="fn">Dispose</span>(<span class="kw">true</span>);
+        <span class="ty">GC</span>.<span class="fn">SuppressFinalize</span>(<span class="kw">this</span>);  <span class="cm">// don't run finalizer</span>
+    }
+
+    <span class="kw">protected virtual void</span> <span class="fn">Dispose</span>(<span class="kw">bool</span> disposing)
+    {
+        <span class="kw">if</span> (_disposed) <span class="kw">return</span>;
+        <span class="kw">if</span> (disposing)
+        {
+            <span class="cm">// Free managed resources here</span>
+        }
+        <span class="fn">CloseHandle</span>(_handle);   <span class="cm">// free unmanaged</span>
+        _handle = <span class="ty">IntPtr</span>.Zero;
+        _disposed = <span class="kw">true</span>;
+    }
+
+    ~<span class="fn">FileWrapper</span>()             <span class="cm">// finalizer — safety net</span>
+        => <span class="fn">Dispose</span>(<span class="kw">false</span>);
+}
+
+<span class="cm">// using — calls Dispose() at end of scope (even on exception)</span>
+<span class="kw">using var</span> file = <span class="kw">new</span> <span class="ty">FileWrapper</span>(<span class="st">"data.txt"</span>);
+<span class="cm">// Equivalent to: try { ... } finally { file.Dispose(); }</span>
+
+<span class="cm">// Modern: IAsyncDisposable</span>
+<span class="kw">await using var</span> conn = <span class="kw">new</span> <span class="ty">AsyncConnection</span>();
+<span class="cm">// Calls DisposeAsync() — use for async cleanup (sockets, streams)</span></code></pre>
+      <div class="callout warn"><strong>Finalizer warning:</strong> Objects with finalizers are NOT collected on the first GC pass — they're placed on the finalization queue first, surviving an extra generation. This is why <span class="ic">GC.SuppressFinalize</span> is important when Dispose is called explicitly.</div>
+    </div>
+  </div>
+
+  <!-- C# 14 misc features -->
+  <div class="card" style="margin-top:1.25rem">
+    <div class="card-head ink">C# 14 — Other New Features <span class="pill pill-new">NEW IN 14</span></div>
+    <div class="grid g3" style="padding:1rem;gap:1rem">
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;font-weight:700;color:var(--accent4);margin-bottom:0.5rem">nameof with Unbound Generics</div>
+        <pre><code><span class="cm">// C# 14: nameof now works on open generics</span>
+<span class="ty">string</span> n1 = <span class="kw">nameof</span>(<span class="ty">List</span>&lt;&gt;);    <span class="cm">// "List"</span>
+<span class="ty">string</span> n2 = <span class="kw">nameof</span>(<span class="ty">Dictionary</span>&lt;,&gt;); <span class="cm">// "Dictionary"</span>
+<span class="cm">// Before C# 14, only closed types worked:
+// nameof(List&lt;int&gt;) → "List" ✓
+// nameof(List&lt;&gt;) → compile error ✗</span></code></pre>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;font-weight:700;color:var(--accent2);margin-bottom:0.5rem">#nowarn / #warnon</div>
+        <pre><code><span class="cm">// Scoped warning suppression</span>
+<span class="cm">#nowarn CS0618</span>
+<span class="kw">var</span> x = <span class="fn">ObsoleteMethod</span>(); <span class="cm">// no warning</span>
+<span class="cm">#warnon CS0618</span>
+<span class="kw">var</span> y = <span class="fn">ObsoleteMethod</span>(); <span class="cm">// warning restored</span>
+
+<span class="cm">// Previously: #pragma warning disable/restore
+// New syntax is cleaner and shorter</span></code></pre>
+      </div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;font-weight:700;color:var(--accent3);margin-bottom:0.5rem">Implicit Span Conversions</div>
+        <pre><code><span class="cm">// C# 14 adds first-class Span conversions</span>
+<span class="ty">int</span>[] arr = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>];
+
+<span class="cm">// Implicit: array → Span</span>
+<span class="ty">Span</span>&lt;<span class="ty">int</span>&gt; s = arr;
+
+<span class="cm">// Implicit: Span → ReadOnlySpan</span>
+<span class="ty">ReadOnlySpan</span>&lt;<span class="ty">int</span>&gt; ro = s;
+
+<span class="cm">// Collection expression → stackalloc Span</span>
+<span class="ty">Span</span>&lt;<span class="ty">int</span>&gt; buf = [<span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span>];
+<span class="cm">// Compiler may optimize to stackalloc!</span></code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /inner container -->
+
+<footer>
+  C# 14 · .NET 10 · In-Depth Cheatsheet with Memory Model Analysis &nbsp;·&nbsp; Stack <span style="color:var(--stack)">■</span> &nbsp; Heap <span style="color:var(--heap)">■</span> &nbsp; Static <span style="color:var(--static)">■</span>
+</footer>
+
