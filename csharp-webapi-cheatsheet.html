@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C# Web API Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+    --keyword: #ff79c6;
+    --type: #8be9fd;
+    --string: #f1fa8c;
+    --comment: #6272a4;
+    --method: #50fa7b;
+    --number: #bd93f9;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0a0e1a 0%, #111827 50%, #0d1b2a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(0,212,255,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Layout */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  /* Nav pills */
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2.5rem;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .nav a:hover {
+    color: var(--accent);
+    border-color: rgba(0,212,255,0.3);
+    background: rgba(0,212,255,0.05);
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 3rem;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #fff;
+  }
+
+  .section-header .tag {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* Grid */
+  .grid { display: grid; gap: 1rem; }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+
+  .card:hover { border-color: #2a3f5f; }
+
+  .card-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    padding: 0.6rem 1rem;
+    background: rgba(0,212,255,0.04);
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-title.green { color: var(--accent3); background: rgba(16,185,129,0.04); }
+  .card-title.purple { color: #a78bfa; background: rgba(124,58,237,0.04); }
+  .card-title.amber { color: var(--accent4); background: rgba(245,158,11,0.04); }
+
+  /* Code block */
+  pre {
+    background: var(--code-bg);
+    padding: 1rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+
+  /* Syntax highlighting */
+  .kw { color: var(--keyword); }
+  .ty { color: var(--type); }
+  .st { color: var(--string); }
+  .cm { color: var(--comment); font-style: italic; }
+  .fn { color: var(--method); }
+  .nu { color: var(--number); }
+  .at { color: #ffb86c; }
+  .pl { color: #bd93f9; }
+
+  /* Inline description */
+  .desc {
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    color: #94a3b8;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+
+  th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid rgba(30,45,69,0.5);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent3);
+    white-space: nowrap;
+    font-size: 0.76rem;
+  }
+
+  td.amber { color: var(--accent4) !important; }
+  td.purple { color: #a78bfa !important; }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* Pill badge */
+  .pill {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .pill-blue { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+  .pill-green { background: rgba(16,185,129,0.1); color: var(--accent3); border: 1px solid rgba(16,185,129,0.2); }
+  .pill-purple { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
+  .pill-amber { background: rgba(245,158,11,0.1); color: var(--accent4); border: 1px solid rgba(245,158,11,0.2); }
+  .pill-red { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+
+  /* Tip box */
+  .tip {
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-left: 3px solid var(--accent3);
+    padding: 0.75rem 1rem;
+    font-size: 0.82rem;
+    color: #94a3b8;
+    border-radius: 0 4px 4px 0;
+    margin-top: 0.75rem;
+  }
+
+  .tip strong { color: var(--accent3); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    border-top: 1px solid var(--border);
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">ASP.NET Core · .NET 8+</div>
+  <h1>C# Web API Cheatsheet</h1>
+  <p class="subtitle">// controllers · minimal api · middleware · auth · ef core · patterns</p>
+</header>
+
+<div class="container">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="#setup">Setup</a>
+    <a href="#controllers">Controllers</a>
+    <a href="#minimal">Minimal API</a>
+    <a href="#routing">Routing</a>
+    <a href="#http-methods">HTTP Methods</a>
+    <a href="#model-binding">Model Binding</a>
+    <a href="#validation">Validation</a>
+    <a href="#responses">Responses</a>
+    <a href="#middleware">Middleware</a>
+    <a href="#di">Dependency Injection</a>
+    <a href="#auth">Auth & JWT</a>
+    <a href="#ef">EF Core</a>
+    <a href="#async">Async Patterns</a>
+    <a href="#filters">Filters</a>
+    <a href="#error">Error Handling</a>
+    <a href="#swagger">Swagger</a>
+    <a href="#status-codes">Status Codes</a>
+  </nav>
+
+  <!-- ─── SETUP ─────────────────────────────── -->
+  <section class="section" id="setup">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,212,255,0.1)">⚙️</div>
+      <h2>Project Setup</h2>
+      <span class="tag">DOTNET CLI</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">CLI Commands</div>
+        <pre><code><span class="cm"># Create new Web API project</span>
+dotnet new webapi -n MyApi
+dotnet new webapi -n MyApi --use-minimal-apis
+
+<span class="cm"># Run / watch</span>
+dotnet run
+dotnet watch run
+
+<span class="cm"># Add packages</span>
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+dotnet add package Swashbuckle.AspNetCore</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title">Program.cs (Minimal Host)</div>
+        <pre><code><span class="kw">var</span> builder = WebApplication.<span class="fn">CreateBuilder</span>(args);
+
+<span class="cm">// Register services</span>
+builder.Services.<span class="fn">AddControllers</span>();
+builder.Services.<span class="fn">AddEndpointsApiExplorer</span>();
+builder.Services.<span class="fn">AddSwaggerGen</span>();
+builder.Services.<span class="fn">AddDbContext</span>&lt;<span class="ty">AppDbContext</span>&gt;(opt =&gt;
+    opt.<span class="fn">UseSqlServer</span>(builder.Configuration
+        .<span class="fn">GetConnectionString</span>(<span class="st">"Default"</span>)));
+
+<span class="kw">var</span> app = builder.<span class="fn">Build</span>();
+
+<span class="cm">// Pipeline</span>
+app.<span class="fn">UseSwagger</span>(); app.<span class="fn">UseSwaggerUI</span>();
+app.<span class="fn">UseHttpsRedirection</span>();
+app.<span class="fn">UseAuthentication</span>();
+app.<span class="fn">UseAuthorization</span>();
+app.<span class="fn">MapControllers</span>();
+app.<span class="fn">Run</span>();</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CONTROLLERS ──────────────────────── -->
+  <section class="section" id="controllers">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(16,185,129,0.1)">🎮</div>
+      <h2>Controllers</h2>
+      <span class="tag">CONTROLLER-BASED API</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title green">Basic Controller</div>
+        <pre><code>[<span class="at">ApiController</span>]
+[<span class="at">Route</span>(<span class="st">"api/[controller]"</span>)]
+<span class="kw">public class</span> <span class="ty">ProductsController</span> : <span class="ty">ControllerBase</span>
+{
+    <span class="kw">private readonly</span> <span class="ty">IProductService</span> _svc;
+
+    <span class="kw">public</span> <span class="fn">ProductsController</span>(<span class="ty">IProductService</span> svc)
+        => _svc = svc;
+
+    [<span class="at">HttpGet</span>]
+    <span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">IActionResult</span>&gt; <span class="fn">GetAll</span>()
+    {
+        <span class="kw">var</span> products = <span class="kw">await</span> _svc.<span class="fn">GetAllAsync</span>();
+        <span class="kw">return</span> <span class="fn">Ok</span>(products);
+    }
+
+    [<span class="at">HttpGet</span>(<span class="st">"{id:int}"</span>)]
+    <span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">IActionResult</span>&gt; <span class="fn">GetById</span>(<span class="ty">int</span> id)
+    {
+        <span class="kw">var</span> product = <span class="kw">await</span> _svc.<span class="fn">GetByIdAsync</span>(id);
+        <span class="kw">return</span> product <span class="kw">is null</span>
+            ? <span class="fn">NotFound</span>()
+            : <span class="fn">Ok</span>(product);
+    }
+
+    [<span class="at">HttpPost</span>]
+    <span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">IActionResult</span>&gt; <span class="fn">Create</span>(
+        [<span class="at">FromBody</span>] <span class="ty">CreateProductDto</span> dto)
+    {
+        <span class="kw">var</span> product = <span class="kw">await</span> _svc.<span class="fn">CreateAsync</span>(dto);
+        <span class="kw">return</span> <span class="fn">CreatedAtAction</span>(
+            <span class="kw">nameof</span>(<span class="fn">GetById</span>),
+            <span class="kw">new</span> { id = product.Id },
+            product);
+    }
+
+    [<span class="at">HttpPut</span>(<span class="st">"{id}"</span>)]
+    <span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">IActionResult</span>&gt; <span class="fn">Update</span>(
+        <span class="ty">int</span> id, <span class="ty">UpdateProductDto</span> dto)
+    {
+        <span class="kw">if</span> (!<span class="kw">await</span> _svc.<span class="fn">UpdateAsync</span>(id, dto))
+            <span class="kw">return</span> <span class="fn">NotFound</span>();
+        <span class="kw">return</span> <span class="fn">NoContent</span>();
+    }
+
+    [<span class="at">HttpDelete</span>(<span class="st">"{id}"</span>)]
+    <span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">IActionResult</span>&gt; <span class="fn">Delete</span>(<span class="ty">int</span> id)
+    {
+        <span class="kw">if</span> (!<span class="kw">await</span> _svc.<span class="fn">DeleteAsync</span>(id))
+            <span class="kw">return</span> <span class="fn">NotFound</span>();
+        <span class="kw">return</span> <span class="fn">NoContent</span>();
+    }
+}</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title green">Controller Base Members</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Member</th><th>Description</th></tr>
+            <tr><td>Ok(obj)</td><td>200 with body</td></tr>
+            <tr><td>Created(uri, obj)</td><td>201 with location header</td></tr>
+            <tr><td>CreatedAtAction(...)</td><td>201 with named action URI</td></tr>
+            <tr><td>NoContent()</td><td>204 empty response</td></tr>
+            <tr><td>BadRequest(obj)</td><td>400 with error detail</td></tr>
+            <tr><td>Unauthorized()</td><td>401</td></tr>
+            <tr><td>Forbid()</td><td>403</td></tr>
+            <tr><td>NotFound()</td><td>404</td></tr>
+            <tr><td>Conflict(obj)</td><td>409</td></tr>
+            <tr><td>StatusCode(code, obj)</td><td>Custom status code</td></tr>
+            <tr><td>Problem(...)</td><td>RFC 7807 problem detail</td></tr>
+            <tr><td>ValidationProblem()</td><td>400 validation errors</td></tr>
+            <tr><td>ModelState</td><td>Validation state dictionary</td></tr>
+            <tr><td>User</td><td>ClaimsPrincipal (auth user)</td></tr>
+            <tr><td>HttpContext</td><td>Current HTTP context</td></tr>
+            <tr><td>Request / Response</td><td>Raw request/response</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MINIMAL API ──────────────────────── -->
+  <section class="section" id="minimal">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.1)">⚡</div>
+      <h2>Minimal API</h2>
+      <span class="tag">.NET 6+</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title purple">Endpoint Definitions</div>
+        <pre><code><span class="cm">// GET</span>
+app.<span class="fn">MapGet</span>(<span class="st">"/products"</span>, <span class="kw">async</span> (
+    <span class="ty">AppDbContext</span> db) =>
+    <span class="kw">await</span> db.Products.<span class="fn">ToListAsync</span>());
+
+<span class="cm">// GET with route param</span>
+app.<span class="fn">MapGet</span>(<span class="st">"/products/{id:int}"</span>, <span class="kw">async</span> (
+    <span class="ty">int</span> id, <span class="ty">AppDbContext</span> db) =>
+{
+    <span class="kw">var</span> p = <span class="kw">await</span> db.Products.<span class="fn">FindAsync</span>(id);
+    <span class="kw">return</span> p <span class="kw">is null</span>
+        ? Results.<span class="fn">NotFound</span>()
+        : Results.<span class="fn">Ok</span>(p);
+});
+
+<span class="cm">// POST</span>
+app.<span class="fn">MapPost</span>(<span class="st">"/products"</span>, <span class="kw">async</span> (
+    <span class="ty">CreateProductDto</span> dto, <span class="ty">AppDbContext</span> db) =>
+{
+    <span class="kw">var</span> p = <span class="kw">new</span> <span class="ty">Product</span> { Name = dto.Name };
+    db.Products.<span class="fn">Add</span>(p);
+    <span class="kw">await</span> db.<span class="fn">SaveChangesAsync</span>();
+    <span class="kw">return</span> Results.<span class="fn">Created</span>(<span class="st">$"/products/{p.Id}"</span>, p);
+});
+
+<span class="cm">// With chained metadata</span>
+app.<span class="fn">MapDelete</span>(<span class="st">"/products/{id}"</span>, <span class="kw">async</span> (
+    <span class="ty">int</span> id, <span class="ty">AppDbContext</span> db) =>
+{
+    <span class="kw">var</span> p = <span class="kw">await</span> db.Products.<span class="fn">FindAsync</span>(id);
+    <span class="kw">if</span> (p <span class="kw">is null</span>) <span class="kw">return</span> Results.<span class="fn">NotFound</span>();
+    db.Products.<span class="fn">Remove</span>(p);
+    <span class="kw">await</span> db.<span class="fn">SaveChangesAsync</span>();
+    <span class="kw">return</span> Results.<span class="fn">NoContent</span>();
+})
+.<span class="fn">RequireAuthorization</span>()
+.<span class="fn">WithName</span>(<span class="st">"DeleteProduct"</span>)
+.<span class="fn">WithTags</span>(<span class="st">"Products"</span>)
+.<span class="fn">Produces</span>(<span class="nu">204</span>)
+.<span class="fn">ProducesProblem</span>(<span class="nu">404</span>);</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title purple">Route Groups & Results</div>
+        <pre><code><span class="cm">// Route group (.NET 7+)</span>
+<span class="kw">var</span> products = app.<span class="fn">MapGroup</span>(<span class="st">"/products"</span>)
+    .<span class="fn">RequireAuthorization</span>()
+    .<span class="fn">WithTags</span>(<span class="st">"Products"</span>);
+
+products.<span class="fn">MapGet</span>(<span class="st">"/"</span>, <span class="fn">GetAll</span>);
+products.<span class="fn">MapGet</span>(<span class="st">"/{id}"</span>, <span class="fn">GetById</span>);
+products.<span class="fn">MapPost</span>(<span class="st">"/"</span>, <span class="fn">Create</span>);
+
+<span class="cm">// Typed Results (.NET 7+)</span>
+<span class="kw">static async</span> <span class="ty">Task</span>&lt;<span class="ty">Results</span>&lt;<span class="ty">Ok</span>&lt;<span class="ty">Product</span>&gt;, <span class="ty">NotFound</span>&gt;&gt;
+    <span class="fn">GetById</span>(<span class="ty">int</span> id, <span class="ty">AppDbContext</span> db)
+{
+    <span class="kw">var</span> p = <span class="kw">await</span> db.Products.<span class="fn">FindAsync</span>(id);
+    <span class="kw">return</span> p <span class="kw">is null</span>
+        ? TypedResults.<span class="fn">NotFound</span>()
+        : TypedResults.<span class="fn">Ok</span>(p);
+}
+
+<span class="cm">// Results helper methods</span>
+Results.<span class="fn">Ok</span>(data)
+Results.<span class="fn">Created</span>(uri, data)
+Results.<span class="fn">NoContent</span>()
+Results.<span class="fn">NotFound</span>()
+Results.<span class="fn">BadRequest</span>(errors)
+Results.<span class="fn">Unauthorized</span>()
+Results.<span class="fn">Forbid</span>()
+Results.<span class="fn">Problem</span>(detail, title, statusCode)
+Results.<span class="fn">Json</span>(obj, options)
+Results.<span class="fn">File</span>(path, contentType)</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ROUTING ──────────────────────────── -->
+  <section class="section" id="routing">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(245,158,11,0.1)">🔀</div>
+      <h2>Routing</h2>
+      <span class="tag">ROUTE TEMPLATES</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title amber">Route Templates & Constraints</div>
+        <pre><code><span class="cm">// Token substitution</span>
+[<span class="at">Route</span>(<span class="st">"api/[controller]/[action]"</span>)]
+
+<span class="cm">// Route constraints</span>
+<span class="st">"{id:int}"</span>        <span class="cm">// integer</span>
+<span class="st">"{id:guid}"</span>       <span class="cm">// GUID</span>
+<span class="st">"{name:alpha}"</span>    <span class="cm">// letters only</span>
+<span class="st">"{age:range(1,120)}"</span>
+<span class="st">"{name:minlength(3)}"</span>
+<span class="st">"{slug:regex(^[a-z-]+$)}"</span>
+<span class="st">"{id:int?}"</span>       <span class="cm">// optional</span>
+<span class="st">"{id:int=1}"</span>      <span class="cm">// with default</span>
+
+<span class="cm">// Catch-all</span>
+<span class="st">"{**path}"</span>        <span class="cm">// matches everything</span>
+
+<span class="cm">// Multiple constraints</span>
+<span class="st">"{id:int:min(1)}"</span>
+
+<span class="cm">// Attribute route order</span>
+[<span class="at">HttpGet</span>(<span class="st">"special"</span>, Order = -<span class="nu">1</span>)]
+[<span class="at">HttpGet</span>(<span class="st">"{id}"</span>)]</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title amber">Route Attributes</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Attribute</th><th>Purpose</th></tr>
+            <tr><td>[Route("...")]</td><td>Define route template on class or method</td></tr>
+            <tr><td>[HttpGet]</td><td>GET endpoint</td></tr>
+            <tr><td>[HttpPost]</td><td>POST endpoint</td></tr>
+            <tr><td>[HttpPut]</td><td>PUT endpoint</td></tr>
+            <tr><td>[HttpPatch]</td><td>PATCH endpoint</td></tr>
+            <tr><td>[HttpDelete]</td><td>DELETE endpoint</td></tr>
+            <tr><td>[HttpHead]</td><td>HEAD endpoint</td></tr>
+            <tr><td>[HttpOptions]</td><td>OPTIONS endpoint</td></tr>
+            <tr><td>[ApiController]</td><td>Enables API conventions (auto 400, binding)</td></tr>
+            <tr><td>[Area("admin")]</td><td>Area routing</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MODEL BINDING ────────────────────── -->
+  <section class="section" id="model-binding">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,212,255,0.1)">🔗</div>
+      <h2>Model Binding</h2>
+      <span class="tag">BINDING SOURCES</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">Binding Source Attributes</div>
+        <pre><code><span class="kw">public</span> <span class="ty">IActionResult</span> <span class="fn">Example</span>(
+    [<span class="at">FromRoute</span>]   <span class="ty">int</span> id,
+    [<span class="at">FromQuery</span>]   <span class="ty">string</span>? search,
+    [<span class="at">FromQuery</span>]   <span class="ty">int</span> page = <span class="nu">1</span>,
+    [<span class="at">FromBody</span>]    <span class="ty">CreateDto</span> dto,
+    [<span class="at">FromHeader</span>(<span class="at">Name</span> = <span class="st">"X-Api-Key"</span>)] <span class="ty">string</span> key,
+    [<span class="at">FromForm</span>]    <span class="ty">IFormFile</span> file,
+    [<span class="at">FromServices</span>] <span class="ty">IMyService</span> svc
+)</code></pre>
+        <div class="desc">With [ApiController], [FromBody] is inferred for complex types and [FromRoute] for route parameters automatically.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Query String & File Upload</div>
+        <pre><code><span class="cm">// Complex query object</span>
+<span class="kw">public record</span> <span class="ty">ProductFilter</span>(
+    <span class="ty">string</span>? Name,
+    <span class="ty">decimal</span>? MinPrice,
+    <span class="ty">decimal</span>? MaxPrice,
+    <span class="ty">int</span> Page = <span class="nu">1</span>,
+    <span class="ty">int</span> PageSize = <span class="nu">20</span>
+);
+
+[<span class="at">HttpGet</span>]
+<span class="kw">public</span> <span class="ty">IActionResult</span> <span class="fn">GetAll</span>(
+    [<span class="at">FromQuery</span>] <span class="ty">ProductFilter</span> filter) { }
+
+<span class="cm">// File upload</span>
+[<span class="at">HttpPost</span>(<span class="st">"upload"</span>)]
+[<span class="at">Consumes</span>(<span class="st">"multipart/form-data"</span>)]
+<span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">IActionResult</span>&gt; <span class="fn">Upload</span>(
+    [<span class="at">FromForm</span>] <span class="ty">IFormFile</span> file)
+{
+    <span class="kw">using var</span> stream = file.<span class="fn">OpenReadStream</span>();
+    <span class="cm">// process stream</span>
+    <span class="kw">return</span> <span class="fn">Ok</span>(<span class="kw">new</span> { file.FileName, file.Length });
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── VALIDATION ───────────────────────── -->
+  <section class="section" id="validation">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(16,185,129,0.1)">✅</div>
+      <h2>Validation</h2>
+      <span class="tag">DATA ANNOTATIONS · FLUENT</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title green">Data Annotations</div>
+        <pre><code><span class="kw">public class</span> <span class="ty">CreateProductDto</span>
+{
+    [<span class="at">Required</span>]
+    [<span class="at">StringLength</span>(<span class="nu">100</span>, MinimumLength = <span class="nu">3</span>)]
+    <span class="kw">public</span> <span class="ty">string</span> Name { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="st">""</span>;
+
+    [<span class="at">Range</span>(<span class="nu">0.01</span>, <span class="nu">99999.99</span>)]
+    <span class="kw">public</span> <span class="ty">decimal</span> Price { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="at">EmailAddress</span>]
+    <span class="kw">public</span> <span class="ty">string</span>? ContactEmail { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="at">Url</span>]
+    <span class="kw">public</span> <span class="ty">string</span>? ImageUrl { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="at">Phone</span>]
+    <span class="kw">public</span> <span class="ty">string</span>? Phone { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="at">RegularExpression</span>(<span class="st">@"^[A-Z]{2}\d{4}$"</span>)]
+    <span class="kw">public</span> <span class="ty">string</span>? Sku { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="at">Compare</span>(<span class="st">"Password"</span>)]
+    <span class="kw">public</span> <span class="ty">string</span>? ConfirmPassword { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="at">EnumDataType</span>(<span class="kw">typeof</span>(<span class="ty">Category</span>))]
+    <span class="kw">public</span> <span class="ty">Category</span> Category { <span class="kw">get</span>; <span class="kw">set</span>; }
+}</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title green">FluentValidation</div>
+        <pre><code><span class="cm">// dotnet add package FluentValidation.AspNetCore</span>
+<span class="kw">public class</span> <span class="ty">CreateProductValidator</span>
+    : <span class="ty">AbstractValidator</span>&lt;<span class="ty">CreateProductDto</span>&gt;
+{
+    <span class="kw">public</span> <span class="fn">CreateProductValidator</span>()
+    {
+        <span class="fn">RuleFor</span>(x => x.Name)
+            .<span class="fn">NotEmpty</span>()
+            .<span class="fn">Length</span>(<span class="nu">3</span>, <span class="nu">100</span>)
+            .<span class="fn">WithMessage</span>(<span class="st">"Name must be 3-100 chars"</span>);
+
+        <span class="fn">RuleFor</span>(x => x.Price)
+            .<span class="fn">GreaterThan</span>(<span class="nu">0</span>)
+            .<span class="fn">LessThanOrEqualTo</span>(<span class="nu">99999</span>);
+
+        <span class="fn">RuleFor</span>(x => x.Email)
+            .<span class="fn">EmailAddress</span>()
+            .<span class="fn">When</span>(x => x.Email != <span class="kw">null</span>);
+
+        <span class="fn">RuleFor</span>(x => x.Tags)
+            .<span class="fn">ForEach</span>(t => t.<span class="fn">NotEmpty</span>());
+    }
+}
+
+<span class="cm">// Register in Program.cs</span>
+builder.Services
+    .<span class="fn">AddFluentValidationAutoValidation</span>()
+    .<span class="fn">AddValidatorsFromAssemblyContaining</span>&lt;<span class="ty">Program</span>&gt;();</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── RESPONSES ────────────────────────── -->
+  <section class="section" id="responses">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.1)">📤</div>
+      <h2>Responses & Content Negotiation</h2>
+      <span class="tag">OUTPUT FORMATTING</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title purple">Response Types</div>
+        <pre><code><span class="cm">// Strongly typed return</span>
+[<span class="at">HttpGet</span>(<span class="st">"{id}"</span>)]
+[<span class="at">ProducesResponseType</span>&lt;<span class="ty">Product</span>&gt;(<span class="nu">200</span>)]
+[<span class="at">ProducesResponseType</span>(<span class="nu">404</span>)]
+<span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">ActionResult</span>&lt;<span class="ty">Product</span>&gt;&gt; <span class="fn">Get</span>(<span class="ty">int</span> id)
+{
+    <span class="kw">var</span> product = <span class="kw">await</span> _svc.<span class="fn">GetAsync</span>(id);
+    <span class="kw">return</span> product ?? (<span class="ty">ActionResult</span>&lt;<span class="ty">Product</span>&gt;)<span class="fn">NotFound</span>();
+}
+
+<span class="cm">// File response</span>
+<span class="kw">return</span> <span class="fn">File</span>(bytes, <span class="st">"application/pdf"</span>, <span class="st">"file.pdf"</span>);
+<span class="kw">return</span> <span class="fn">PhysicalFile</span>(path, <span class="st">"image/jpeg"</span>);
+<span class="kw">return</span> <span class="fn">Stream</span>(stream, <span class="st">"text/plain"</span>);
+
+<span class="cm">// Custom headers</span>
+Response.Headers.<span class="fn">Add</span>(<span class="st">"X-Total-Count"</span>, total.<span class="fn">ToString</span>());
+Response.Headers.CacheControl = <span class="st">"public, max-age=300"</span>;
+
+<span class="cm">// Redirect</span>
+<span class="kw">return</span> <span class="fn">RedirectToAction</span>(<span class="st">"GetById"</span>, <span class="kw">new</span> { id = newId });
+<span class="kw">return</span> <span class="fn">RedirectToRoute</span>(<span class="st">"RouteName"</span>, routeValues);</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title purple">JSON Configuration</div>
+        <pre><code><span class="cm">// System.Text.Json options</span>
+builder.Services.<span class="fn">AddControllers</span>()
+    .<span class="fn">AddJsonOptions</span>(opt => {
+        opt.JsonSerializerOptions.PropertyNamingPolicy
+            = JsonNamingPolicy.CamelCase;
+        opt.JsonSerializerOptions.WriteIndented = <span class="kw">false</span>;
+        opt.JsonSerializerOptions.DefaultIgnoreCondition
+            = JsonIgnoreCondition.WhenWritingNull;
+        opt.JsonSerializerOptions.Converters.<span class="fn">Add</span>(
+            <span class="kw">new</span> <span class="ty">JsonStringEnumConverter</span>());
+    });
+
+<span class="cm">// Newtonsoft.Json (opt-in)</span>
+<span class="cm">// dotnet add package Microsoft.AspNetCore.Mvc.NewtonsoftJson</span>
+builder.Services.<span class="fn">AddControllers</span>()
+    .<span class="fn">AddNewtonsoftJson</span>(opt => {
+        opt.SerializerSettings.ContractResolver
+            = <span class="kw">new</span> <span class="ty">CamelCasePropertyNamesContractResolver</span>();
+        opt.SerializerSettings.NullValueHandling
+            = NullValueHandling.Ignore;
+    });
+
+<span class="cm">// Paginated response pattern</span>
+<span class="kw">public record</span> <span class="ty">PagedResult</span>&lt;<span class="ty">T</span>&gt;(
+    <span class="ty">IEnumerable</span>&lt;<span class="ty">T</span>&gt; Items,
+    <span class="ty">int</span> TotalCount,
+    <span class="ty">int</span> Page,
+    <span class="ty">int</span> PageSize
+);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MIDDLEWARE ───────────────────────── -->
+  <section class="section" id="middleware">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,212,255,0.1)">🔧</div>
+      <h2>Middleware</h2>
+      <span class="tag">PIPELINE</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">Custom Middleware</div>
+        <pre><code><span class="cm">// Class-based middleware</span>
+<span class="kw">public class</span> <span class="ty">RequestLoggingMiddleware</span>
+{
+    <span class="kw">private readonly</span> <span class="ty">RequestDelegate</span> _next;
+    <span class="kw">private readonly</span> <span class="ty">ILogger</span> _log;
+
+    <span class="kw">public</span> <span class="fn">RequestLoggingMiddleware</span>(
+        <span class="ty">RequestDelegate</span> next,
+        <span class="ty">ILogger</span>&lt;<span class="ty">RequestLoggingMiddleware</span>&gt; log)
+    { _next = next; _log = log; }
+
+    <span class="kw">public async</span> <span class="ty">Task</span> <span class="fn">InvokeAsync</span>(<span class="ty">HttpContext</span> ctx)
+    {
+        _log.<span class="fn">LogInformation</span>(
+            <span class="st">"{Method} {Path}"</span>,
+            ctx.Request.Method,
+            ctx.Request.Path);
+
+        <span class="kw">var</span> sw = Stopwatch.<span class="fn">StartNew</span>();
+        <span class="kw">await</span> <span class="fn">_next</span>(ctx);
+        sw.<span class="fn">Stop</span>();
+
+        _log.<span class="fn">LogInformation</span>(
+            <span class="st">"Completed {StatusCode} in {Ms}ms"</span>,
+            ctx.Response.StatusCode,
+            sw.ElapsedMilliseconds);
+    }
+}
+
+<span class="cm">// Register</span>
+app.<span class="fn">UseMiddleware</span>&lt;<span class="ty">RequestLoggingMiddleware</span>&gt;();
+
+<span class="cm">// Inline middleware</span>
+app.<span class="fn">Use</span>(<span class="kw">async</span> (ctx, next) =>
+{
+    ctx.Response.Headers[<span class="st">"X-App"</span>] = <span class="st">"MyApi"</span>;
+    <span class="kw">await</span> <span class="fn">next</span>(ctx);
+});
+
+<span class="cm">// Short-circuit</span>
+app.<span class="fn">Run</span>(<span class="kw">async</span> ctx =>
+    <span class="kw">await</span> ctx.Response.<span class="fn">WriteAsync</span>(<span class="st">"Hello!"</span>));</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title">Pipeline Order</div>
+        <div class="desc">Middleware executes in registration order. Order matters — especially for auth.</div>
+        <pre><code><span class="cm">// Recommended pipeline order</span>
+app.<span class="fn">UseExceptionHandler</span>(<span class="st">"/error"</span>);    <span class="cm">// 1st</span>
+app.<span class="fn">UseHsts</span>();
+app.<span class="fn">UseHttpsRedirection</span>();
+app.<span class="fn">UseStaticFiles</span>();
+app.<span class="fn">UseRouting</span>();
+app.<span class="fn">UseCors</span>();                         <span class="cm">// before auth</span>
+app.<span class="fn">UseAuthentication</span>();               <span class="cm">// before authz</span>
+app.<span class="fn">UseAuthorization</span>();
+app.<span class="fn">UseRateLimiter</span>();
+app.<span class="fn">MapControllers</span>();                  <span class="cm">// last</span>
+
+<span class="cm">// CORS setup</span>
+builder.Services.<span class="fn">AddCors</span>(opt =>
+    opt.<span class="fn">AddPolicy</span>(<span class="st">"AllowAll"</span>, p =>
+        p.<span class="fn">AllowAnyOrigin</span>()
+         .<span class="fn">AllowAnyMethod</span>()
+         .<span class="fn">AllowAnyHeader</span>()));
+app.<span class="fn">UseCors</span>(<span class="st">"AllowAll"</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── DI ──────────────────────────────── -->
+  <section class="section" id="di">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(16,185,129,0.1)">💉</div>
+      <h2>Dependency Injection</h2>
+      <span class="tag">SERVICE LIFETIMES</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title green">Service Registration</div>
+        <pre><code><span class="cm">// Lifetimes</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="ty">ICache</span>, <span class="ty">MemoryCache</span>&gt;();
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="ty">IProductRepo</span>, <span class="ty">ProductRepo</span>&gt;();
+builder.Services.<span class="fn">AddTransient</span>&lt;<span class="ty">IEmailSender</span>, <span class="ty">EmailSender</span>&gt;();
+
+<span class="cm">// Factory registration</span>
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="ty">IMyService</span>&gt;(sp =>
+    <span class="kw">new</span> <span class="ty">MyService</span>(
+        sp.<span class="fn">GetRequiredService</span>&lt;<span class="ty">ILogger</span>&lt;<span class="ty">MyService</span>&gt;&gt;(),
+        sp.<span class="fn">GetRequiredService</span>&lt;<span class="ty">IOptions</span>&lt;<span class="ty">MyOptions</span>&gt;&gt;()));
+
+<span class="cm">// Options pattern</span>
+builder.Services
+    .<span class="fn">Configure</span>&lt;<span class="ty">JwtOptions</span>&gt;(
+        builder.Configuration.<span class="fn">GetSection</span>(<span class="st">"Jwt"</span>));
+
+<span class="cm">// HttpClient factory</span>
+builder.Services.<span class="fn">AddHttpClient</span>&lt;<span class="ty">IGitHubService</span>, <span class="ty">GitHubService</span>&gt;(c =>
+{
+    c.BaseAddress = <span class="kw">new</span> <span class="ty">Uri</span>(<span class="st">"https://api.github.com"</span>);
+    c.DefaultRequestHeaders.<span class="fn">Add</span>(<span class="st">"Accept"</span>, <span class="st">"application/vnd.github.v3+json"</span>);
+}).<span class="fn">AddPolicyHandler</span>(retryPolicy);</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title green">Lifetimes Comparison</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Lifetime</th><th>Created</th><th>Shared</th><th>Use For</th></tr>
+            <tr><td>Singleton</td><td>Once</td><td>All requests</td><td>Config, caches, stateless services</td></tr>
+            <tr><td>Scoped</td><td>Per request</td><td>Within request</td><td>DB contexts, unit-of-work</td></tr>
+            <tr><td>Transient</td><td>Per injection</td><td>Never</td><td>Lightweight, stateless helpers</td></tr>
+          </table>
+        </div>
+        <div class="tip"><strong>⚠️ Captive dependency:</strong> Never inject Scoped/Transient services into Singletons — they'll outlive their intended lifetime.</div>
+        <pre><code><span class="cm">// Options injection in service</span>
+<span class="kw">public class</span> <span class="ty">MyService</span>
+{
+    <span class="kw">private readonly</span> <span class="ty">MyOptions</span> _opts;
+    <span class="kw">public</span> <span class="fn">MyService</span>(<span class="ty">IOptions</span>&lt;<span class="ty">MyOptions</span>&gt; opts)
+        => _opts = opts.Value;
+}</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── AUTH ─────────────────────────────── -->
+  <section class="section" id="auth">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(239,68,68,0.1)">🔐</div>
+      <h2>Authentication & Authorization</h2>
+      <span class="tag">JWT · POLICIES · ROLES</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title" style="color:#f87171;background:rgba(239,68,68,0.04)">JWT Setup & Token Generation</div>
+        <pre><code><span class="cm">// Program.cs</span>
+builder.Services
+    .<span class="fn">AddAuthentication</span>(JwtBearerDefaults.AuthenticationScheme)
+    .<span class="fn">AddJwtBearer</span>(opt =>
+    {
+        opt.TokenValidationParameters = <span class="kw">new</span>()
+        {
+            ValidateIssuer = <span class="kw">true</span>,
+            ValidateAudience = <span class="kw">true</span>,
+            ValidateLifetime = <span class="kw">true</span>,
+            ValidateIssuerSigningKey = <span class="kw">true</span>,
+            ValidIssuer = config[<span class="st">"Jwt:Issuer"</span>],
+            ValidAudience = config[<span class="st">"Jwt:Audience"</span>],
+            IssuerSigningKey = <span class="kw">new</span> <span class="ty">SymmetricSecurityKey</span>(
+                <span class="ty">Encoding</span>.UTF8.<span class="fn">GetBytes</span>(config[<span class="st">"Jwt:Key"</span>]!))
+        };
+    });
+
+<span class="cm">// Token generation service</span>
+<span class="kw">public string</span> <span class="fn">GenerateToken</span>(<span class="ty">User</span> user)
+{
+    <span class="kw">var</span> claims = <span class="kw">new</span>[]
+    {
+        <span class="kw">new</span> <span class="ty">Claim</span>(<span class="ty">ClaimTypes</span>.NameIdentifier, user.Id.<span class="fn">ToString</span>()),
+        <span class="kw">new</span> <span class="ty">Claim</span>(<span class="ty">ClaimTypes</span>.Email, user.Email),
+        <span class="kw">new</span> <span class="ty">Claim</span>(<span class="ty">ClaimTypes</span>.Role, user.Role)
+    };
+    <span class="kw">var</span> key = <span class="kw">new</span> <span class="ty">SymmetricSecurityKey</span>(
+        <span class="ty">Encoding</span>.UTF8.<span class="fn">GetBytes</span>(_config[<span class="st">"Jwt:Key"</span>]!));
+    <span class="kw">var</span> creds = <span class="kw">new</span> <span class="ty">SigningCredentials</span>(
+        key, SecurityAlgorithms.HmacSha256);
+
+    <span class="kw">var</span> token = <span class="kw">new</span> <span class="ty">JwtSecurityToken</span>(
+        issuer:   _config[<span class="st">"Jwt:Issuer"</span>],
+        audience: _config[<span class="st">"Jwt:Audience"</span>],
+        claims:   claims,
+        expires:  DateTime.UtcNow.<span class="fn">AddHours</span>(<span class="nu">1</span>),
+        signingCredentials: creds);
+
+    <span class="kw">return new</span> <span class="ty">JwtSecurityTokenHandler</span>().<span class="fn">WriteToken</span>(token);
+}</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#f87171;background:rgba(239,68,68,0.04)">Authorization Policies</div>
+        <pre><code><span class="cm">// Policy definition</span>
+builder.Services.<span class="fn">AddAuthorization</span>(opt =>
+{
+    opt.<span class="fn">AddPolicy</span>(<span class="st">"AdminOnly"</span>, p =>
+        p.<span class="fn">RequireRole</span>(<span class="st">"Admin"</span>));
+
+    opt.<span class="fn">AddPolicy</span>(<span class="st">"MinAge18"</span>, p =>
+        p.<span class="fn">RequireClaim</span>(<span class="st">"age"</span>)
+         .<span class="fn">RequireAssertion</span>(ctx =>
+            <span class="ty">int</span>.<span class="fn">Parse</span>(ctx.User
+                .<span class="fn">FindFirst</span>(<span class="st">"age"</span>)!.Value) >= <span class="nu">18</span>));
+
+    opt.<span class="fn">AddPolicy</span>(<span class="st">"ApiKey"</span>, p =>
+        p.<span class="fn">AddRequirements</span>(<span class="kw">new</span> <span class="ty">ApiKeyRequirement</span>()));
+
+    opt.FallbackPolicy = <span class="kw">new</span> <span class="ty">AuthorizationPolicyBuilder</span>()
+        .<span class="fn">RequireAuthenticatedUser</span>()
+        .<span class="fn">Build</span>();
+});
+
+<span class="cm">// Usage on controllers/methods</span>
+[<span class="at">Authorize</span>]
+[<span class="at">Authorize</span>(Roles = <span class="st">"Admin,Manager"</span>)]
+[<span class="at">Authorize</span>(Policy = <span class="st">"AdminOnly"</span>)]
+[<span class="at">AllowAnonymous</span>]
+
+<span class="cm">// Read claims in controller</span>
+<span class="kw">var</span> userId = User.<span class="fn">FindFirstValue</span>(<span class="ty">ClaimTypes</span>.NameIdentifier);
+<span class="kw">var</span> email  = User.<span class="fn">FindFirstValue</span>(<span class="ty">ClaimTypes</span>.Email);
+<span class="kw">bool</span> isAdmin = User.<span class="fn">IsInRole</span>(<span class="st">"Admin"</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── EF CORE ──────────────────────────── -->
+  <section class="section" id="ef">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(0,212,255,0.1)">🗄️</div>
+      <h2>Entity Framework Core</h2>
+      <span class="tag">ORM · MIGRATIONS</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">DbContext & Entities</div>
+        <pre><code><span class="kw">public class</span> <span class="ty">AppDbContext</span> : <span class="ty">DbContext</span>
+{
+    <span class="kw">public</span> <span class="fn">AppDbContext</span>(<span class="ty">DbContextOptions</span>&lt;<span class="ty">AppDbContext</span>&gt; opts)
+        : <span class="kw">base</span>(opts) { }
+
+    <span class="kw">public</span> <span class="ty">DbSet</span>&lt;<span class="ty">Product</span>&gt; Products => <span class="fn">Set</span>&lt;<span class="ty">Product</span>&gt;();
+    <span class="kw">public</span> <span class="ty">DbSet</span>&lt;<span class="ty">Category</span>&gt; Categories => <span class="fn">Set</span>&lt;<span class="ty">Category</span>&gt;();
+
+    <span class="kw">protected override void</span> <span class="fn">OnModelCreating</span>(
+        <span class="ty">ModelBuilder</span> mb)
+    {
+        mb.<span class="fn">Entity</span>&lt;<span class="ty">Product</span>&gt;(e =>
+        {
+            e.<span class="fn">HasKey</span>(p => p.Id);
+            e.Property(p => p.Name)
+                .<span class="fn">IsRequired</span>().<span class="fn">HasMaxLength</span>(<span class="nu">100</span>);
+            e.Property(p => p.Price)
+                .<span class="fn">HasColumnType</span>(<span class="st">"decimal(18,2)"</span>);
+            e.<span class="fn">HasOne</span>(p => p.Category)
+                .<span class="fn">WithMany</span>(c => c.Products)
+                .<span class="fn">HasForeignKey</span>(p => p.CategoryId)
+                .<span class="fn">OnDelete</span>(DeleteBehavior.Restrict);
+            e.<span class="fn">HasIndex</span>(p => p.Sku).<span class="fn">IsUnique</span>();
+        });
+    }
+}</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title">LINQ Queries</div>
+        <pre><code><span class="cm">// Basic CRUD</span>
+<span class="kw">var</span> all = <span class="kw">await</span> db.Products.<span class="fn">ToListAsync</span>();
+<span class="kw">var</span> one = <span class="kw">await</span> db.Products.<span class="fn">FindAsync</span>(id);
+<span class="kw">var</span> one = <span class="kw">await</span> db.Products
+    .<span class="fn">FirstOrDefaultAsync</span>(p => p.Id == id);
+
+<span class="cm">// Filtering, sorting, paging</span>
+<span class="kw">var</span> paged = <span class="kw">await</span> db.Products
+    .<span class="fn">Where</span>(p => p.Price > <span class="nu">10</span> && p.IsActive)
+    .<span class="fn">OrderBy</span>(p => p.Name)
+    .<span class="fn">Skip</span>((page - <span class="nu">1</span>) * size)
+    .<span class="fn">Take</span>(size)
+    .<span class="fn">Select</span>(p => <span class="kw">new</span> <span class="ty">ProductDto</span>(p.Id, p.Name, p.Price))
+    .<span class="fn">ToListAsync</span>();
+
+<span class="cm">// Includes (eager loading)</span>
+<span class="kw">var</span> p = <span class="kw">await</span> db.Products
+    .<span class="fn">Include</span>(p => p.Category)
+    .<span class="fn">Include</span>(p => p.Tags)
+    .<span class="fn">ThenInclude</span>(t => t.TagDetails)
+    .<span class="fn">AsNoTracking</span>()         <span class="cm">// read-only perf</span>
+    .<span class="fn">FirstOrDefaultAsync</span>(p => p.Id == id);
+
+<span class="cm">// Add / Update / Delete</span>
+db.Products.<span class="fn">Add</span>(product);
+db.Products.<span class="fn">Update</span>(product);
+db.Products.<span class="fn">Remove</span>(product);
+<span class="kw">await</span> db.<span class="fn">SaveChangesAsync</span>();
+
+<span class="cm">// Bulk via ExecuteDeleteAsync (.NET 7)</span>
+<span class="kw">await</span> db.Products
+    .<span class="fn">Where</span>(p => p.IsExpired)
+    .<span class="fn">ExecuteDeleteAsync</span>();</code></pre>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:1rem">
+      <strong>CLI Migrations:</strong>&nbsp;
+      <code style="color:#94a3b8">dotnet ef migrations add Init</code> &nbsp;|&nbsp;
+      <code style="color:#94a3b8">dotnet ef database update</code> &nbsp;|&nbsp;
+      <code style="color:#94a3b8">dotnet ef migrations remove</code>
+    </div>
+  </section>
+
+  <!-- ─── ASYNC ────────────────────────────── -->
+  <section class="section" id="async">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(245,158,11,0.1)">⚡</div>
+      <h2>Async Patterns</h2>
+      <span class="tag">TASK · CANCELLATION</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title amber">Cancellation Tokens</div>
+        <pre><code><span class="cm">// Auto-injected from request</span>
+[<span class="at">HttpGet</span>]
+<span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">IActionResult</span>&gt; <span class="fn">GetAll</span>(
+    <span class="ty">CancellationToken</span> ct)
+{
+    <span class="kw">var</span> data = <span class="kw">await</span> db.Products
+        .<span class="fn">ToListAsync</span>(ct);    <span class="cm">// pass ct to EF</span>
+    <span class="kw">return</span> <span class="fn">Ok</span>(data);
+}
+
+<span class="cm">// Manual timeout</span>
+<span class="kw">using var</span> cts = <span class="kw">new</span> <span class="ty">CancellationTokenSource</span>(
+    <span class="ty">TimeSpan</span>.<span class="fn">FromSeconds</span>(<span class="nu">5</span>));
+<span class="kw">var</span> result = <span class="kw">await</span> _http.<span class="fn">GetAsync</span>(url, cts.Token);
+
+<span class="cm">// Linked token</span>
+<span class="kw">using var</span> linked = <span class="ty">CancellationTokenSource</span>
+    .<span class="fn">CreateLinkedTokenSource</span>(ct, timeoutCts.Token);</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title amber">Parallel & Background Work</div>
+        <pre><code><span class="cm">// Parallel tasks</span>
+<span class="kw">var</span> (users, products) = <span class="kw">await</span> (
+    _userSvc.<span class="fn">GetAllAsync</span>(),
+    _productSvc.<span class="fn">GetAllAsync</span>()
+).WaitAsync(ct);
+
+<span class="cm">// Or Task.WhenAll</span>
+<span class="kw">var</span> tasks = ids.<span class="fn">Select</span>(id => _svc.<span class="fn">GetAsync</span>(id));
+<span class="kw">var</span> results = <span class="kw">await</span> Task.<span class="fn">WhenAll</span>(tasks);
+
+<span class="cm">// Background service</span>
+<span class="kw">public class</span> <span class="ty">WorkerService</span> : <span class="ty">BackgroundService</span>
+{
+    <span class="kw">protected override async</span> <span class="ty">Task</span> <span class="fn">ExecuteAsync</span>(
+        <span class="ty">CancellationToken</span> ct)
+    {
+        <span class="kw">while</span> (!ct.IsCancellationRequested)
+        {
+            <span class="kw">await</span> <span class="fn">DoWorkAsync</span>(ct);
+            <span class="kw">await</span> Task.<span class="fn">Delay</span>(<span class="ty">TimeSpan</span>.<span class="fn">FromMinutes</span>(<span class="nu">1</span>), ct);
+        }
+    }
+}
+<span class="cm">// Register</span>
+builder.Services.<span class="fn">AddHostedService</span>&lt;<span class="ty">WorkerService</span>&gt;();</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FILTERS ──────────────────────────── -->
+  <section class="section" id="filters">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(167,139,250,0.1)">🔍</div>
+      <h2>Filters & Action Filters</h2>
+      <span class="tag">AOP PIPELINE</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title purple">Action Filter</div>
+        <pre><code><span class="kw">public class</span> <span class="ty">ValidateModelAttribute</span>
+    : <span class="ty">ActionFilterAttribute</span>
+{
+    <span class="kw">public override void</span> <span class="fn">OnActionExecuting</span>(
+        <span class="ty">ActionExecutingContext</span> ctx)
+    {
+        <span class="kw">if</span> (!ctx.ModelState.IsValid)
+        {
+            ctx.Result = <span class="kw">new</span> <span class="ty">BadRequestObjectResult</span>(
+                ctx.ModelState);
+        }
+    }
+}
+
+<span class="cm">// Resource filter</span>
+<span class="kw">public class</span> <span class="ty">CacheFilter</span> : <span class="ty">IResourceFilter</span>
+{
+    <span class="kw">public void</span> <span class="fn">OnResourceExecuting</span>(
+        <span class="ty">ResourceExecutingContext</span> ctx) { }
+    <span class="kw">public void</span> <span class="fn">OnResourceExecuted</span>(
+        <span class="ty">ResourceExecutedContext</span> ctx) { }
+}
+
+<span class="cm">// Result filter</span>
+<span class="kw">public class</span> <span class="ty">WrapResultFilter</span> : <span class="ty">IResultFilter</span>
+{
+    <span class="kw">public void</span> <span class="fn">OnResultExecuting</span>(
+        <span class="ty">ResultExecutingContext</span> ctx)
+    {
+        <span class="kw">if</span> (ctx.Result <span class="kw">is</span> <span class="ty">ObjectResult</span> obj)
+            obj.Value = <span class="kw">new</span> { data = obj.Value, success = <span class="kw">true</span> };
+    }
+    <span class="kw">public void</span> <span class="fn">OnResultExecuted</span>(<span class="ty">ResultExecutedContext</span> ctx) { }
+}</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title purple">Filter Registration & Types</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Filter Type</th><th>Interface</th><th>When</th></tr>
+            <tr><td>Authorization</td><td>IAuthorizationFilter</td><td>Before all others</td></tr>
+            <tr><td>Resource</td><td>IResourceFilter</td><td>Wraps action + result</td></tr>
+            <tr><td>Action</td><td>IActionFilter</td><td>Before/after action method</td></tr>
+            <tr><td>Exception</td><td>IExceptionFilter</td><td>On unhandled exceptions</td></tr>
+            <tr><td>Result</td><td>IResultFilter</td><td>Before/after result execution</td></tr>
+          </table>
+        </div>
+        <pre><code><span class="cm">// Global registration</span>
+builder.Services.<span class="fn">AddControllers</span>(opt =>
+{
+    opt.Filters.<span class="fn">Add</span>&lt;<span class="ty">ValidateModelAttribute</span>&gt;();
+    opt.Filters.<span class="fn">Add</span>(<span class="kw">new</span> <span class="ty">ResponseCacheAttribute</span>
+        { Duration = <span class="nu">60</span> });
+});
+
+<span class="cm">// Attribute usage</span>
+[<span class="at">ServiceFilter</span>(typeof(<span class="ty">MyFilter</span>))]  <span class="cm">// with DI</span>
+[<span class="at">TypeFilter</span>(typeof(<span class="ty">MyFilter</span>))]     <span class="cm">// with DI + args</span>
+[<span class="at">ValidateModel</span>]                    <span class="cm">// custom attribute</span></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ERROR HANDLING ───────────────────── -->
+  <section class="section" id="error">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(239,68,68,0.1)">🚨</div>
+      <h2>Error Handling</h2>
+      <span class="tag">EXCEPTIONS · PROBLEM DETAILS</span>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title" style="color:#f87171;background:rgba(239,68,68,0.04)">Global Exception Handler</div>
+        <pre><code><span class="cm">// Program.cs (.NET 8 IExceptionHandler)</span>
+builder.Services.<span class="fn">AddExceptionHandler</span>&lt;<span class="ty">GlobalExceptionHandler</span>&gt;();
+builder.Services.<span class="fn">AddProblemDetails</span>();
+
+<span class="kw">public class</span> <span class="ty">GlobalExceptionHandler</span>
+    : <span class="ty">IExceptionHandler</span>
+{
+    <span class="kw">private readonly</span> <span class="ty">ILogger</span> _log;
+    <span class="kw">public</span> <span class="fn">GlobalExceptionHandler</span>(
+        <span class="ty">ILogger</span>&lt;<span class="ty">GlobalExceptionHandler</span>&gt; log) => _log = log;
+
+    <span class="kw">public async</span> <span class="ty">ValueTask</span>&lt;<span class="kw">bool</span>&gt; <span class="fn">TryHandleAsync</span>(
+        <span class="ty">HttpContext</span> ctx,
+        <span class="ty">Exception</span> ex,
+        <span class="ty">CancellationToken</span> ct)
+    {
+        _log.<span class="fn">LogError</span>(ex, <span class="st">"Unhandled exception"</span>);
+
+        (ctx.Response.StatusCode, <span class="kw">var</span> title) = ex <span class="kw">switch</span>
+        {
+            <span class="ty">NotFoundException</span> e => (<span class="nu">404</span>, <span class="st">"Not Found"</span>),
+            <span class="ty">ValidationException</span> e => (<span class="nu">400</span>, <span class="st">"Bad Request"</span>),
+            <span class="ty">UnauthorizedAccessException</span> e => (<span class="nu">401</span>, <span class="st">"Unauthorized"</span>),
+            _ => (<span class="nu">500</span>, <span class="st">"Internal Server Error"</span>)
+        };
+
+        <span class="kw">await</span> ctx.Response.<span class="fn">WriteAsJsonAsync</span>(<span class="kw">new</span>
+        {
+            type = <span class="st">"https://httpstatuses.io/"</span> + ctx.Response.StatusCode,
+            title,
+            status = ctx.Response.StatusCode,
+            detail = ex.Message
+        }, ct);
+
+        <span class="kw">return true</span>;
+    }
+}</code></pre>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#f87171;background:rgba(239,68,68,0.04)">Custom Exception Types</div>
+        <pre><code><span class="cm">// Domain exceptions</span>
+<span class="kw">public class</span> <span class="ty">NotFoundException</span> : <span class="ty">Exception</span>
+{
+    <span class="kw">public</span> <span class="fn">NotFoundException</span>(<span class="ty">string</span> name, <span class="kw">object</span> key)
+        : <span class="kw">base</span>(<span class="st">$"{name} ({key}) was not found."</span>) { }
+}
+
+<span class="kw">public class</span> <span class="ty">ValidationException</span> : <span class="ty">Exception</span>
+{
+    <span class="kw">public</span> <span class="ty">IDictionary</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>[]&gt; Errors { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="fn">ValidationException</span>(
+        <span class="ty">IDictionary</span>&lt;<span class="ty">string</span>, <span class="ty">string</span>[]&gt; errors)
+    {
+        Errors = errors;
+    }
+}
+
+<span class="cm">// Throw anywhere in service layer</span>
+<span class="kw">if</span> (product <span class="kw">is null</span>)
+    <span class="kw">throw new</span> <span class="ty">NotFoundException</span>(<span class="kw">nameof</span>(<span class="ty">Product</span>), id);
+
+<span class="cm">// Problem Details RFC 7807</span>
+<span class="kw">return</span> <span class="fn">Problem</span>(
+    detail: <span class="st">"The product is out of stock."</span>,
+    title: <span class="st">"Constraint Violation"</span>,
+    statusCode: <span class="nu">409</span>,
+    type: <span class="st">"https://example.com/errors/out-of-stock"</span>);</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SWAGGER ──────────────────────────── -->
+  <section class="section" id="swagger">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(16,185,129,0.1)">📚</div>
+      <h2>Swagger / OpenAPI</h2>
+      <span class="tag">DOCUMENTATION</span>
+    </div>
+    <div class="card">
+      <div class="card-title green">Swagger Configuration</div>
+      <pre><code>builder.Services.<span class="fn">AddSwaggerGen</span>(opt =>
+{
+    opt.<span class="fn">SwaggerDoc</span>(<span class="st">"v1"</span>, <span class="kw">new</span> <span class="ty">OpenApiInfo</span>
+    {
+        Title = <span class="st">"My API"</span>, Version = <span class="st">"v1"</span>,
+        Description = <span class="st">"A sample API"</span>,
+        Contact = <span class="kw">new</span> <span class="ty">OpenApiContact</span> { Name = <span class="st">"Dev Team"</span>, Email = <span class="st">"dev@example.com"</span> }
+    });
+
+    <span class="cm">// JWT support in Swagger UI</span>
+    opt.<span class="fn">AddSecurityDefinition</span>(<span class="st">"Bearer"</span>, <span class="kw">new</span> <span class="ty">OpenApiSecurityScheme</span>
+    {
+        Name = <span class="st">"Authorization"</span>, Type = SecuritySchemeType.Http,
+        Scheme = <span class="st">"Bearer"</span>, BearerFormat = <span class="st">"JWT"</span>,
+        In = ParameterLocation.Header
+    });
+    opt.<span class="fn">AddSecurityRequirement</span>(<span class="kw">new</span> <span class="ty">OpenApiSecurityRequirement</span>
+    {
+        [<span class="kw">new</span> <span class="ty">OpenApiSecurityScheme</span>
+        {
+            Reference = <span class="kw">new</span> <span class="ty">OpenApiReference</span>
+                { Type = ReferenceType.SecurityScheme, Id = <span class="st">"Bearer"</span> }
+        }] = Array.Empty&lt;<span class="ty">string</span>&gt;()
+    });
+
+    <span class="cm">// Include XML comments</span>
+    <span class="kw">var</span> xmlFile = <span class="st">$"{Assembly.GetExecutingAssembly().GetName().Name}.xml"</span>;
+    opt.<span class="fn">IncludeXmlComments</span>(Path.<span class="fn">Combine</span>(AppContext.BaseDirectory, xmlFile));
+});
+
+<span class="cm">/// &lt;summary&gt;Gets a product by ID.&lt;/summary&gt;</span>
+<span class="cm">/// &lt;param name="id"&gt;The product ID.&lt;/param&gt;</span>
+<span class="cm">/// &lt;returns&gt;The product.&lt;/returns&gt;</span>
+[<span class="at">HttpGet</span>(<span class="st">"{id}"</span>)]
+[<span class="at">ProducesResponseType</span>&lt;<span class="ty">Product</span>&gt;(StatusCodes.Status200OK)]
+[<span class="at">ProducesResponseType</span>(StatusCodes.Status404NotFound)]
+<span class="kw">public async</span> <span class="ty">Task</span>&lt;<span class="ty">IActionResult</span>&gt; <span class="fn">Get</span>(<span class="ty">int</span> id) { }</code></pre>
+    </div>
+  </section>
+
+  <!-- ─── STATUS CODES ─────────────────────── -->
+  <section class="section" id="status-codes">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(245,158,11,0.1)">🔢</div>
+      <h2>HTTP Status Codes Reference</h2>
+      <span class="tag">QUICK REFERENCE</span>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-title">2xx Success</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Code</th><th>Meaning</th><th>Use</th></tr>
+            <tr><td>200</td><td>OK</td><td>GET, PUT success</td></tr>
+            <tr><td>201</td><td>Created</td><td>POST success</td></tr>
+            <tr><td>202</td><td>Accepted</td><td>Async processing</td></tr>
+            <tr><td>204</td><td>No Content</td><td>DELETE, PUT no body</td></tr>
+            <tr><td>206</td><td>Partial</td><td>Range requests</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title amber">4xx Client Errors</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Code</th><th>Meaning</th><th>Use</th></tr>
+            <tr><td class="amber">400</td><td>Bad Request</td><td>Validation fail</td></tr>
+            <tr><td class="amber">401</td><td>Unauthorized</td><td>Not authenticated</td></tr>
+            <tr><td class="amber">403</td><td>Forbidden</td><td>Not authorized</td></tr>
+            <tr><td class="amber">404</td><td>Not Found</td><td>Resource missing</td></tr>
+            <tr><td class="amber">409</td><td>Conflict</td><td>Duplicate / constraint</td></tr>
+            <tr><td class="amber">422</td><td>Unprocessable</td><td>Semantic errors</td></tr>
+            <tr><td class="amber">429</td><td>Too Many Req.</td><td>Rate limited</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#f87171;background:rgba(239,68,68,0.04)">5xx Server Errors</div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Code</th><th>Meaning</th><th>Use</th></tr>
+            <tr><td style="color:#f87171">500</td><td>Server Error</td><td>Unhandled exception</td></tr>
+            <tr><td style="color:#f87171">501</td><td>Not Impl.</td><td>Feature not ready</td></tr>
+            <tr><td style="color:#f87171">502</td><td>Bad Gateway</td><td>Upstream error</td></tr>
+            <tr><td style="color:#f87171">503</td><td>Unavailable</td><td>Maintenance/overload</td></tr>
+            <tr><td style="color:#f87171">504</td><td>Timeout</td><td>Upstream timeout</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  C# Web API Cheatsheet &nbsp;·&nbsp; ASP.NET Core &nbsp;·&nbsp; .NET 8+ &nbsp;·&nbsp; generated with Claude
+</footer>
+
+</body>
+</html>
