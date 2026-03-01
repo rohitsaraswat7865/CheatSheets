@@ -614,6 +614,68 @@ Full verbose path:
     </div>
   </div>
 
+  <!-- RELATIVE VS ABSOLUTE CONTEXT -->
+  <div class="card wide">
+    <div class="card-header">
+      <span class="card-icon">🎯</span>
+      <span class="card-title">Relative vs Absolute Context</span>
+      <span class="tag tag-pink">critical</span>
+    </div>
+    <div class="card-body">
+      <div class="example" style="background:rgba(124,106,247,0.15); border-color:var(--accent);">//  - Descendant-or-self axis (from document root)
+.// - Descendant-or-self axis (from current node)
+/   - Child axis
+.   - Current node
+..  - Parent node</div>
+      <p style="font-size:0.8rem; color:#b0b0c8; margin:1rem 0 0.6rem;">The dot (.) determines whether you search from <strong style="color:var(--accent2)">document root</strong> or <strong style="color:var(--accent3)">current node</strong>:</p>
+      <div class="example">-- ❌ WRONG: Searches from document root (not relative!)
+//tr[//td]
+→ Selects ALL &lt;tr> elements IF any &lt;td> exists anywhere in document
+
+-- ✅ CORRECT: Direct child relationship
+//tr[td]
+→ Selects &lt;tr> elements that have &lt;td> as direct children
+
+-- ✅ CORRECT: Relative descendant relationship
+//tr[.//td]
+→ Selects &lt;tr> elements that have &lt;td> as descendants
+→ The dot (.) makes it relative to current &lt;tr> node</div>
+      
+      <div style="margin-top:1rem">
+        <p style="font-size:0.75rem; font-weight:700; color:var(--accent); margin-bottom:0.4rem;">VISUAL COMPARISON:</p>
+        <div class="example" style="background:var(--surface2)">&lt;table>
+  &lt;tr id="row1">&lt;td>Cell 1&lt;/td>&lt;/tr>
+  &lt;tr id="row2">&lt;th>Header&lt;/th>&lt;/tr>  &lt;!-- No td! -->
+&lt;/table>
+
+//tr[//td]     → row1 AND row2  (both, because ANY td exists) ❌
+//tr[td]       → row1 only      (has td as child) ✅
+//tr[.//td]    → row1 only      (has td as descendant) ✅</div>
+      </div>
+
+      <div style="margin-top:1rem">
+        <p style="font-size:0.75rem; font-weight:700; color:var(--accent2); margin-bottom:0.4rem;">PRACTICAL EXAMPLES:</p>
+        <div class="example">-- ❌ WRONG: Will match all rows if any td exists
+//tr[//td[normalize-space()='Value']]
+
+-- ✅ CORRECT: Only rows containing that specific value
+//tr[.//td[normalize-space()='Value']]
+
+-- ❌ WRONG: Checks if ANY td in document has @class
+//tr[//td[@class='active']]
+
+-- ✅ CORRECT: Only rows with td having that class
+//tr[.//td[@class='active']]
+
+-- Find row by one column, click another in SAME row
+//tr[.//td[@data-colindex='9'][.='DOC-001']]
+  //td[@data-colindex='2']//a</div>
+      </div>
+
+      <div class="note">⚠️ <strong>Key Rule:</strong> Always use <code style="color:var(--accent3)">.//</code> when searching relative to the current node. Without the dot, <code style="color:var(--accent2)">//</code> searches from document root!</div>
+    </div>
+  </div>
+
   <!-- DOCUMENT ORDER & AXES DIRECTION -->
   <div class="card">
     <div class="card-header">
