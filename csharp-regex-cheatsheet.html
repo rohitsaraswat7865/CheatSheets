@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C# Regex Cheatsheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #512da8 0%, #311b92 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #512da8;
+            border-bottom: 3px solid #512da8;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: #673ab7;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background: #673ab7;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #d32f2f;
+            font-size: 0.9em;
+        }
+
+        .code-block {
+            background: #263238;
+            color: #aed581;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .example {
+            background: #e8eaf6;
+            padding: 15px;
+            border-left: 4px solid #673ab7;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .note {
+            background: #fff3e0;
+            padding: 15px;
+            border-left: 4px solid #ff9800;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        footer {
+            background: #263238;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>C# Regular Expression Cheatsheet</h1>
+            <p class="subtitle">Complete guide to regex patterns, methods, and options in C#</p>
+        </header>
+
+        <div class="content">
+            <!-- Basic Syntax -->
+            <div class="section">
+                <h2>Character Classes</h2>
+                <table>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                    <tr>
+                        <td><code>.</code></td>
+                        <td>Any character except newline</td>
+                        <td><code>a.c</code> matches "abc", "a5c"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\d</code></td>
+                        <td>Digit (0-9)</td>
+                        <td><code>\d+</code> matches "123"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\D</code></td>
+                        <td>Non-digit</td>
+                        <td><code>\D+</code> matches "abc"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\w</code></td>
+                        <td>Word character (a-z, A-Z, 0-9, _)</td>
+                        <td><code>\w+</code> matches "hello_123"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\W</code></td>
+                        <td>Non-word character</td>
+                        <td><code>\W+</code> matches "!@#"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\s</code></td>
+                        <td>Whitespace (space, tab, newline)</td>
+                        <td><code>\s+</code> matches "   "</td>
+                    </tr>
+                    <tr>
+                        <td><code>\S</code></td>
+                        <td>Non-whitespace</td>
+                        <td><code>\S+</code> matches "hello"</td>
+                    </tr>
+                    <tr>
+                        <td><code>[abc]</code></td>
+                        <td>Any character in set</td>
+                        <td><code>[aeiou]</code> matches vowels</td>
+                    </tr>
+                    <tr>
+                        <td><code>[^abc]</code></td>
+                        <td>Any character not in set</td>
+                        <td><code>[^0-9]</code> matches non-digits</td>
+                    </tr>
+                    <tr>
+                        <td><code>[a-z]</code></td>
+                        <td>Character range</td>
+                        <td><code>[a-zA-Z]</code> matches letters</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Quantifiers -->
+            <div class="section">
+                <h2>Quantifiers</h2>
+                <table>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                    <tr>
+                        <td><code>*</code></td>
+                        <td>0 or more (greedy)</td>
+                        <td><code>a*</code> matches "", "a", "aaa"</td>
+                    </tr>
+                    <tr>
+                        <td><code>+</code></td>
+                        <td>1 or more (greedy)</td>
+                        <td><code>a+</code> matches "a", "aaa"</td>
+                    </tr>
+                    <tr>
+                        <td><code>?</code></td>
+                        <td>0 or 1 (optional)</td>
+                        <td><code>colou?r</code> matches "color", "colour"</td>
+                    </tr>
+                    <tr>
+                        <td><code>{n}</code></td>
+                        <td>Exactly n times</td>
+                        <td><code>\d{3}</code> matches "123"</td>
+                    </tr>
+                    <tr>
+                        <td><code>{n,}</code></td>
+                        <td>n or more times</td>
+                        <td><code>\d{2,}</code> matches "12", "123"</td>
+                    </tr>
+                    <tr>
+                        <td><code>{n,m}</code></td>
+                        <td>Between n and m times</td>
+                        <td><code>\d{2,4}</code> matches "12", "123", "1234"</td>
+                    </tr>
+                    <tr>
+                        <td><code>*?</code></td>
+                        <td>0 or more (lazy)</td>
+                        <td><code>a*?</code> matches shortest possible</td>
+                    </tr>
+                    <tr>
+                        <td><code>+?</code></td>
+                        <td>1 or more (lazy)</td>
+                        <td><code>a+?</code> matches shortest possible</td>
+                    </tr>
+                    <tr>
+                        <td><code>??</code></td>
+                        <td>0 or 1 (lazy)</td>
+                        <td><code>a??</code> matches "" if possible</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Anchors -->
+            <div class="section">
+                <h2>Anchors & Boundaries</h2>
+                <table>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                    <tr>
+                        <td><code>^</code></td>
+                        <td>Start of string/line</td>
+                        <td><code>^Hello</code> matches "Hello world"</td>
+                    </tr>
+                    <tr>
+                        <td><code>$</code></td>
+                        <td>End of string/line</td>
+                        <td><code>end$</code> matches "The end"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\b</code></td>
+                        <td>Word boundary</td>
+                        <td><code>\bcat\b</code> matches "cat" not "catch"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\B</code></td>
+                        <td>Non-word boundary</td>
+                        <td><code>\Bcat\B</code> matches "scat" in "scatter"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\A</code></td>
+                        <td>Start of string only</td>
+                        <td><code>\AStart</code> (ignores Multiline)</td>
+                    </tr>
+                    <tr>
+                        <td><code>\z</code></td>
+                        <td>End of string only</td>
+                        <td><code>End\z</code> (ignores Multiline)</td>
+                    </tr>
+                    <tr>
+                        <td><code>\Z</code></td>
+                        <td>End before final newline</td>
+                        <td><code>End\Z</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>\G</code></td>
+                        <td>End of previous match</td>
+                        <td>Used for contiguous matching</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Groups -->
+            <div class="section">
+                <h2>Groups & Capturing</h2>
+                <table>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                    <tr>
+                        <td><code>(abc)</code></td>
+                        <td>Capturing group</td>
+                        <td><code>(ab)+</code> captures "ab" repeatedly</td>
+                    </tr>
+                    <tr>
+                        <td><code>(?:abc)</code></td>
+                        <td>Non-capturing group</td>
+                        <td><code>(?:ab)+</code> groups without capture</td>
+                    </tr>
+                    <tr>
+                        <td><code>(?&lt;name&gt;abc)</code></td>
+                        <td>Named capturing group</td>
+                        <td><code>(?&lt;year&gt;\d{4})</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>\1, \2</code></td>
+                        <td>Backreference by number</td>
+                        <td><code>(\w)\1</code> matches "aa", "bb"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\k&lt;name&gt;</code></td>
+                        <td>Named backreference</td>
+                        <td><code>(?&lt;char&gt;\w)\k&lt;char&gt;</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>(?=abc)</code></td>
+                        <td>Positive lookahead</td>
+                        <td><code>\w+(?=\d)</code> matches word before digit</td>
+                    </tr>
+                    <tr>
+                        <td><code>(?!abc)</code></td>
+                        <td>Negative lookahead</td>
+                        <td><code>\d+(?!\.)</code> digits not before period</td>
+                    </tr>
+                    <tr>
+                        <td><code>(?&lt;=abc)</code></td>
+                        <td>Positive lookbehind</td>
+                        <td><code>(?&lt;=\$)\d+</code> digits after $</td>
+                    </tr>
+                    <tr>
+                        <td><code>(?&lt;!abc)</code></td>
+                        <td>Negative lookbehind</td>
+                        <td><code>(?&lt;!\d)\w+</code> word not after digit</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Special Characters -->
+            <div class="section">
+                <h2>Special Characters & Escapes</h2>
+                <table>
+                    <tr>
+                        <th>Pattern</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                    <tr>
+                        <td><code>\</code></td>
+                        <td>Escape special character</td>
+                        <td><code>\.</code> matches literal "."</td>
+                    </tr>
+                    <tr>
+                        <td><code>|</code></td>
+                        <td>Alternation (OR)</td>
+                        <td><code>cat|dog</code> matches "cat" or "dog"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\t</code></td>
+                        <td>Tab character</td>
+                        <td><code>\t+</code> matches tabs</td>
+                    </tr>
+                    <tr>
+                        <td><code>\r</code></td>
+                        <td>Carriage return</td>
+                        <td><code>\r\n</code> Windows line ending</td>
+                    </tr>
+                    <tr>
+                        <td><code>\n</code></td>
+                        <td>Newline</td>
+                        <td><code>\n+</code> matches line breaks</td>
+                    </tr>
+                    <tr>
+                        <td><code>\xNN</code></td>
+                        <td>Hex character code</td>
+                        <td><code>\x41</code> matches "A"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\uNNNN</code></td>
+                        <td>Unicode character</td>
+                        <td><code>\u00A9</code> matches "©"</td>
+                    </tr>
+                    <tr>
+                        <td><code>\p{...}</code></td>
+                        <td>Unicode category</td>
+                        <td><code>\p{Lu}</code> uppercase letters</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- C# Regex Methods -->
+            <div class="section">
+                <h2>C# Regex Class Methods</h2>
+                
+                <h3>Basic Matching</h3>
+                <div class="code-block">// Check if pattern exists
+bool isMatch = Regex.IsMatch(input, pattern);
+
+// Get first match
+Match match = Regex.Match(input, pattern);
+if (match.Success) {
+    string value = match.Value;
+    int index = match.Index;
+}
+
+// Get all matches
+MatchCollection matches = Regex.Matches(input, pattern);
+foreach (Match m in matches) {
+    Console.WriteLine(m.Value);
+}</div>
+
+                <h3>Replacing</h3>
+                <div class="code-block">// Simple replacement
+string result = Regex.Replace(input, pattern, replacement);
+
+// Replacement with groups
+string result = Regex.Replace(input, @"(\d+)-(\d+)", "$2-$1");
+
+// Replacement with evaluator
+string result = Regex.Replace(input, @"\d+", m => 
+    (int.Parse(m.Value) * 2).ToString());</div>
+
+                <h3>Splitting</h3>
+                <div class="code-block">// Split string by pattern
+string[] parts = Regex.Split(input, pattern);
+
+// Example: Split by multiple delimiters
+string[] words = Regex.Split(text, @"[\s,;]+");</div>
+
+                <h3>Using Compiled Regex</h3>
+                <div class="code-block">// For better performance with repeated use
+Regex regex = new Regex(pattern, RegexOptions.Compiled);
+Match match = regex.Match(input);
+
+// Static method with timeout
+Match match = Regex.Match(input, pattern, 
+    RegexOptions.None, TimeSpan.FromSeconds(1));</div>
+            </div>
+
+            <!-- RegexOptions -->
+            <div class="section">
+                <h2>RegexOptions Flags</h2>
+                <table>
+                    <tr>
+                        <th>Option</th>
+                        <th>Description</th>
+                        <th>Inline Flag</th>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.None</code></td>
+                        <td>Default behavior</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.IgnoreCase</code></td>
+                        <td>Case-insensitive matching</td>
+                        <td><code>(?i)</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.Multiline</code></td>
+                        <td>^ and $ match line boundaries</td>
+                        <td><code>(?m)</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.Singleline</code></td>
+                        <td>. matches newline characters</td>
+                        <td><code>(?s)</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.ExplicitCapture</code></td>
+                        <td>Only named groups are captured</td>
+                        <td><code>(?n)</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.Compiled</code></td>
+                        <td>Compile regex for better performance</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.IgnorePatternWhitespace</code></td>
+                        <td>Ignore whitespace and allow comments</td>
+                        <td><code>(?x)</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.RightToLeft</code></td>
+                        <td>Search from right to left</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.ECMAScript</code></td>
+                        <td>ECMAScript-compliant behavior</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>RegexOptions.CultureInvariant</code></td>
+                        <td>Ignore cultural differences</td>
+                        <td>-</td>
+                    </tr>
+                </table>
+
+                <div class="example">
+                    <strong>Example:</strong> Combining options
+                    <div class="code-block">// Multiple options with | operator
+Regex regex = new Regex(pattern, 
+    RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+// Inline flags in pattern
+string pattern = @"(?im)^hello";</div>
+                </div>
+            </div>
+
+            <!-- Common Patterns -->
+            <div class="section">
+                <h2>Common Patterns</h2>
+                
+                <div class="grid">
+                    <div class="card">
+                        <h3>Email</h3>
+                        <div class="code-block">@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Phone (US)</h3>
+                        <div class="code-block">@"^(\+1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>URL</h3>
+                        <div class="code-block">@"^https?://[^\s/$.?#].[^\s]*$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>IP Address (IPv4)</h3>
+                        <div class="code-block">@"^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Date (MM/DD/YYYY)</h3>
+                        <div class="code-block">@"^(0[1-9]|1[0-2])/(0[1-9]|[12]\d|3[01])/\d{4}$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Credit Card</h3>
+                        <div class="code-block">@"^\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Hex Color</h3>
+                        <div class="code-block">@"^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Username</h3>
+                        <div class="code-block">@"^[a-zA-Z0-9_-]{3,16}$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Strong Password</h3>
+                        <div class="code-block">@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>HTML Tag</h3>
+                        <div class="code-block">@"<([a-z]+)([^<]+)*(?:>(.*)<\/\1>|\s+\/>)"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Social Security (US)</h3>
+                        <div class="code-block">@"^\d{3}-?\d{2}-?\d{4}$"</div>
+                    </div>
+
+                    <div class="card">
+                        <h3>ZIP Code (US)</h3>
+                        <div class="code-block">@"^\d{5}(-\d{4})?$"</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Practical Examples -->
+            <div class="section">
+                <h2>Practical Examples</h2>
+
+                <h3>Validate Email Address</h3>
+                <div class="code-block">string email = "user@example.com";
+string pattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+
+if (Regex.IsMatch(email, pattern))
+{
+    Console.WriteLine("Valid email");
+}</div>
+
+                <h3>Extract Phone Numbers</h3>
+                <div class="code-block">string text = "Call me at 555-123-4567 or (555) 987-6543";
+string pattern = @"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}";
+
+foreach (Match match in Regex.Matches(text, pattern))
+{
+    Console.WriteLine($"Found: {match.Value}");
+}</div>
+
+                <h3>Replace Multiple Spaces</h3>
+                <div class="code-block">string text = "Too    many     spaces";
+string result = Regex.Replace(text, @"\s+", " ");
+// Result: "Too many spaces"</div>
+
+                <h3>Parse URL Components</h3>
+                <div class="code-block">string url = "https://www.example.com:8080/path?query=value";
+string pattern = @"^(?&lt;protocol&gt;https?)://(?&lt;host&gt;[^:/]+)(?::(?&lt;port&gt;\d+))?(?&lt;path&gt;/[^?]*)?(?:\?(?&lt;query&gt;.*))?$";
+
+Match match = Regex.Match(url, pattern);
+if (match.Success)
+{
+    string protocol = match.Groups["protocol"].Value;
+    string host = match.Groups["host"].Value;
+    string port = match.Groups["port"].Value;
+    string path = match.Groups["path"].Value;
+}</div>
+
+                <h3>Validate Password Strength</h3>
+                <div class="code-block">string password = "MyP@ssw0rd";
+// At least 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char
+string pattern = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+
+bool isStrong = Regex.IsMatch(password, pattern);</div>
+
+                <h3>Remove HTML Tags</h3>
+                <div class="code-block">string html = "&lt;p&gt;Hello &lt;strong&gt;World&lt;/strong&gt;!&lt;/p&gt;";
+string text = Regex.Replace(html, @"<[^>]+>", "");
+// Result: "Hello World!"</div>
+
+                <h3>Format Credit Card Numbers</h3>
+                <div class="code-block">string cardNumber = "1234567890123456";
+string formatted = Regex.Replace(cardNumber, @"(\d{4})(?=\d)", "$1-");
+// Result: "1234-5678-9012-3456"</div>
+
+                <h3>Extract Hashtags</h3>
+                <div class="code-block">string tweet = "Loving #CSharp and #RegEx today! #Programming";
+string pattern = @"#\w+";
+
+var hashtags = Regex.Matches(tweet, pattern)
+    .Cast&lt;Match&gt;()
+    .Select(m =&gt; m.Value);
+// Result: #CSharp, #RegEx, #Programming</div>
+            </div>
+
+            <!-- Performance Tips -->
+            <div class="section">
+                <h2>Performance & Best Practices</h2>
+
+                <div class="note">
+                    <strong>⚠️ Important Tips:</strong>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Use <code>RegexOptions.Compiled</code> for frequently used patterns</li>
+                        <li>Avoid catastrophic backtracking with lazy quantifiers</li>
+                        <li>Use timeouts to prevent regex from hanging: <code>Regex.Match(input, pattern, RegexOptions.None, TimeSpan.FromSeconds(1))</code></li>
+                        <li>Prefer specific character classes over <code>.</code> when possible</li>
+                        <li>Use non-capturing groups <code>(?:...)</code> when you don't need the capture</li>
+                        <li>Test complex patterns with tools like regex101.com</li>
+                        <li>Use <code>@</code> verbatim strings to avoid double-escaping</li>
+                    </ul>
+                </div>
+
+                <h3>Catastrophic Backtracking Example</h3>
+                <div class="code-block">// BAD - Can cause exponential backtracking
+string bad = @"(a+)+b";
+
+// GOOD - More specific, faster
+string good = @"a+b";</div>
+
+                <h3>Using Verbatim Strings</h3>
+                <div class="code-block">// Without verbatim (need double backslashes)
+string pattern1 = "\\d{3}-\\d{2}-\\d{4}";
+
+// With verbatim (more readable)
+string pattern2 = @"\d{3}-\d{2}-\d{4}";</div>
+            </div>
+
+            <!-- Unicode Categories -->
+            <div class="section">
+                <h2>Unicode Categories</h2>
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Example</th>
+                    </tr>
+                    <tr>
+                        <td><code>\p{L}</code></td>
+                        <td>Any letter</td>
+                        <td><code>\p{L}+</code> matches any letters</td>
+                    </tr>
+                    <tr>
+                        <td><code>\p{Lu}</code></td>
+                        <td>Uppercase letter</td>
+                        <td><code>\p{Lu}</code> matches A-Z</td>
+                    </tr>
+                    <tr>
+                        <td><code>\p{Ll}</code></td>
+                        <td>Lowercase letter</td>
+                        <td><code>\p{Ll}</code> matches a-z</td>
+                    </tr>
+                    <tr>
+                        <td><code>\p{N}</code></td>
+                        <td>Any number</td>
+                        <td><code>\p{N}+</code> matches numbers</td>
+                    </tr>
+                    <tr>
+                        <td><code>\p{P}</code></td>
+                        <td>Any punctuation</td>
+                        <td><code>\p{P}</code> matches punctuation</td>
+                    </tr>
+                    <tr>
+                        <td><code>\p{Z}</code></td>
+                        <td>Any separator</td>
+                        <td><code>\p{Z}</code> matches separators</td>
+                    </tr>
+                    <tr>
+                        <td><code>\p{S}</code></td>
+                        <td>Any symbol</td>
+                        <td><code>\p{S}</code> matches symbols</td>
+                    </tr>
+                    <tr>
+                        <td><code>\p{C}</code></td>
+                        <td>Any control character</td>
+                        <td><code>\p{C}</code> matches control chars</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+        <footer>
+            <p>C# Regular Expression Cheatsheet | Created with ❤️ for developers</p>
+            <p style="margin-top: 5px; opacity: 0.8;">Remember to use verbatim strings (@"...") in C# for regex patterns!</p>
+        </footer>
+    </div>
+</body>
+</html>
