@@ -573,6 +573,120 @@ public void ManualTest()<br>
                 </div>
             </div>
             
+            <!-- Parallel Execution -->
+            <div class="section">
+                <h2>⚡ Parallel Test Execution</h2>
+                
+                <h3>Assembly Level Parallelization</h3>
+                <div class="code-block">
+                    <code>// In AssemblyInfo.cs or any test file<br>
+using NUnit.Framework;<br><br>
+// Enable parallel execution at assembly level<br>
+[assembly: Parallelizable(ParallelScope.Fixtures)]<br><br>
+// Set maximum number of workers<br>
+[assembly: LevelOfParallelism(4)]</code>
+                </div>
+                
+                <h3>Parallel Scopes</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scope</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>ParallelScope.Self</code></td>
+                            <td>Only this test/fixture runs in parallel with others</td>
+                        </tr>
+                        <tr>
+                            <td><code>ParallelScope.Children</code></td>
+                            <td>Child tests run in parallel with each other</td>
+                        </tr>
+                        <tr>
+                            <td><code>ParallelScope.Fixtures</code></td>
+                            <td>Test fixtures run in parallel (default recommendation)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ParallelScope.All</code></td>
+                            <td>Everything runs in parallel</td>
+                        </tr>
+                        <tr>
+                            <td><code>ParallelScope.None</code></td>
+                            <td>No parallelization</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Fixture Level Control</h3>
+                <div class="code-block">
+                    <code>// Enable parallel execution for this fixture<br>
+[TestFixture]<br>
+[Parallelizable(ParallelScope.Children)]<br>
+public class ParallelTests<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test] public void Test1() { } // Runs in parallel<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test] public void Test2() { } // Runs in parallel<br>
+}<br><br>
+// Disable parallel execution for this fixture<br>
+[TestFixture]<br>
+[NonParallelizable]<br>
+public class SequentialTests<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test] public void Test1() { } // Runs sequentially<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test] public void Test2() { } // Runs sequentially<br>
+}</code>
+                </div>
+                
+                <h3>Test Level Control</h3>
+                <div class="code-block">
+                    <code>[TestFixture]<br>
+public class MixedParallelizationTests<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Parallelizable]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;public void ParallelTest1() { }<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Parallelizable]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;public void ParallelTest2() { }<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[NonParallelizable]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;public void SequentialTest() { }<br>
+}</code>
+                </div>
+                
+                <h3>Configuration Examples</h3>
+                <div class="code-block">
+                    <code>// Example 1: Run all fixtures in parallel, tests within fixtures sequential<br>
+[assembly: Parallelizable(ParallelScope.Fixtures)]<br>
+[assembly: LevelOfParallelism(8)]<br><br>
+// Example 2: Run everything in parallel<br>
+[assembly: Parallelizable(ParallelScope.All)]<br>
+[assembly: LevelOfParallelism(4)]<br><br>
+// Example 3: Specific fixture with parallel children<br>
+[TestFixture]<br>
+[Parallelizable(ParallelScope.Children)]<br>
+public class DatabaseTests<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test] public void Test1() { }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[Test] public void Test2() { }<br>
+}</code>
+                </div>
+                
+                <div class="note">
+                    <strong>Important:</strong> When running tests in parallel, ensure they don't share mutable state. Use thread-safe code and avoid static fields. Tests with database operations or file I/O may need to be marked [NonParallelizable] or use unique resources per test.
+                </div>
+                
+                <h3>Command Line</h3>
+                <div class="code-block">
+                    <code>// Run with specific number of workers<br>
+dotnet test -- NUnit.NumberOfTestWorkers=4<br><br>
+// Disable parallel execution from command line<br>
+dotnet test -- NUnit.NumberOfTestWorkers=0</code>
+                </div>
+            </div>
+            
             <!-- Running Tests -->
             <div class="section">
                 <h2>▶️ Running Tests</h2>
