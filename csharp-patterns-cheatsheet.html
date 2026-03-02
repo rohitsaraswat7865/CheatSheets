@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C# Design Patterns & SOLID Principles Cheatsheet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #00d9ff;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+        h2 {
+            color: #ff6b6b;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+        }
+        h3 {
+            color: #4ecdc4;
+            margin: 20px 0 10px;
+        }
+        h4 {
+            color: #ffe66d;
+            margin: 15px 0 10px;
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .pattern-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #00d9ff;
+        }
+        .solid-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ff6b6b;
+        }
+        .letter {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 15px;
+            color: white;
+        }
+        pre {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            font-size: 13px;
+            border: 1px solid #30363d;
+            margin: 10px 0;
+        }
+        code {
+            font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+            color: #c9d1d9;
+        }
+        .keyword { color: #ff79c6; }
+        .class-name { color: #8be9fd; }
+        .method { color: #50fa7b; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; }
+        .type { color: #bd93f9; }
+        .good { 
+            border-left: 4px solid #50fa7b; 
+            background: rgba(80, 250, 123, 0.1);
+        }
+        .bad { 
+            border-left: 4px solid #ff5555; 
+            background: rgba(255, 85, 85, 0.1);
+        }
+        .label {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .label-good { background: #50fa7b; color: #000; }
+        .label-bad { background: #ff5555; color: #fff; }
+        .label-creational { background: #bd93f9; color: #000; }
+        .label-structural { background: #8be9fd; color: #000; }
+        .label-behavioral { background: #ffb86c; color: #000; }
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .use-case {
+            background: rgba(255, 184, 108, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .nav {
+            position: sticky;
+            top: 0;
+            background: rgba(26, 26, 46, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            z-index: 100;
+        }
+        .nav a {
+            color: #00d9ff;
+            text-decoration: none;
+            margin-right: 20px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .nav a:hover {
+            background: rgba(0, 217, 255, 0.2);
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 900px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            .pattern-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 C# Design Patterns & SOLID Principles</h1>
+        
+        <nav class="nav">
+            <a href="#solid">SOLID Principles</a>
+            <a href="#creational">Creational Patterns</a>
+            <a href="#structural">Structural Patterns</a>
+            <a href="#behavioral">Behavioral Patterns</a>
+        </nav>
+
+        <!-- SOLID PRINCIPLES SECTION -->
+        <section id="solid" class="section">
+            <h2>📐 SOLID Principles</h2>
+            <p style="margin-bottom: 20px;">SOLID is an acronym for five design principles that make software designs more understandable, flexible, and maintainable.</p>
+
+            <!-- S - Single Responsibility -->
+            <div class="solid-card">
+                <h3><span class="letter">S</span>Single Responsibility Principle (SRP)</h3>
+                <p><strong>Definition:</strong> A class should have only one reason to change, meaning it should have only one job or responsibility.</p>
+                
+                <h4>Why It Matters:</h4>
+                <ul>
+                    <li>Easier to understand and maintain</li>
+                    <li>Reduced coupling between components</li>
+                    <li>Easier to test in isolation</li>
+                    <li>Changes in one area don't affect others</li>
+                </ul>
+
+                <div class="comparison">
+                    <div>
+                        <span class="label label-bad">❌ Violating SRP</span>
+                        <pre class="bad"><code><span class="keyword">public class</span> <span class="class-name">Employee</span>
+{
+    <span class="keyword">public string</span> Name { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    <span class="keyword">public decimal</span> Salary { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    
+    <span class="comment">// Responsibility 1: Employee data</span>
+    <span class="keyword">public void</span> <span class="method">UpdateEmployee</span>() { }
+    
+    <span class="comment">// Responsibility 2: Salary calculation</span>
+    <span class="keyword">public decimal</span> <span class="method">CalculateSalary</span>() { }
+    
+    <span class="comment">// Responsibility 3: Reporting</span>
+    <span class="keyword">public void</span> <span class="method">GenerateReport</span>() { }
+    
+    <span class="comment">// Responsibility 4: Database operations</span>
+    <span class="keyword">public void</span> <span class="method">SaveToDatabase</span>() { }
+}</code></pre>
+                    </div>
+                    <div>
+                        <span class="label label-good">✅ Following SRP</span>
+                        <pre class="good"><code><span class="comment">// Only handles employee data</span>
+<span class="keyword">public class</span> <span class="class-name">Employee</span>
+{
+    <span class="keyword">public string</span> Name { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    <span class="keyword">public decimal</span> Salary { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+}
+
+<span class="comment">// Handles salary calculations</span>
+<span class="keyword">public class</span> <span class="class-name">SalaryCalculator</span>
+{
+    <span class="keyword">public decimal</span> <span class="method">Calculate</span>(<span class="class-name">Employee</span> emp) { }
+}
+
+<span class="comment">// Handles report generation</span>
+<span class="keyword">public class</span> <span class="class-name">EmployeeReportGenerator</span>
+{
+    <span class="keyword">public void</span> <span class="method">Generate</span>(<span class="class-name">Employee</span> emp) { }
+}
+
+<span class="comment">// Handles persistence</span>
+<span class="keyword">public class</span> <span class="class-name">EmployeeRepository</span>
+{
+    <span class="keyword">public void</span> <span class="method">Save</span>(<span class="class-name">Employee</span> emp) { }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- O - Open/Closed -->
+            <div class="solid-card">
+                <h3><span class="letter">O</span>Open/Closed Principle (OCP)</h3>
+                <p><strong>Definition:</strong> Software entities should be open for extension but closed for modification.</p>
+                
+                <h4>Why It Matters:</h4>
+                <ul>
+                    <li>Add new features without changing existing code</li>
+                    <li>Reduces risk of breaking existing functionality</li>
+                    <li>Promotes use of abstractions and polymorphism</li>
+                </ul>
+
+                <div class="comparison">
+                    <div>
+                        <span class="label label-bad">❌ Violating OCP</span>
+                        <pre class="bad"><code><span class="keyword">public class</span> <span class="class-name">AreaCalculator</span>
+{
+    <span class="keyword">public double</span> <span class="method">Calculate</span>(<span class="keyword">object</span> shape)
+    {
+        <span class="comment">// Must modify this method for every new shape!</span>
+        <span class="keyword">if</span> (shape <span class="keyword">is</span> <span class="class-name">Rectangle</span> rect)
+            <span class="keyword">return</span> rect.Width * rect.Height;
+        <span class="keyword">else if</span> (shape <span class="keyword">is</span> <span class="class-name">Circle</span> circle)
+            <span class="keyword">return</span> Math.PI * circle.Radius * circle.Radius;
+        <span class="keyword">else if</span> (shape <span class="keyword">is</span> <span class="class-name">Triangle</span> tri)
+            <span class="keyword">return</span> 0.5 * tri.Base * tri.Height;
+        <span class="comment">// Adding new shape requires modification!</span>
+        <span class="keyword">throw new</span> <span class="class-name">NotSupportedException</span>();
+    }
+}</code></pre>
+                    </div>
+                    <div>
+                        <span class="label label-good">✅ Following OCP</span>
+                        <pre class="good"><code><span class="keyword">public interface</span> <span class="class-name">IShape</span>
+{
+    <span class="keyword">double</span> <span class="method">CalculateArea</span>();
+}
+
+<span class="keyword">public class</span> <span class="class-name">Rectangle</span> : <span class="class-name">IShape</span>
+{
+    <span class="keyword">public double</span> Width { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    <span class="keyword">public double</span> Height { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    <span class="keyword">public double</span> <span class="method">CalculateArea</span>() => Width * Height;
+}
+
+<span class="keyword">public class</span> <span class="class-name">Circle</span> : <span class="class-name">IShape</span>
+{
+    <span class="keyword">public double</span> Radius { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    <span class="keyword">public double</span> <span class="method">CalculateArea</span>() => 
+        Math.PI * Radius * Radius;
+}
+
+<span class="comment">// No modification needed - just extend!</span>
+<span class="keyword">public class</span> <span class="class-name">AreaCalculator</span>
+{
+    <span class="keyword">public double</span> <span class="method">Calculate</span>(<span class="class-name">IShape</span> shape) => 
+        shape.CalculateArea();
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- L - Liskov Substitution -->
+            <div class="solid-card">
+                <h3><span class="letter">L</span>Liskov Substitution Principle (LSP)</h3>
+                <p><strong>Definition:</strong> Objects of a superclass should be replaceable with objects of its subclasses without breaking the application.</p>
+                
+                <h4>Key Rules:</h4>
+                <ul>
+                    <li>Preconditions cannot be strengthened in a subtype</li>
+                    <li>Postconditions cannot be weakened in a subtype</li>
+                    <li>Invariants of the supertype must be preserved</li>
+                    <li>Subtype methods should not throw new exceptions</li>
+                </ul>
+
+                <div class="comparison">
+                    <div>
+                        <span class="label label-bad">❌ Violating LSP</span>
+                        <pre class="bad"><code><span class="keyword">public class</span> <span class="class-name">Bird</span>
+{
+    <span class="keyword">public virtual void</span> <span class="method">Fly</span>()
+    {
+        Console.WriteLine(<span class="string">"Flying..."</span>);
+    }
+}
+
+<span class="keyword">public class</span> <span class="class-name">Penguin</span> : <span class="class-name">Bird</span>
+{
+    <span class="keyword">public override void</span> <span class="method">Fly</span>()
+    {
+        <span class="comment">// Penguins can't fly! This breaks LSP</span>
+        <span class="keyword">throw new</span> <span class="class-name">NotSupportedException</span>(
+            <span class="string">"Penguins cannot fly!"</span>);
+    }
+}
+
+<span class="comment">// This will crash!</span>
+<span class="keyword">void</span> <span class="method">MakeBirdFly</span>(<span class="class-name">Bird</span> bird)
+{
+    bird.Fly(); <span class="comment">// Throws exception for Penguin</span>
+}</code></pre>
+                    </div>
+                    <div>
+                        <span class="label label-good">✅ Following LSP</span>
+                        <pre class="good"><code><span class="keyword">public abstract class</span> <span class="class-name">Bird</span>
+{
+    <span class="keyword">public abstract void</span> <span class="method">Move</span>();
+}
+
+<span class="keyword">public interface</span> <span class="class-name">IFlyable</span>
+{
+    <span class="keyword">void</span> <span class="method">Fly</span>();
+}
+
+<span class="keyword">public class</span> <span class="class-name">Sparrow</span> : <span class="class-name">Bird</span>, <span class="class-name">IFlyable</span>
+{
+    <span class="keyword">public override void</span> <span class="method">Move</span>() => <span class="method">Fly</span>();
+    <span class="keyword">public void</span> <span class="method">Fly</span>() => 
+        Console.WriteLine(<span class="string">"Flying..."</span>);
+}
+
+<span class="keyword">public class</span> <span class="class-name">Penguin</span> : <span class="class-name">Bird</span>
+{
+    <span class="keyword">public override void</span> <span class="method">Move</span>() => 
+        Console.WriteLine(<span class="string">"Swimming..."</span>);
+}
+
+<span class="comment">// Now all Birds can Move() safely</span>
+<span class="keyword">void</span> <span class="method">MakeBirdMove</span>(<span class="class-name">Bird</span> bird)
+{
+    bird.Move(); <span class="comment">// Works for all birds!</span>
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- I - Interface Segregation -->
+            <div class="solid-card">
+                <h3><span class="letter">I</span>Interface Segregation Principle (ISP)</h3>
+                <p><strong>Definition:</strong> Clients should not be forced to depend on interfaces they do not use. Split large interfaces into smaller, specific ones.</p>
+                
+                <h4>Benefits:</h4>
+                <ul>
+                    <li>More cohesive interfaces</li>
+                    <li>Classes implement only what they need</li>
+                    <li>Easier to understand and maintain</li>
+                    <li>Reduced coupling</li>
+                </ul>
+
+                <div class="comparison">
+                    <div>
+                        <span class="label label-bad">❌ Violating ISP</span>
+                        <pre class="bad"><code><span class="comment">// Fat interface - too many responsibilities</span>
+<span class="keyword">public interface</span> <span class="class-name">IWorker</span>
+{
+    <span class="keyword">void</span> <span class="method">Work</span>();
+    <span class="keyword">void</span> <span class="method">Eat</span>();
+    <span class="keyword">void</span> <span class="method">Sleep</span>();
+    <span class="keyword">void</span> <span class="method">GetPaid</span>();
+}
+
+<span class="keyword">public class</span> <span class="class-name">HumanWorker</span> : <span class="class-name">IWorker</span>
+{
+    <span class="keyword">public void</span> <span class="method">Work</span>() { <span class="comment">/* OK */</span> }
+    <span class="keyword">public void</span> <span class="method">Eat</span>() { <span class="comment">/* OK */</span> }
+    <span class="keyword">public void</span> <span class="method">Sleep</span>() { <span class="comment">/* OK */</span> }
+    <span class="keyword">public void</span> <span class="method">GetPaid</span>() { <span class="comment">/* OK */</span> }
+}
+
+<span class="keyword">public class</span> <span class="class-name">Robot</span> : <span class="class-name">IWorker</span>
+{
+    <span class="keyword">public void</span> <span class="method">Work</span>() { <span class="comment">/* OK */</span> }
+    <span class="comment">// Robots don't eat or sleep!</span>
+    <span class="keyword">public void</span> <span class="method">Eat</span>() => <span class="keyword">throw new</span> <span class="class-name">NotImplementedException</span>();
+    <span class="keyword">public void</span> <span class="method">Sleep</span>() => <span class="keyword">throw new</span> <span class="class-name">NotImplementedException</span>();
+    <span class="keyword">public void</span> <span class="method">GetPaid</span>() => <span class="keyword">throw new</span> <span class="class-name">NotImplementedException</span>();
+}</code></pre>
+                    </div>
+                    <div>
+                        <span class="label label-good">✅ Following ISP</span>
+                        <pre class="good"><code><span class="comment">// Segregated interfaces</span>
+<span class="keyword">public interface</span> <span class="class-name">IWorkable</span>
+{
+    <span class="keyword">void</span> <span class="method">Work</span>();
+}
+
+<span class="keyword">public interface</span> <span class="class-name">IFeedable</span>
+{
+    <span class="keyword">void</span> <span class="method">Eat</span>();
+    <span class="keyword">void</span> <span class="method">Sleep</span>();
+}
+
+<span class="keyword">public interface</span> <span class="class-name">IPayable</span>
+{
+    <span class="keyword">void</span> <span class="method">GetPaid</span>();
+}
+
+<span class="comment">// Human implements all relevant interfaces</span>
+<span class="keyword">public class</span> <span class="class-name">HumanWorker</span> : <span class="class-name">IWorkable</span>, <span class="class-name">IFeedable</span>, <span class="class-name">IPayable</span>
+{
+    <span class="keyword">public void</span> <span class="method">Work</span>() { }
+    <span class="keyword">public void</span> <span class="method">Eat</span>() { }
+    <span class="keyword">public void</span> <span class="method">Sleep</span>() { }
+    <span class="keyword">public void</span> <span class="method">GetPaid</span>() { }
+}
+
+<span class="comment">// Robot only implements what it needs</span>
+<span class="keyword">public class</span> <span class="class-name">Robot</span> : <span class="class-name">IWorkable</span>
+{
+    <span class="keyword">public void</span> <span class="method">Work</span>() { }
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- D - Dependency Inversion -->
+            <div class="solid-card">
+                <h3><span class="letter">D</span>Dependency Inversion Principle (DIP)</h3>
+                <p><strong>Definition:</strong> High-level modules should not depend on low-level modules. Both should depend on abstractions. Abstractions should not depend on details.</p>
+                
+                <h4>Key Concepts:</h4>
+                <ul>
+                    <li><strong>Dependency Injection (DI):</strong> Providing dependencies from outside rather than creating them inside</li>
+                    <li><strong>Inversion of Control (IoC):</strong> Framework controls the flow, not your code</li>
+                    <li><strong>Abstractions:</strong> Interfaces or abstract classes that define contracts</li>
+                </ul>
+
+                <div class="comparison">
+                    <div>
+                        <span class="label label-bad">❌ Violating DIP</span>
+                        <pre class="bad"><code><span class="comment">// High-level module depends on low-level</span>
+<span class="keyword">public class</span> <span class="class-name">EmailNotification</span>
+{
+    <span class="keyword">public void</span> <span class="method">Send</span>(<span class="keyword">string</span> message)
+    {
+        <span class="comment">// Send email logic</span>
+    }
+}
+
+<span class="keyword">public class</span> <span class="class-name">OrderService</span>
+{
+    <span class="comment">// Tight coupling to EmailNotification</span>
+    <span class="keyword">private readonly</span> <span class="class-name">EmailNotification</span> _notification 
+        = <span class="keyword">new</span> <span class="class-name">EmailNotification</span>();
+    
+    <span class="keyword">public void</span> <span class="method">PlaceOrder</span>(<span class="class-name">Order</span> order)
+    {
+        <span class="comment">// Process order...</span>
+        _notification.Send(<span class="string">"Order placed!"</span>);
+        <span class="comment">// Cannot easily switch to SMS!</span>
+    }
+}</code></pre>
+                    </div>
+                    <div>
+                        <span class="label label-good">✅ Following DIP</span>
+                        <pre class="good"><code><span class="comment">// Abstraction</span>
+<span class="keyword">public interface</span> <span class="class-name">INotificationService</span>
+{
+    <span class="keyword">void</span> <span class="method">Send</span>(<span class="keyword">string</span> message);
+}
+
+<span class="keyword">public class</span> <span class="class-name">EmailNotification</span> : <span class="class-name">INotificationService</span>
+{
+    <span class="keyword">public void</span> <span class="method">Send</span>(<span class="keyword">string</span> message) { <span class="comment">/* Email */</span> }
+}
+
+<span class="keyword">public class</span> <span class="class-name">SmsNotification</span> : <span class="class-name">INotificationService</span>
+{
+    <span class="keyword">public void</span> <span class="method">Send</span>(<span class="keyword">string</span> message) { <span class="comment">/* SMS */</span> }
+}
+
+<span class="keyword">public class</span> <span class="class-name">OrderService</span>
+{
+    <span class="keyword">private readonly</span> <span class="class-name">INotificationService</span> _notification;
+    
+    <span class="comment">// Dependency Injection via constructor</span>
+    <span class="keyword">public</span> <span class="method">OrderService</span>(<span class="class-name">INotificationService</span> notification)
+    {
+        _notification = notification;
+    }
+    
+    <span class="keyword">public void</span> <span class="method">PlaceOrder</span>(<span class="class-name">Order</span> order)
+    {
+        <span class="comment">// Process order...</span>
+        _notification.Send(<span class="string">"Order placed!"</span>);
+    }
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="use-case">
+                    <h4>🔧 DI Container Example (.NET)</h4>
+                    <pre><code><span class="comment">// In Program.cs or Startup.cs</span>
+services.AddScoped&lt;<span class="class-name">INotificationService</span>, <span class="class-name">EmailNotification</span>&gt;();
+services.AddScoped&lt;<span class="class-name">OrderService</span>&gt;();
+
+<span class="comment">// Now OrderService gets INotificationService automatically injected!</span></code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- DESIGN PATTERNS SECTION -->
+        <section id="creational" class="section">
+            <h2>🏗️ Creational Design Patterns</h2>
+            <p style="margin-bottom: 20px;">Creational patterns deal with object creation mechanisms, trying to create objects in a manner suitable to the situation.</p>
+
+            <div class="pattern-grid">
+                <!-- Singleton -->
+                <div class="pattern-card">
+                    <span class="label label-creational">Creational</span>
+                    <h3>🔒 Singleton Pattern</h3>
+                    <p><strong>Purpose:</strong> Ensure a class has only one instance and provide a global point of access to it.</p>
+                    
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Database connections</li>
+                        <li>Configuration managers</li>
+                        <li>Logging services</li>
+                        <li>Caching</li>
+                    </ul>
+
+                    <pre><code><span class="keyword">public sealed class</span> <span class="class-name">Singleton</span>
+{
+    <span class="comment">// Lazy&lt;T&gt; ensures thread safety</span>
+    <span class="keyword">private static readonly</span> Lazy&lt;<span class="class-name">Singleton</span>&gt; _instance
+        = <span class="keyword">new</span> Lazy&lt;<span class="class-name">Singleton</span>&gt;(() => <span class="keyword">new</span> <span class="class-name">Singleton</span>());
+    
+    <span class="comment">// Private constructor prevents external instantiation</span>
+    <span class="keyword">private</span> <span class="method">Singleton</span>() { }
+    
+    <span class="keyword">public static</span> <span class="class-name">Singleton</span> Instance => _instance.Value;
+    
+    <span class="keyword">public void</span> <span class="method">DoSomething</span>()
+    {
+        Console.WriteLine(<span class="string">"Singleton method called"</span>);
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="class-name">Singleton</span>.Instance.DoSomething();</code></pre>
+
+                    <div class="use-case">
+                        <strong>⚠️ Warning:</strong> Singletons can make unit testing difficult. Consider using DI containers instead.
+                    </div>
+                </div>
+
+                <!-- Factory Method -->
+                <div class="pattern-card">
+                    <span class="label label-creational">Creational</span>
+                    <h3>🏭 Factory Method Pattern</h3>
+                    <p><strong>Purpose:</strong> Define an interface for creating an object, but let subclasses decide which class to instantiate.</p>
+                    
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>When you don't know exact types at compile time</li>
+                        <li>When you want to delegate creation to subclasses</li>
+                        <li>To avoid tight coupling to concrete classes</li>
+                    </ul>
+
+                    <pre><code><span class="comment">// Product interface</span>
+<span class="keyword">public interface</span> <span class="class-name">IVehicle</span>
+{
+    <span class="keyword">void</span> <span class="method">Drive</span>();
+}
+
+<span class="comment">// Concrete products</span>
+<span class="keyword">public class</span> <span class="class-name">Car</span> : <span class="class-name">IVehicle</span>
+{
+    <span class="keyword">public void</span> <span class="method">Drive</span>() => Console.WriteLine(<span class="string">"Driving car"</span>);
+}
+
+<span class="keyword">public class</span> <span class="class-name">Motorcycle</span> : <span class="class-name">IVehicle</span>
+{
+    <span class="keyword">public void</span> <span class="method">Drive</span>() => Console.WriteLine(<span class="string">"Riding motorcycle"</span>);
+}
+
+<span class="comment">// Factory</span>
+<span class="keyword">public abstract class</span> <span class="class-name">VehicleFactory</span>
+{
+    <span class="keyword">public abstract</span> <span class="class-name">IVehicle</span> <span class="method">CreateVehicle</span>();
+}
+
+<span class="keyword">public class</span> <span class="class-name">CarFactory</span> : <span class="class-name">VehicleFactory</span>
+{
+    <span class="keyword">public override</span> <span class="class-name">IVehicle</span> <span class="method">CreateVehicle</span>() => <span class="keyword">new</span> <span class="class-name">Car</span>();
+}
+
+<span class="keyword">public class</span> <span class="class-name">MotorcycleFactory</span> : <span class="class-name">VehicleFactory</span>
+{
+    <span class="keyword">public override</span> <span class="class-name">IVehicle</span> <span class="method">CreateVehicle</span>() => <span class="keyword">new</span> <span class="class-name">Motorcycle</span>();
+}
+
+<span class="comment">// Usage</span>
+<span class="class-name">VehicleFactory</span> factory = <span class="keyword">new</span> <span class="class-name">CarFactory</span>();
+<span class="class-name">IVehicle</span> vehicle = factory.CreateVehicle();
+vehicle.Drive(); <span class="comment">// "Driving car"</span></code></pre>
+                </div>
+
+                <!-- Abstract Factory -->
+                <div class="pattern-card">
+                    <span class="label label-creational">Creational</span>
+                    <h3>🏭🏭 Abstract Factory Pattern</h3>
+                    <p><strong>Purpose:</strong> Provide an interface for creating families of related objects without specifying their concrete classes.</p>
+                    
+                    <h4>Key Difference from Factory Method:</h4>
+                    <ul>
+                        <li>Creates families of related objects</li>
+                        <li>Multiple factory methods in one interface</li>
+                        <li>Ensures products from same family work together</li>
+                    </ul>
+
+                    <pre><code><span class="comment">// Abstract products</span>
+<span class="keyword">public interface</span> <span class="class-name">IButton</span> { <span class="keyword">void</span> <span class="method">Render</span>(); }
+<span class="keyword">public interface</span> <span class="class-name">ITextBox</span> { <span class="keyword">void</span> <span class="method">Render</span>(); }
+
+<span class="comment">// Concrete products - Windows family</span>
+<span class="keyword">public class</span> <span class="class-name">WindowsButton</span> : <span class="class-name">IButton</span>
+{
+    <span class="keyword">public void</span> <span class="method">Render</span>() => Console.WriteLine(<span class="string">"Windows Button"</span>);
+}
+<span class="keyword">public class</span> <span class="class-name">WindowsTextBox</span> : <span class="class-name">ITextBox</span>
+{
+    <span class="keyword">public void</span> <span class="method">Render</span>() => Console.WriteLine(<span class="string">"Windows TextBox"</span>);
+}
+
+<span class="comment">// Concrete products - Mac family</span>
+<span class="keyword">public class</span> <span class="class-name">MacButton</span> : <span class="class-name">IButton</span>
+{
+    <span class="keyword">public void</span> <span class="method">Render</span>() => Console.WriteLine(<span class="string">"Mac Button"</span>);
+}
+<span class="keyword">public class</span> <span class="class-name">MacTextBox</span> : <span class="class-name">ITextBox</span>
+{
+    <span class="keyword">public void</span> <span class="method">Render</span>() => Console.WriteLine(<span class="string">"Mac TextBox"</span>);
+}
+
+<span class="comment">// Abstract factory</span>
+<span class="keyword">public interface</span> <span class="class-name">IUIFactory</span>
+{
+    <span class="class-name">IButton</span> <span class="method">CreateButton</span>();
+    <span class="class-name">ITextBox</span> <span class="method">CreateTextBox</span>();
+}
+
+<span class="comment">// Concrete factories</span>
+<span class="keyword">public class</span> <span class="class-name">WindowsFactory</span> : <span class="class-name">IUIFactory</span>
+{
+    <span class="keyword">public</span> <span class="class-name">IButton</span> <span class="method">CreateButton</span>() => <span class="keyword">new</span> <span class="class-name">WindowsButton</span>();
+    <span class="keyword">public</span> <span class="class-name">ITextBox</span> <span class="method">CreateTextBox</span>() => <span class="keyword">new</span> <span class="class-name">WindowsTextBox</span>();
+}
+
+<span class="keyword">public class</span> <span class="class-name">MacFactory</span> : <span class="class-name">IUIFactory</span>
+{
+    <span class="keyword">public</span> <span class="class-name">IButton</span> <span class="method">CreateButton</span>() => <span class="keyword">new</span> <span class="class-name">MacButton</span>();
+    <span class="keyword">public</span> <span class="class-name">ITextBox</span> <span class="method">CreateTextBox</span>() => <span class="keyword">new</span> <span class="class-name">MacTextBox</span>();
+}</code></pre>
+                </div>
+
+                <!-- Builder -->
+                <div class="pattern-card">
+                    <span class="label label-creational">Creational</span>
+                    <h3>🔨 Builder Pattern</h3>
+                    <p><strong>Purpose:</strong> Separate the construction of a complex object from its representation, allowing the same construction process to create different representations.</p>
+                    
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Object has many optional parameters</li>
+                        <li>Object creation involves multiple steps</li>
+                        <li>Want to avoid "telescoping constructors"</li>
+                        <li>Creating immutable objects</li>
+                    </ul>
+
+                    <pre><code><span class="keyword">public class</span> <span class="class-name">Pizza</span>
+{
+    <span class="keyword">public string</span> Size { <span class="keyword">get</span>; }
+    <span class="keyword">public string</span> Crust { <span class="keyword">get</span>; }
+    <span class="keyword">public bool</span> Cheese { <span class="keyword">get</span>; }
+    <span class="keyword">public bool</span> Pepperoni { <span class="keyword">get</span>; }
+    <span class="keyword">public bool</span> Mushrooms { <span class="keyword">get</span>; }
+    
+    <span class="keyword">private</span> <span class="method">Pizza</span>(<span class="class-name">PizzaBuilder</span> builder)
+    {
+        Size = builder.Size;
+        Crust = builder.Crust;
+        Cheese = builder.Cheese;
+        Pepperoni = builder.Pepperoni;
+        Mushrooms = builder.Mushrooms;
+    }
+    
+    <span class="keyword">public class</span> <span class="class-name">PizzaBuilder</span>
+    {
+        <span class="keyword">public string</span> Size { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="string">"Medium"</span>;
+        <span class="keyword">public string</span> Crust { <span class="keyword">get</span>; <span class="keyword">private set</span>; } = <span class="string">"Regular"</span>;
+        <span class="keyword">public bool</span> Cheese { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        <span class="keyword">public bool</span> Pepperoni { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        <span class="keyword">public bool</span> Mushrooms { <span class="keyword">get</span>; <span class="keyword">private set</span>; }
+        
+        <span class="keyword">public</span> <span class="class-name">PizzaBuilder</span> <span class="method">SetSize</span>(<span class="keyword">string</span> size)
+        { Size = size; <span class="keyword">return this</span>; }
+        
+        <span class="keyword">public</span> <span class="class-name">PizzaBuilder</span> <span class="method">SetCrust</span>(<span class="keyword">string</span> crust)
+        { Crust = crust; <span class="keyword">return this</span>; }
+        
+        <span class="keyword">public</span> <span class="class-name">PizzaBuilder</span> <span class="method">AddCheese</span>()
+        { Cheese = <span class="keyword">true</span>; <span class="keyword">return this</span>; }
+        
+        <span class="keyword">public</span> <span class="class-name">PizzaBuilder</span> <span class="method">AddPepperoni</span>()
+        { Pepperoni = <span class="keyword">true</span>; <span class="keyword">return this</span>; }
+        
+        <span class="keyword">public</span> <span class="class-name">PizzaBuilder</span> <span class="method">AddMushrooms</span>()
+        { Mushrooms = <span class="keyword">true</span>; <span class="keyword">return this</span>; }
+        
+        <span class="keyword">public</span> <span class="class-name">Pizza</span> <span class="method">Build</span>() => <span class="keyword">new</span> <span class="class-name">Pizza</span>(<span class="keyword">this</span>);
+    }
+}
+
+<span class="comment">// Usage - Fluent API</span>
+<span class="keyword">var</span> pizza = <span class="keyword">new</span> <span class="class-name">Pizza.PizzaBuilder</span>()
+    .SetSize(<span class="string">"Large"</span>)
+    .SetCrust(<span class="string">"Thin"</span>)
+    .AddCheese()
+    .AddPepperoni()
+    .Build();</code></pre>
+                </div>
+
+                <!-- Prototype -->
+                <div class="pattern-card">
+                    <span class="label label-creational">Creational</span>
+                    <h3>📋 Prototype Pattern</h3>
+                    <p><strong>Purpose:</strong> Create new objects by copying an existing object (prototype) rather than creating from scratch.</p>
+                    
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Object creation is expensive</li>
+                        <li>Objects have few variations</li>
+                        <li>Avoiding subclasses for object creation</li>
+                    </ul>
+
+                    <pre><code><span class="keyword">public interface</span> <span class="class-name">IPrototype</span>&lt;T&gt;
+{
+    T <span class="method">Clone</span>();
+}
+
+<span class="keyword">public class</span> <span class="class-name">Document</span> : <span class="class-name">IPrototype</span>&lt;<span class="class-name">Document</span>&gt;
+{
+    <span class="keyword">public string</span> Title { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    <span class="keyword">public string</span> Content { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    <span class="keyword">public</span> List&lt;<span class="keyword">string</span>&gt; Authors { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    
+    <span class="comment">// Shallow copy</span>
+    <span class="keyword">public</span> <span class="class-name">Document</span> <span class="method">ShallowClone</span>()
+    {
+        <span class="keyword">return</span> (<span class="class-name">Document</span>)MemberwiseClone();
+    }
+    
+    <span class="comment">// Deep copy</span>
+    <span class="keyword">public</span> <span class="class-name">Document</span> <span class="method">Clone</span>()
+    {
+        <span class="keyword">return new</span> <span class="class-name">Document</span>
+        {
+            Title = Title,
+            Content = Content,
+            Authors = <span class="keyword">new</span> List&lt;<span class="keyword">string</span>&gt;(Authors) <span class="comment">// New list</span>
+        };
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="keyword">var</span> original = <span class="keyword">new</span> <span class="class-name">Document</span> 
+{ 
+    Title = <span class="string">"Report"</span>, 
+    Authors = <span class="keyword">new</span> List&lt;<span class="keyword">string</span>&gt; { <span class="string">"Alice"</span> } 
+};
+
+<span class="keyword">var</span> copy = original.Clone();
+copy.Title = <span class="string">"Report Copy"</span>;
+copy.Authors.Add(<span class="string">"Bob"</span>);
+<span class="comment">// Original is not affected</span></code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Structural Patterns -->
+        <section id="structural" class="section">
+            <h2>🏛️ Structural Design Patterns</h2>
+            <p style="margin-bottom: 20px;">Structural patterns explain how to assemble objects and classes into larger structures while keeping these structures flexible and efficient.</p>
+
+            <div class="pattern-grid">
+                <!-- Adapter -->
+                <div class="pattern-card">
+                    <span class="label label-structural">Structural</span>
+                    <h3>🔌 Adapter Pattern</h3>
+                    <p><strong>Purpose:</strong> Convert the interface of a class into another interface that clients expect. Allows incompatible interfaces to work together.</p>
+                    
+                    <h4>Real-world Analogy:</h4>
+                    <p>Like a power adapter that lets you plug a US device into a European outlet.</p>
+
+                    <pre><code><span class="comment">// Existing interface your code uses</span>
+<span class="keyword">public interface</span> <span class="class-name">ITarget</span>
+{
+    <span class="keyword">string</span> <span class="method">GetRequest</span>();
+}
+
+<span class="comment">// Legacy/third-party class with incompatible interface</span>
+<span class="keyword">public class</span> <span class="class-name">Adaptee</span>
+{
+    <span class="keyword">public string</span> <span class="method">GetSpecificRequest</span>()
+    {
+        <span class="keyword">return</span> <span class="string">"Specific request"</span>;
+    }
+}
+
+<span class="comment">// Adapter makes Adaptee compatible with ITarget</span>
+<span class="keyword">public class</span> <span class="class-name">Adapter</span> : <span class="class-name">ITarget</span>
+{
+    <span class="keyword">private readonly</span> <span class="class-name">Adaptee</span> _adaptee;
+    
+    <span class="keyword">public</span> <span class="method">Adapter</span>(<span class="class-name">Adaptee</span> adaptee)
+    {
+        _adaptee = adaptee;
+    }
+    
+    <span class="keyword">public string</span> <span class="method">GetRequest</span>()
+    {
+        <span class="comment">// Translate the call</span>
+        <span class="keyword">return</span> $<span class="string">"Adapted: {_adaptee.GetSpecificRequest()}"</span>;
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="class-name">Adaptee</span> adaptee = <span class="keyword">new</span> <span class="class-name">Adaptee</span>();
+<span class="class-name">ITarget</span> target = <span class="keyword">new</span> <span class="class-name">Adapter</span>(adaptee);
+Console.WriteLine(target.GetRequest());</code></pre>
+                </div>
+
+                <!-- Decorator -->
+                <div class="pattern-card">
+                    <span class="label label-structural">Structural</span>
+                    <h3>🎨 Decorator Pattern</h3>
+                    <p><strong>Purpose:</strong> Attach additional responsibilities to an object dynamically. Provides a flexible alternative to subclassing for extending functionality.</p>
+                    
+                    <h4>When to Use:</h4>
+                    <ul>
+                        <li>Add responsibilities without affecting other objects</li>
+                        <li>Responsibilities can be withdrawn</li>
+                        <li>Extension by subclassing is impractical</li>
+                    </ul>
+
+                    <pre><code><span class="comment">// Component interface</span>
+<span class="keyword">public interface</span> <span class="class-name">ICoffee</span>
+{
+    <span class="keyword">string</span> <span class="method">GetDescription</span>();
+    <span class="keyword">decimal</span> <span class="method">GetCost</span>();
+}
+
+<span class="comment">// Concrete component</span>
+<span class="keyword">public class</span> <span class="class-name">SimpleCoffee</span> : <span class="class-name">ICoffee</span>
+{
+    <span class="keyword">public string</span> <span class="method">GetDescription</span>() => <span class="string">"Simple Coffee"</span>;
+    <span class="keyword">public decimal</span> <span class="method">GetCost</span>() => 2.00m;
+}
+
+<span class="comment">// Base decorator</span>
+<span class="keyword">public abstract class</span> <span class="class-name">CoffeeDecorator</span> : <span class="class-name">ICoffee</span>
+{
+    <span class="keyword">protected readonly</span> <span class="class-name">ICoffee</span> _coffee;
+    
+    <span class="keyword">protected</span> <span class="method">CoffeeDecorator</span>(<span class="class-name">ICoffee</span> coffee)
+    {
+        _coffee = coffee;
+    }
+    
+    <span class="keyword">public virtual string</span> <span class="method">GetDescription</span>() => _coffee.GetDescription();
+    <span class="keyword">public virtual decimal</span> <span class="method">GetCost</span>() => _coffee.GetCost();
+}
+
+<span class="comment">// Concrete decorators</span>
+<span class="keyword">public class</span> <span class="class-name">MilkDecorator</span> : <span class="class-name">CoffeeDecorator</span>
+{
+    <span class="keyword">public</span> <span class="method">MilkDecorator</span>(<span class="class-name">ICoffee</span> coffee) : <span class="keyword">base</span>(coffee) { }
+    
+    <span class="keyword">public override string</span> <span class="method">GetDescription</span>() 
+        => $<span class="string">"{_coffee.GetDescription()} + Milk"</span>;
+    <span class="keyword">public override decimal</span> <span class="method">GetCost</span>() => _coffee.GetCost() + 0.50m;
+}
+
+<span class="keyword">public class</span> <span class="class-name">SugarDecorator</span> : <span class="class-name">CoffeeDecorator</span>
+{
+    <span class="keyword">public</span> <span class="method">SugarDecorator</span>(<span class="class-name">ICoffee</span> coffee) : <span class="keyword">base</span>(coffee) { }
+    
+    <span class="keyword">public override string</span> <span class="method">GetDescription</span>() 
+        => $<span class="string">"{_coffee.GetDescription()} + Sugar"</span>;
+    <span class="keyword">public override decimal</span> <span class="method">GetCost</span>() => _coffee.GetCost() + 0.25m;
+}
+
+<span class="comment">// Usage - Stack decorators!</span>
+<span class="class-name">ICoffee</span> coffee = <span class="keyword">new</span> <span class="class-name">SimpleCoffee</span>();
+coffee = <span class="keyword">new</span> <span class="class-name">MilkDecorator</span>(coffee);
+coffee = <span class="keyword">new</span> <span class="class-name">SugarDecorator</span>(coffee);
+<span class="comment">// "Simple Coffee + Milk + Sugar" = $2.75</span></code></pre>
+                </div>
+
+                <!-- Facade -->
+                <div class="pattern-card">
+                    <span class="label label-structural">Structural</span>
+                    <h3>🏠 Facade Pattern</h3>
+                    <p><strong>Purpose:</strong> Provide a unified interface to a set of interfaces in a subsystem. Defines a higher-level interface that makes the subsystem easier to use.</p>
+
+                    <pre><code><span class="comment">// Complex subsystem classes</span>
+<span class="keyword">public class</span> <span class="class-name">CPU</span>
+{
+    <span class="keyword">public void</span> <span class="method">Freeze</span>() => Console.WriteLine(<span class="string">"CPU: Freeze"</span>);
+    <span class="keyword">public void</span> <span class="method">Jump</span>(<span class="keyword">long</span> position) { }
+    <span class="keyword">public void</span> <span class="method">Execute</span>() => Console.WriteLine(<span class="string">"CPU: Execute"</span>);
+}
+
+<span class="keyword">public class</span> <span class="class-name">Memory</span>
+{
+    <span class="keyword">public void</span> <span class="method">Load</span>(<span class="keyword">long</span> position, <span class="keyword">byte</span>[] data) 
+        => Console.WriteLine(<span class="string">"Memory: Load"</span>);
+}
+
+<span class="keyword">public class</span> <span class="class-name">HardDrive</span>
+{
+    <span class="keyword">public byte</span>[] <span class="method">Read</span>(<span class="keyword">long</span> lba, <span class="keyword">int</span> size) 
+    {
+        Console.WriteLine(<span class="string">"HardDrive: Read"</span>);
+        <span class="keyword">return new byte</span>[size];
+    }
+}
+
+<span class="comment">// Facade - Simple interface to complex subsystem</span>
+<span class="keyword">public class</span> <span class="class-name">ComputerFacade</span>
+{
+    <span class="keyword">private readonly</span> <span class="class-name">CPU</span> _cpu = <span class="keyword">new</span>();
+    <span class="keyword">private readonly</span> <span class="class-name">Memory</span> _memory = <span class="keyword">new</span>();
+    <span class="keyword">private readonly</span> <span class="class-name">HardDrive</span> _hardDrive = <span class="keyword">new</span>();
+    
+    <span class="keyword">public void</span> <span class="method">Start</span>()
+    {
+        _cpu.Freeze();
+        _memory.Load(0, _hardDrive.Read(0, 1024));
+        _cpu.Jump(0);
+        _cpu.Execute();
+        Console.WriteLine(<span class="string">"Computer started!"</span>);
+    }
+}
+
+<span class="comment">// Usage - One simple method call</span>
+<span class="keyword">var</span> computer = <span class="keyword">new</span> <span class="class-name">ComputerFacade</span>();
+computer.Start();</code></pre>
+                </div>
+
+                <!-- Proxy -->
+                <div class="pattern-card">
+                    <span class="label label-structural">Structural</span>
+                    <h3>🛡️ Proxy Pattern</h3>
+                    <p><strong>Purpose:</strong> Provide a surrogate or placeholder for another object to control access to it.</p>
+                    
+                    <h4>Types of Proxies:</h4>
+                    <ul>
+                        <li><strong>Virtual Proxy:</strong> Lazy initialization</li>
+                        <li><strong>Protection Proxy:</strong> Access control</li>
+                        <li><strong>Remote Proxy:</strong> Local representative for remote object</li>
+                        <li><strong>Logging Proxy:</strong> Add logging</li>
+                    </ul>
+
+                    <pre><code><span class="keyword">public interface</span> <span class="class-name">IDocument</span>
+{
+    <span class="keyword">void</span> <span class="method">Display</span>();
+}
+
+<span class="comment">// Real subject - expensive to create</span>
+<span class="keyword">public class</span> <span class="class-name">RealDocument</span> : <span class="class-name">IDocument</span>
+{
+    <span class="keyword">private readonly string</span> _filename;
+    
+    <span class="keyword">public</span> <span class="method">RealDocument</span>(<span class="keyword">string</span> filename)
+    {
+        _filename = filename;
+        <span class="method">LoadFromDisk</span>(); <span class="comment">// Expensive operation</span>
+    }
+    
+    <span class="keyword">private void</span> <span class="method">LoadFromDisk</span>()
+    {
+        Console.WriteLine($<span class="string">"Loading {_filename} from disk..."</span>);
+        Thread.Sleep(2000); <span class="comment">// Simulate slow load</span>
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Display</span>() => Console.WriteLine($<span class="string">"Displaying {_filename}"</span>);
+}
+
+<span class="comment">// Virtual proxy - lazy loading</span>
+<span class="keyword">public class</span> <span class="class-name">DocumentProxy</span> : <span class="class-name">IDocument</span>
+{
+    <span class="keyword">private</span> <span class="class-name">RealDocument</span>? _realDocument;
+    <span class="keyword">private readonly string</span> _filename;
+    
+    <span class="keyword">public</span> <span class="method">DocumentProxy</span>(<span class="keyword">string</span> filename)
+    {
+        _filename = filename;
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Display</span>()
+    {
+        <span class="comment">// Load only when needed</span>
+        _realDocument ??= <span class="keyword">new</span> <span class="class-name">RealDocument</span>(_filename);
+        _realDocument.Display();
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="class-name">IDocument</span> doc = <span class="keyword">new</span> <span class="class-name">DocumentProxy</span>(<span class="string">"huge_file.pdf"</span>);
+<span class="comment">// No loading yet...</span>
+doc.Display(); <span class="comment">// Now it loads!</span></code></pre>
+                </div>
+
+                <!-- Composite -->
+                <div class="pattern-card">
+                    <span class="label label-structural">Structural</span>
+                    <h3>🌳 Composite Pattern</h3>
+                    <p><strong>Purpose:</strong> Compose objects into tree structures to represent part-whole hierarchies. Lets clients treat individual objects and compositions uniformly.</p>
+
+                    <pre><code><span class="keyword">public interface</span> <span class="class-name">IFileSystemItem</span>
+{
+    <span class="keyword">string</span> Name { <span class="keyword">get</span>; }
+    <span class="keyword">long</span> <span class="method">GetSize</span>();
+    <span class="keyword">void</span> <span class="method">Display</span>(<span class="keyword">int</span> indent = 0);
+}
+
+<span class="comment">// Leaf</span>
+<span class="keyword">public class</span> <span class="class-name">File</span> : <span class="class-name">IFileSystemItem</span>
+{
+    <span class="keyword">public string</span> Name { <span class="keyword">get</span>; }
+    <span class="keyword">public long</span> Size { <span class="keyword">get</span>; }
+    
+    <span class="keyword">public</span> <span class="method">File</span>(<span class="keyword">string</span> name, <span class="keyword">long</span> size)
+    {
+        Name = name;
+        Size = size;
+    }
+    
+    <span class="keyword">public long</span> <span class="method">GetSize</span>() => Size;
+    <span class="keyword">public void</span> <span class="method">Display</span>(<span class="keyword">int</span> indent = 0) 
+        => Console.WriteLine($<span class="string">"{new string(' ', indent)}📄 {Name} ({Size}KB)"</span>);
+}
+
+<span class="comment">// Composite</span>
+<span class="keyword">public class</span> <span class="class-name">Directory</span> : <span class="class-name">IFileSystemItem</span>
+{
+    <span class="keyword">public string</span> Name { <span class="keyword">get</span>; }
+    <span class="keyword">private readonly</span> List&lt;<span class="class-name">IFileSystemItem</span>&gt; _items = <span class="keyword">new</span>();
+    
+    <span class="keyword">public</span> <span class="method">Directory</span>(<span class="keyword">string</span> name) => Name = name;
+    
+    <span class="keyword">public void</span> <span class="method">Add</span>(<span class="class-name">IFileSystemItem</span> item) => _items.Add(item);
+    
+    <span class="keyword">public long</span> <span class="method">GetSize</span>() => _items.Sum(i => i.GetSize());
+    
+    <span class="keyword">public void</span> <span class="method">Display</span>(<span class="keyword">int</span> indent = 0)
+    {
+        Console.WriteLine($<span class="string">"{new string(' ', indent)}📁 {Name}/"</span>);
+        <span class="keyword">foreach</span> (<span class="keyword">var</span> item <span class="keyword">in</span> _items)
+            item.Display(indent + 2);
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="keyword">var</span> root = <span class="keyword">new</span> <span class="class-name">Directory</span>(<span class="string">"root"</span>);
+root.Add(<span class="keyword">new</span> <span class="class-name">File</span>(<span class="string">"readme.txt"</span>, 10));
+
+<span class="keyword">var</span> src = <span class="keyword">new</span> <span class="class-name">Directory</span>(<span class="string">"src"</span>);
+src.Add(<span class="keyword">new</span> <span class="class-name">File</span>(<span class="string">"app.cs"</span>, 50));
+src.Add(<span class="keyword">new</span> <span class="class-name">File</span>(<span class="string">"utils.cs"</span>, 30));
+root.Add(src);
+
+root.Display();
+Console.WriteLine($<span class="string">"Total: {root.GetSize()}KB"</span>);</code></pre>
+                </div>
+
+                <!-- Bridge -->
+                <div class="pattern-card">
+                    <span class="label label-structural">Structural</span>
+                    <h3>🌉 Bridge Pattern</h3>
+                    <p><strong>Purpose:</strong> Decouple an abstraction from its implementation so that the two can vary independently.</p>
+                    
+                    <h4>Key Concept:</h4>
+                    <p>Prefer composition over inheritance. The "bridge" is the composition relationship.</p>
+
+                    <pre><code><span class="comment">// Implementor - the "implementation" hierarchy</span>
+<span class="keyword">public interface</span> <span class="class-name">IMessageSender</span>
+{
+    <span class="keyword">void</span> <span class="method">SendMessage</span>(<span class="keyword">string</span> message);
+}
+
+<span class="keyword">public class</span> <span class="class-name">EmailSender</span> : <span class="class-name">IMessageSender</span>
+{
+    <span class="keyword">public void</span> <span class="method">SendMessage</span>(<span class="keyword">string</span> message) 
+        => Console.WriteLine($<span class="string">"📧 Email: {message}"</span>);
+}
+
+<span class="keyword">public class</span> <span class="class-name">SmsSender</span> : <span class="class-name">IMessageSender</span>
+{
+    <span class="keyword">public void</span> <span class="method">SendMessage</span>(<span class="keyword">string</span> message) 
+        => Console.WriteLine($<span class="string">"📱 SMS: {message}"</span>);
+}
+
+<span class="comment">// Abstraction - the "abstraction" hierarchy</span>
+<span class="keyword">public abstract class</span> <span class="class-name">Message</span>
+{
+    <span class="keyword">protected readonly</span> <span class="class-name">IMessageSender</span> _sender;
+    
+    <span class="keyword">protected</span> <span class="method">Message</span>(<span class="class-name">IMessageSender</span> sender)
+    {
+        _sender = sender;
+    }
+    
+    <span class="keyword">public abstract void</span> <span class="method">Send</span>(<span class="keyword">string</span> message);
+}
+
+<span class="keyword">public class</span> <span class="class-name">TextMessage</span> : <span class="class-name">Message</span>
+{
+    <span class="keyword">public</span> <span class="method">TextMessage</span>(<span class="class-name">IMessageSender</span> sender) : <span class="keyword">base</span>(sender) { }
+    
+    <span class="keyword">public override void</span> <span class="method">Send</span>(<span class="keyword">string</span> message)
+    {
+        _sender.SendMessage(message);
+    }
+}
+
+<span class="keyword">public class</span> <span class="class-name">UrgentMessage</span> : <span class="class-name">Message</span>
+{
+    <span class="keyword">public</span> <span class="method">UrgentMessage</span>(<span class="class-name">IMessageSender</span> sender) : <span class="keyword">base</span>(sender) { }
+    
+    <span class="keyword">public override void</span> <span class="method">Send</span>(<span class="keyword">string</span> message)
+    {
+        _sender.SendMessage($<span class="string">"🚨 URGENT: {message}"</span>);
+    }
+}
+
+<span class="comment">// Usage - Mix and match freely!</span>
+<span class="keyword">var</span> urgentEmail = <span class="keyword">new</span> <span class="class-name">UrgentMessage</span>(<span class="keyword">new</span> <span class="class-name">EmailSender</span>());
+<span class="keyword">var</span> normalSms = <span class="keyword">new</span> <span class="class-name">TextMessage</span>(<span class="keyword">new</span> <span class="class-name">SmsSender</span>());
+urgentEmail.Send(<span class="string">"Server down!"</span>);
+normalSms.Send(<span class="string">"Hello!"</span>);</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Behavioral Patterns -->
+        <section id="behavioral" class="section">
+            <h2>🎭 Behavioral Design Patterns</h2>
+            <p style="margin-bottom: 20px;">Behavioral patterns are concerned with algorithms and the assignment of responsibilities between objects.</p>
+
+            <div class="pattern-grid">
+                <!-- Strategy -->
+                <div class="pattern-card">
+                    <span class="label label-behavioral">Behavioral</span>
+                    <h3>🎯 Strategy Pattern</h3>
+                    <p><strong>Purpose:</strong> Define a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from clients that use it.</p>
+
+                    <pre><code><span class="comment">// Strategy interface</span>
+<span class="keyword">public interface</span> <span class="class-name">IPaymentStrategy</span>
+{
+    <span class="keyword">void</span> <span class="method">Pay</span>(<span class="keyword">decimal</span> amount);
+}
+
+<span class="comment">// Concrete strategies</span>
+<span class="keyword">public class</span> <span class="class-name">CreditCardPayment</span> : <span class="class-name">IPaymentStrategy</span>
+{
+    <span class="keyword">private readonly string</span> _cardNumber;
+    
+    <span class="keyword">public</span> <span class="method">CreditCardPayment</span>(<span class="keyword">string</span> cardNumber)
+    {
+        _cardNumber = cardNumber;
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Pay</span>(<span class="keyword">decimal</span> amount)
+    {
+        Console.WriteLine($<span class="string">"💳 Paid ${amount} with card {_cardNumber}"</span>);
+    }
+}
+
+<span class="keyword">public class</span> <span class="class-name">PayPalPayment</span> : <span class="class-name">IPaymentStrategy</span>
+{
+    <span class="keyword">private readonly string</span> _email;
+    
+    <span class="keyword">public</span> <span class="method">PayPalPayment</span>(<span class="keyword">string</span> email) => _email = email;
+    
+    <span class="keyword">public void</span> <span class="method">Pay</span>(<span class="keyword">decimal</span> amount)
+    {
+        Console.WriteLine($<span class="string">"🅿️ Paid ${amount} via PayPal ({_email})"</span>);
+    }
+}
+
+<span class="comment">// Context</span>
+<span class="keyword">public class</span> <span class="class-name">ShoppingCart</span>
+{
+    <span class="keyword">private</span> <span class="class-name">IPaymentStrategy</span>? _paymentStrategy;
+    
+    <span class="keyword">public void</span> <span class="method">SetPaymentStrategy</span>(<span class="class-name">IPaymentStrategy</span> strategy)
+    {
+        _paymentStrategy = strategy;
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Checkout</span>(<span class="keyword">decimal</span> total)
+    {
+        _paymentStrategy?.Pay(total);
+    }
+}
+
+<span class="comment">// Usage - Change strategy at runtime</span>
+<span class="keyword">var</span> cart = <span class="keyword">new</span> <span class="class-name">ShoppingCart</span>();
+cart.SetPaymentStrategy(<span class="keyword">new</span> <span class="class-name">CreditCardPayment</span>(<span class="string">"1234-5678"</span>));
+cart.Checkout(99.99m);
+
+cart.SetPaymentStrategy(<span class="keyword">new</span> <span class="class-name">PayPalPayment</span>(<span class="string">"user@email.com"</span>));
+cart.Checkout(49.99m);</code></pre>
+                </div>
+
+                <!-- Observer -->
+                <div class="pattern-card">
+                    <span class="label label-behavioral">Behavioral</span>
+                    <h3>👀 Observer Pattern</h3>
+                    <p><strong>Purpose:</strong> Define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.</p>
+
+                    <pre><code><span class="comment">// Observer interface</span>
+<span class="keyword">public interface</span> <span class="class-name">IObserver</span>
+{
+    <span class="keyword">void</span> <span class="method">Update</span>(<span class="keyword">string</span> message);
+}
+
+<span class="comment">// Subject interface</span>
+<span class="keyword">public interface</span> <span class="class-name">ISubject</span>
+{
+    <span class="keyword">void</span> <span class="method">Attach</span>(<span class="class-name">IObserver</span> observer);
+    <span class="keyword">void</span> <span class="method">Detach</span>(<span class="class-name">IObserver</span> observer);
+    <span class="keyword">void</span> <span class="method">Notify</span>();
+}
+
+<span class="comment">// Concrete subject</span>
+<span class="keyword">public class</span> <span class="class-name">NewsAgency</span> : <span class="class-name">ISubject</span>
+{
+    <span class="keyword">private readonly</span> List&lt;<span class="class-name">IObserver</span>&gt; _observers = <span class="keyword">new</span>();
+    <span class="keyword">private string</span> _latestNews = <span class="keyword">string</span>.Empty;
+    
+    <span class="keyword">public string</span> LatestNews
+    {
+        <span class="keyword">get</span> => _latestNews;
+        <span class="keyword">set</span>
+        {
+            _latestNews = value;
+            Notify();
+        }
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Attach</span>(<span class="class-name">IObserver</span> observer) => _observers.Add(observer);
+    <span class="keyword">public void</span> <span class="method">Detach</span>(<span class="class-name">IObserver</span> observer) => _observers.Remove(observer);
+    <span class="keyword">public void</span> <span class="method">Notify</span>()
+    {
+        <span class="keyword">foreach</span> (<span class="keyword">var</span> observer <span class="keyword">in</span> _observers)
+            observer.Update(_latestNews);
+    }
+}
+
+<span class="comment">// Concrete observers</span>
+<span class="keyword">public class</span> <span class="class-name">NewsChannel</span> : <span class="class-name">IObserver</span>
+{
+    <span class="keyword">public string</span> Name { <span class="keyword">get</span>; }
+    
+    <span class="keyword">public</span> <span class="method">NewsChannel</span>(<span class="keyword">string</span> name) => Name = name;
+    
+    <span class="keyword">public void</span> <span class="method">Update</span>(<span class="keyword">string</span> message)
+    {
+        Console.WriteLine($<span class="string">"📺 {Name}: Breaking - {message}"</span>);
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="keyword">var</span> agency = <span class="keyword">new</span> <span class="class-name">NewsAgency</span>();
+agency.Attach(<span class="keyword">new</span> <span class="class-name">NewsChannel</span>(<span class="string">"CNN"</span>));
+agency.Attach(<span class="keyword">new</span> <span class="class-name">NewsChannel</span>(<span class="string">"BBC"</span>));
+
+agency.LatestNews = <span class="string">"C# 12 Released!"</span>;
+<span class="comment">// Both channels receive the update</span></code></pre>
+                </div>
+
+                <!-- Command -->
+                <div class="pattern-card">
+                    <span class="label label-behavioral">Behavioral</span>
+                    <h3>📜 Command Pattern</h3>
+                    <p><strong>Purpose:</strong> Encapsulate a request as an object, thereby letting you parameterize clients with different requests, queue or log requests, and support undoable operations.</p>
+
+                    <pre><code><span class="comment">// Command interface</span>
+<span class="keyword">public interface</span> <span class="class-name">ICommand</span>
+{
+    <span class="keyword">void</span> <span class="method">Execute</span>();
+    <span class="keyword">void</span> <span class="method">Undo</span>();
+}
+
+<span class="comment">// Receiver</span>
+<span class="keyword">public class</span> <span class="class-name">TextEditor</span>
+{
+    <span class="keyword">public string</span> Text { <span class="keyword">get</span>; <span class="keyword">set</span>; } = <span class="keyword">string</span>.Empty;
+    
+    <span class="keyword">public void</span> <span class="method">AddText</span>(<span class="keyword">string</span> text)
+    {
+        Text += text;
+        Console.WriteLine($<span class="string">"Text: '{Text}'"</span>);
+    }
+    
+    <span class="keyword">public void</span> <span class="method">RemoveText</span>(<span class="keyword">int</span> length)
+    {
+        Text = Text[..^length];
+        Console.WriteLine($<span class="string">"Text: '{Text}'"</span>);
+    }
+}
+
+<span class="comment">// Concrete command</span>
+<span class="keyword">public class</span> <span class="class-name">AddTextCommand</span> : <span class="class-name">ICommand</span>
+{
+    <span class="keyword">private readonly</span> <span class="class-name">TextEditor</span> _editor;
+    <span class="keyword">private readonly string</span> _text;
+    
+    <span class="keyword">public</span> <span class="method">AddTextCommand</span>(<span class="class-name">TextEditor</span> editor, <span class="keyword">string</span> text)
+    {
+        _editor = editor;
+        _text = text;
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Execute</span>() => _editor.AddText(_text);
+    <span class="keyword">public void</span> <span class="method">Undo</span>() => _editor.RemoveText(_text.Length);
+}
+
+<span class="comment">// Invoker with history</span>
+<span class="keyword">public class</span> <span class="class-name">CommandManager</span>
+{
+    <span class="keyword">private readonly</span> Stack&lt;<span class="class-name">ICommand</span>&gt; _history = <span class="keyword">new</span>();
+    
+    <span class="keyword">public void</span> <span class="method">ExecuteCommand</span>(<span class="class-name">ICommand</span> command)
+    {
+        command.Execute();
+        _history.Push(command);
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Undo</span>()
+    {
+        <span class="keyword">if</span> (_history.TryPop(<span class="keyword">out var</span> command))
+            command.Undo();
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="keyword">var</span> editor = <span class="keyword">new</span> <span class="class-name">TextEditor</span>();
+<span class="keyword">var</span> manager = <span class="keyword">new</span> <span class="class-name">CommandManager</span>();
+
+manager.ExecuteCommand(<span class="keyword">new</span> <span class="class-name">AddTextCommand</span>(editor, <span class="string">"Hello "</span>));
+manager.ExecuteCommand(<span class="keyword">new</span> <span class="class-name">AddTextCommand</span>(editor, <span class="string">"World"</span>));
+manager.Undo(); <span class="comment">// Removes "World"</span></code></pre>
+                </div>
+
+                <!-- State -->
+                <div class="pattern-card">
+                    <span class="label label-behavioral">Behavioral</span>
+                    <h3>🚦 State Pattern</h3>
+                    <p><strong>Purpose:</strong> Allow an object to alter its behavior when its internal state changes. The object will appear to change its class.</p>
+
+                    <pre><code><span class="comment">// State interface</span>
+<span class="keyword">public interface</span> <span class="class-name">IOrderState</span>
+{
+    <span class="keyword">void</span> <span class="method">Process</span>(<span class="class-name">Order</span> order);
+    <span class="keyword">void</span> <span class="method">Ship</span>(<span class="class-name">Order</span> order);
+    <span class="keyword">void</span> <span class="method">Deliver</span>(<span class="class-name">Order</span> order);
+}
+
+<span class="comment">// Context</span>
+<span class="keyword">public class</span> <span class="class-name">Order</span>
+{
+    <span class="keyword">public</span> <span class="class-name">IOrderState</span> State { <span class="keyword">get</span>; <span class="keyword">set</span>; }
+    
+    <span class="keyword">public</span> <span class="method">Order</span>() => State = <span class="keyword">new</span> <span class="class-name">NewOrderState</span>();
+    
+    <span class="keyword">public void</span> <span class="method">Process</span>() => State.Process(<span class="keyword">this</span>);
+    <span class="keyword">public void</span> <span class="method">Ship</span>() => State.Ship(<span class="keyword">this</span>);
+    <span class="keyword">public void</span> <span class="method">Deliver</span>() => State.Deliver(<span class="keyword">this</span>);
+}
+
+<span class="comment">// Concrete states</span>
+<span class="keyword">public class</span> <span class="class-name">NewOrderState</span> : <span class="class-name">IOrderState</span>
+{
+    <span class="keyword">public void</span> <span class="method">Process</span>(<span class="class-name">Order</span> order)
+    {
+        Console.WriteLine(<span class="string">"✅ Order processed"</span>);
+        order.State = <span class="keyword">new</span> <span class="class-name">ProcessedState</span>();
+    }
+    <span class="keyword">public void</span> <span class="method">Ship</span>(<span class="class-name">Order</span> o) => Console.WriteLine(<span class="string">"❌ Process first!"</span>);
+    <span class="keyword">public void</span> <span class="method">Deliver</span>(<span class="class-name">Order</span> o) => Console.WriteLine(<span class="string">"❌ Not ready!"</span>);
+}
+
+<span class="keyword">public class</span> <span class="class-name">ProcessedState</span> : <span class="class-name">IOrderState</span>
+{
+    <span class="keyword">public void</span> <span class="method">Process</span>(<span class="class-name">Order</span> o) => Console.WriteLine(<span class="string">"Already processed"</span>);
+    <span class="keyword">public void</span> <span class="method">Ship</span>(<span class="class-name">Order</span> order)
+    {
+        Console.WriteLine(<span class="string">"📦 Order shipped"</span>);
+        order.State = <span class="keyword">new</span> <span class="class-name">ShippedState</span>();
+    }
+    <span class="keyword">public void</span> <span class="method">Deliver</span>(<span class="class-name">Order</span> o) => Console.WriteLine(<span class="string">"❌ Ship first!"</span>);
+}
+
+<span class="keyword">public class</span> <span class="class-name">ShippedState</span> : <span class="class-name">IOrderState</span>
+{
+    <span class="keyword">public void</span> <span class="method">Process</span>(<span class="class-name">Order</span> o) => Console.WriteLine(<span class="string">"Already shipped"</span>);
+    <span class="keyword">public void</span> <span class="method">Ship</span>(<span class="class-name">Order</span> o) => Console.WriteLine(<span class="string">"Already shipped"</span>);
+    <span class="keyword">public void</span> <span class="method">Deliver</span>(<span class="class-name">Order</span> order)
+    {
+        Console.WriteLine(<span class="string">"🎉 Order delivered!"</span>);
+        order.State = <span class="keyword">new</span> <span class="class-name">DeliveredState</span>();
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="keyword">var</span> order = <span class="keyword">new</span> <span class="class-name">Order</span>();
+order.Ship();    <span class="comment">// "Process first!"</span>
+order.Process(); <span class="comment">// "Order processed"</span>
+order.Ship();    <span class="comment">// "Order shipped"</span>
+order.Deliver(); <span class="comment">// "Order delivered!"</span></code></pre>
+                </div>
+
+                <!-- Template Method -->
+                <div class="pattern-card">
+                    <span class="label label-behavioral">Behavioral</span>
+                    <h3>📋 Template Method Pattern</h3>
+                    <p><strong>Purpose:</strong> Define the skeleton of an algorithm in a method, deferring some steps to subclasses. Lets subclasses redefine certain steps without changing the algorithm's structure.</p>
+
+                    <pre><code><span class="comment">// Abstract class with template method</span>
+<span class="keyword">public abstract class</span> <span class="class-name">DataMiner</span>
+{
+    <span class="comment">// Template method - defines the algorithm skeleton</span>
+    <span class="keyword">public void</span> <span class="method">Mine</span>(<span class="keyword">string</span> path)
+    {
+        OpenFile(path);
+        ExtractData();
+        ParseData();
+        AnalyzeData();
+        SendReport();
+        CloseFile();
+    }
+    
+    <span class="comment">// Steps to be implemented by subclasses</span>
+    <span class="keyword">protected abstract void</span> <span class="method">OpenFile</span>(<span class="keyword">string</span> path);
+    <span class="keyword">protected abstract void</span> <span class="method">ExtractData</span>();
+    <span class="keyword">protected abstract void</span> <span class="method">CloseFile</span>();
+    
+    <span class="comment">// Default implementations (hooks)</span>
+    <span class="keyword">protected virtual void</span> <span class="method">ParseData</span>()
+    {
+        Console.WriteLine(<span class="string">"Parsing data..."</span>);
+    }
+    
+    <span class="keyword">protected virtual void</span> <span class="method">AnalyzeData</span>()
+    {
+        Console.WriteLine(<span class="string">"Analyzing data..."</span>);
+    }
+    
+    <span class="keyword">protected virtual void</span> <span class="method">SendReport</span>()
+    {
+        Console.WriteLine(<span class="string">"Sending report..."</span>);
+    }
+}
+
+<span class="comment">// Concrete classes</span>
+<span class="keyword">public class</span> <span class="class-name">CsvDataMiner</span> : <span class="class-name">DataMiner</span>
+{
+    <span class="keyword">protected override void</span> <span class="method">OpenFile</span>(<span class="keyword">string</span> path)
+        => Console.WriteLine($<span class="string">"Opening CSV: {path}"</span>);
+    <span class="keyword">protected override void</span> <span class="method">ExtractData</span>()
+        => Console.WriteLine(<span class="string">"Reading CSV rows..."</span>);
+    <span class="keyword">protected override void</span> <span class="method">CloseFile</span>()
+        => Console.WriteLine(<span class="string">"Closing CSV"</span>);
+}
+
+<span class="keyword">public class</span> <span class="class-name">PdfDataMiner</span> : <span class="class-name">DataMiner</span>
+{
+    <span class="keyword">protected override void</span> <span class="method">OpenFile</span>(<span class="keyword">string</span> path)
+        => Console.WriteLine($<span class="string">"Opening PDF: {path}"</span>);
+    <span class="keyword">protected override void</span> <span class="method">ExtractData</span>()
+        => Console.WriteLine(<span class="string">"Extracting PDF text..."</span>);
+    <span class="keyword">protected override void</span> <span class="method">CloseFile</span>()
+        => Console.WriteLine(<span class="string">"Closing PDF"</span>);
+}
+
+<span class="comment">// Usage</span>
+<span class="keyword">var</span> csvMiner = <span class="keyword">new</span> <span class="class-name">CsvDataMiner</span>();
+csvMiner.Mine(<span class="string">"data.csv"</span>);</code></pre>
+                </div>
+
+                <!-- Chain of Responsibility -->
+                <div class="pattern-card">
+                    <span class="label label-behavioral">Behavioral</span>
+                    <h3>⛓️ Chain of Responsibility Pattern</h3>
+                    <p><strong>Purpose:</strong> Avoid coupling the sender of a request to its receiver by giving more than one object a chance to handle the request. Chain the receiving objects and pass the request along the chain.</p>
+
+                    <pre><code><span class="comment">// Handler interface</span>
+<span class="keyword">public abstract class</span> <span class="class-name">SupportHandler</span>
+{
+    <span class="keyword">protected</span> <span class="class-name">SupportHandler</span>? _nextHandler;
+    
+    <span class="keyword">public</span> <span class="class-name">SupportHandler</span> <span class="method">SetNext</span>(<span class="class-name">SupportHandler</span> handler)
+    {
+        _nextHandler = handler;
+        <span class="keyword">return</span> handler;
+    }
+    
+    <span class="keyword">public virtual void</span> <span class="method">Handle</span>(<span class="keyword">string</span> issue, <span class="keyword">int</span> severity)
+    {
+        _nextHandler?.Handle(issue, severity);
+    }
+}
+
+<span class="comment">// Concrete handlers</span>
+<span class="keyword">public class</span> <span class="class-name">Level1Support</span> : <span class="class-name">SupportHandler</span>
+{
+    <span class="keyword">public override void</span> <span class="method">Handle</span>(<span class="keyword">string</span> issue, <span class="keyword">int</span> severity)
+    {
+        <span class="keyword">if</span> (severity <= 1)
+            Console.WriteLine($<span class="string">"📞 L1 Support handles: {issue}"</span>);
+        <span class="keyword">else</span>
+            <span class="keyword">base</span>.Handle(issue, severity);
+    }
+}
+
+<span class="keyword">public class</span> <span class="class-name">Level2Support</span> : <span class="class-name">SupportHandler</span>
+{
+    <span class="keyword">public override void</span> <span class="method">Handle</span>(<span class="keyword">string</span> issue, <span class="keyword">int</span> severity)
+    {
+        <span class="keyword">if</span> (severity <= 3)
+            Console.WriteLine($<span class="string">"👨‍💻 L2 Support handles: {issue}"</span>);
+        <span class="keyword">else</span>
+            <span class="keyword">base</span>.Handle(issue, severity);
+    }
+}
+
+<span class="keyword">public class</span> <span class="class-name">Manager</span> : <span class="class-name">SupportHandler</span>
+{
+    <span class="keyword">public override void</span> <span class="method">Handle</span>(<span class="keyword">string</span> issue, <span class="keyword">int</span> severity)
+    {
+        Console.WriteLine($<span class="string">"👔 Manager handles: {issue}"</span>);
+    }
+}
+
+<span class="comment">// Usage - Build the chain</span>
+<span class="keyword">var</span> l1 = <span class="keyword">new</span> <span class="class-name">Level1Support</span>();
+<span class="keyword">var</span> l2 = <span class="keyword">new</span> <span class="class-name">Level2Support</span>();
+<span class="keyword">var</span> manager = <span class="keyword">new</span> <span class="class-name">Manager</span>();
+
+l1.SetNext(l2).SetNext(manager);
+
+l1.Handle(<span class="string">"Password reset"</span>, 1);     <span class="comment">// L1 handles</span>
+l1.Handle(<span class="string">"System slow"</span>, 2);         <span class="comment">// L2 handles</span>
+l1.Handle(<span class="string">"Server down!"</span>, 5);        <span class="comment">// Manager handles</span></code></pre>
+                </div>
+
+                <!-- Mediator -->
+                <div class="pattern-card">
+                    <span class="label label-behavioral">Behavioral</span>
+                    <h3>🎛️ Mediator Pattern</h3>
+                    <p><strong>Purpose:</strong> Define an object that encapsulates how a set of objects interact. Promotes loose coupling by keeping objects from referring to each other explicitly.</p>
+
+                    <pre><code><span class="comment">// Mediator interface</span>
+<span class="keyword">public interface</span> <span class="class-name">IChatRoom</span>
+{
+    <span class="keyword">void</span> <span class="method">SendMessage</span>(<span class="keyword">string</span> message, <span class="class-name">User</span> sender);
+    <span class="keyword">void</span> <span class="method">AddUser</span>(<span class="class-name">User</span> user);
+}
+
+<span class="comment">// Colleague</span>
+<span class="keyword">public class</span> <span class="class-name">User</span>
+{
+    <span class="keyword">public string</span> Name { <span class="keyword">get</span>; }
+    <span class="keyword">private readonly</span> <span class="class-name">IChatRoom</span> _chatRoom;
+    
+    <span class="keyword">public</span> <span class="method">User</span>(<span class="keyword">string</span> name, <span class="class-name">IChatRoom</span> chatRoom)
+    {
+        Name = name;
+        _chatRoom = chatRoom;
+        _chatRoom.AddUser(<span class="keyword">this</span>);
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Send</span>(<span class="keyword">string</span> message)
+    {
+        Console.WriteLine($<span class="string">"{Name} sends: {message}"</span>);
+        _chatRoom.SendMessage(message, <span class="keyword">this</span>);
+    }
+    
+    <span class="keyword">public void</span> <span class="method">Receive</span>(<span class="keyword">string</span> message, <span class="keyword">string</span> from)
+    {
+        Console.WriteLine($<span class="string">"{Name} receives from {from}: {message}"</span>);
+    }
+}
+
+<span class="comment">// Concrete mediator</span>
+<span class="keyword">public class</span> <span class="class-name">ChatRoom</span> : <span class="class-name">IChatRoom</span>
+{
+    <span class="keyword">private readonly</span> List&lt;<span class="class-name">User</span>&gt; _users = <span class="keyword">new</span>();
+    
+    <span class="keyword">public void</span> <span class="method">AddUser</span>(<span class="class-name">User</span> user) => _users.Add(user);
+    
+    <span class="keyword">public void</span> <span class="method">SendMessage</span>(<span class="keyword">string</span> message, <span class="class-name">User</span> sender)
+    {
+        <span class="keyword">foreach</span> (<span class="keyword">var</span> user <span class="keyword">in</span> _users.Where(u => u != sender))
+        {
+            user.Receive(message, sender.Name);
+        }
+    }
+}
+
+<span class="comment">// Usage</span>
+<span class="keyword">var</span> chatRoom = <span class="keyword">new</span> <span class="class-name">ChatRoom</span>();
+<span class="keyword">var</span> alice = <span class="keyword">new</span> <span class="class-name">User</span>(<span class="string">"Alice"</span>, chatRoom);
+<span class="keyword">var</span> bob = <span class="keyword">new</span> <span class="class-name">User</span>(<span class="string">"Bob"</span>, chatRoom);
+<span class="keyword">var</span> charlie = <span class="keyword">new</span> <span class="class-name">User</span>(<span class="string">"Charlie"</span>, chatRoom);
+
+alice.Send(<span class="string">"Hello everyone!"</span>);
+<span class="comment">// Bob and Charlie both receive the message</span></code></pre>
+                </div>
+
+                <!-- Iterator -->
+                <div class="pattern-card">
+                    <span class="label label-behavioral">Behavioral</span>
+                    <h3>🔄 Iterator Pattern</h3>
+                    <p><strong>Purpose:</strong> Provide a way to access the elements of an aggregate object sequentially without exposing its underlying representation.</p>
+
+                    <pre><code><span class="comment">// In C#, typically use IEnumerable&lt;T&gt;</span>
+<span class="keyword">public class</span> <span class="class-name">BookCollection</span> : IEnumerable&lt;<span class="class-name">Book</span>&gt;
+{
+    <span class="keyword">private readonly</span> List&lt;<span class="class-name">Book</span>&gt; _books = <span class="keyword">new</span>();
+    
+    <span class="keyword">public void</span> <span class="method">Add</span>(<span class="class-name">Book</span> book) => _books.Add(book);
+    
+    <span class="comment">// Using yield for custom iteration</span>
+    <span class="keyword">public</span> IEnumerator&lt;<span class="class-name">Book</span>&gt; <span class="method">GetEnumerator</span>()
+    {
+        <span class="keyword">foreach</span> (<span class="keyword">var</span> book <span class="keyword">in</span> _books)
+        {
+            <span class="keyword">yield return</span> book;
+        }
+    }
+    
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    
+    <span class="comment">// Custom iterator - only fiction books</span>
+    <span class="keyword">public</span> IEnumerable&lt;<span class="class-name">Book</span>&gt; <span class="method">FictionBooks</span>()
+    {
+        <span class="keyword">foreach</span> (<span class="keyword">var</span> book <span class="keyword">in</span> _books)
+        {
+            <span class="keyword">if</span> (book.IsFiction)
+                <span class="keyword">yield return</span> book;
+        }
+    }
+    
+    <span class="comment">// Reverse iterator</span>
+    <span class="keyword">public</span> IEnumerable&lt;<span class="class-name">Book</span>&gt; <span class="method">Reverse</span>()
+    {
+        <span class="keyword">for</span> (<span class="keyword">int</span> i = _books.Count - 1; i >= 0; i--)
+        {
+            <span class="keyword">yield return</span> _books[i];
+        }
+    }
+}
+
+<span class="keyword">public record</span> <span class="class-name">Book</span>(<span class="keyword">string</span> Title, <span class="keyword">bool</span> IsFiction);
+
+<span class="comment">// Usage</span>
+<span class="keyword">var</span> collection = <span class="keyword">new</span> <span class="class-name">BookCollection</span>();
+collection.Add(<span class="keyword">new</span> <span class="class-name">Book</span>(<span class="string">"1984"</span>, <span class="keyword">true</span>));
+collection.Add(<span class="keyword">new</span> <span class="class-name">Book</span>(<span class="string">"Clean Code"</span>, <span class="keyword">false</span>));
+collection.Add(<span class="keyword">new</span> <span class="class-name">Book</span>(<span class="string">"Dune"</span>, <span class="keyword">true</span>));
+
+<span class="keyword">foreach</span> (<span class="keyword">var</span> book <span class="keyword">in</span> collection.FictionBooks())
+{
+    Console.WriteLine(book.Title);
+}
+<span class="comment">// Output: "1984", "Dune"</span></code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Reference -->
+        <section class="section">
+            <h2>📚 Quick Reference Summary</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div class="pattern-card">
+                    <h3>🏗️ Creational</h3>
+                    <ul>
+                        <li><strong>Singleton:</strong> One instance only</li>
+                        <li><strong>Factory Method:</strong> Delegate creation to subclasses</li>
+                        <li><strong>Abstract Factory:</strong> Create families of objects</li>
+                        <li><strong>Builder:</strong> Step-by-step construction</li>
+                        <li><strong>Prototype:</strong> Clone existing objects</li>
+                    </ul>
+                </div>
+                <div class="pattern-card">
+                    <h3>🏛️ Structural</h3>
+                    <ul>
+                        <li><strong>Adapter:</strong> Convert interfaces</li>
+                        <li><strong>Decorator:</strong> Add responsibilities dynamically</li>
+                        <li><strong>Facade:</strong> Simplify complex subsystems</li>
+                        <li><strong>Proxy:</strong> Control access to object</li>
+                        <li><strong>Composite:</strong> Tree structures</li>
+                        <li><strong>Bridge:</strong> Separate abstraction from implementation</li>
+                    </ul>
+                </div>
+                <div class="pattern-card">
+                    <h3>🎭 Behavioral</h3>
+                    <ul>
+                        <li><strong>Strategy:</strong> Interchangeable algorithms</li>
+                        <li><strong>Observer:</strong> Notify dependents of changes</li>
+                        <li><strong>Command:</strong> Encapsulate requests</li>
+                        <li><strong>State:</strong> Alter behavior based on state</li>
+                        <li><strong>Template Method:</strong> Algorithm skeleton</li>
+                        <li><strong>Chain of Responsibility:</strong> Pass requests along chain</li>
+                        <li><strong>Mediator:</strong> Centralize communications</li>
+                        <li><strong>Iterator:</strong> Sequential access</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer style="text-align: center; padding: 20px; color: #888;">
+            <p>C# Design Patterns & SOLID Principles Cheatsheet | Created March 2026</p>
+        </footer>
+    </div>
+</body>
+</html>
