@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Playwright JS — Complete Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #10141c;
+    --surface2: #161b27;
+    --border: #1e2636;
+    --border2: #253045;
+    --text: #cdd9f0;
+    --muted: #5a6a8a;
+    --accent: #00d4aa;
+    --accent2: #7c6af7;
+    --accent3: #f7a35c;
+    --accent4: #e05c7a;
+    --accent5: #4dbbff;
+    --green: #3dd68c;
+    --yellow: #f0c060;
+    --red: #f07070;
+    --code-bg: #080b12;
+    --tag-bg: rgba(0,212,170,0.08);
+    --tag-border: rgba(0,212,170,0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* GRID NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.012) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.012) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .header-left {}
+
+  .logo-line {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .logo-badge {
+    background: linear-gradient(135deg, #00d4aa, #4dbbff);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0a0c10;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .version-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+
+  h1 {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #ffffff 0%, #cdd9f0 40%, #7c6af7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .header-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+    padding-top: 8px;
+  }
+
+  .meta-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--tag-bg);
+    border: 1px solid var(--tag-border);
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 8px 32px;
+  }
+
+  .toc-title {
+    grid-column: 1 / -1;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .toc a {
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    transition: color 0.15s;
+  }
+
+  .toc a:hover { color: var(--accent); }
+
+  .toc a::before {
+    content: '→';
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    transition: color 0.15s;
+  }
+
+  .toc a:hover::before { color: var(--accent); }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 28px;
+  }
+
+  .section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+
+  /* ── CARDS GRID ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+  }
+
+  .cards.wide {
+    grid-template-columns: 1fr;
+  }
+
+  .cards.two-col {
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: var(--border2);
+    transform: translateY(-1px);
+  }
+
+  .card-head {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .card-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ── CODE BLOCK ── */
+  pre {
+    background: var(--code-bg);
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: #c8d8f0;
+    tab-size: 2;
+  }
+
+  code { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── SYNTAX HIGHLIGHT ── */
+  .kw  { color: #c792ea; }          /* keyword */
+  .fn  { color: #82aaff; }          /* function */
+  .str { color: #c3e88d; }          /* string */
+  .num { color: #f78c6c; }          /* number */
+  .cm  { color: #4a5568; font-style: italic; } /* comment */
+  .cl  { color: #ffcb6b; }          /* class */
+  .op  { color: #89ddff; }          /* operator */
+  .pr  { color: #00d4aa; }          /* property/method */
+  .se  { color: #f07178; }          /* selector/tag */
+  .bo  { color: #f7a35c; }          /* boolean */
+  .at  { color: #4dbbff; }          /* await */
+
+  /* ── DESCRIPTION ── */
+  .card-desc {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── TABLE ── */
+  .tbl-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  th {
+    background: var(--code-bg);
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border2);
+  }
+
+  td {
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  td:first-child { color: var(--accent5); }
+  td:nth-child(2) { color: var(--muted); font-size: 11px; }
+
+  /* ── NOTE / TIP ── */
+  .note {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  .note-icon { flex-shrink: 0; color: var(--accent3); font-size: 12px; margin-top: 1px; }
+
+  /* ── ACCENT VARIANTS ── */
+  .a1 .card-title { color: var(--accent); }
+  .a1 .section-icon { background: rgba(0,212,170,0.1); }
+  .a2 .card-title { color: var(--accent2); }
+  .a2 .section-icon { background: rgba(124,106,247,0.1); }
+  .a3 .card-title { color: var(--accent3); }
+  .a3 .section-icon { background: rgba(247,163,92,0.1); }
+  .a4 .card-title { color: var(--accent4); }
+  .a4 .section-icon { background: rgba(224,92,122,0.1); }
+  .a5 .card-title { color: var(--accent5); }
+  .a5 .section-icon { background: rgba(77,187,255,0.1); }
+  .a6 .card-title { color: var(--green); }
+  .a6 .section-icon { background: rgba(61,214,140,0.1); }
+  .a7 .card-title { color: var(--yellow); }
+  .a7 .section-icon { background: rgba(240,192,96,0.1); }
+
+  /* ── INLINE CODE ── */
+  ic {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  /* ── HIGHLIGHT ROW ── */
+  .hl td:first-child { color: var(--green) !important; font-weight: 600; }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+  .badge-green { background: rgba(61,214,140,0.12); color: var(--green); border: 1px solid rgba(61,214,140,0.3); }
+  .badge-blue  { background: rgba(77,187,255,0.12); color: var(--accent5); border: 1px solid rgba(77,187,255,0.3); }
+  .badge-yellow{ background: rgba(240,192,96,0.12); color: var(--yellow); border: 1px solid rgba(240,192,96,0.3); }
+
+  /* ── FOOTER ── */
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  footer p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .cards, .cards.two-col { grid-template-columns: 1fr; }
+    header { flex-direction: column; }
+    .header-meta { align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="header-left">
+    <div class="logo-line">
+      <span class="logo-badge">🎭 Playwright</span>
+      <span class="version-tag">v1.44+ / JavaScript</span>
+    </div>
+    <h1>Complete<br>Cheatsheet</h1>
+    <p class="subtitle">// End-to-end testing framework by Microsoft</p>
+  </div>
+  <div class="header-meta">
+    <span class="meta-pill">Chromium · Firefox · WebKit</span>
+    <span class="meta-pill">Node.js 18+</span>
+    <span class="meta-pill">playwright.dev</span>
+  </div>
+</header>
+
+<!-- ══════════ TOC ══════════ -->
+<nav class="toc">
+  <div class="toc-title">Table of Contents</div>
+  <a href="#install">Installation &amp; Config</a>
+  <a href="#launch">Browser &amp; Context</a>
+  <a href="#navigate">Navigation</a>
+  <a href="#locators">Locators</a>
+  <a href="#actions">Actions</a>
+  <a href="#assertions">Assertions</a>
+  <a href="#waits">Waiting Strategies</a>
+  <a href="#network">Network</a>
+  <a href="#dialogs">Dialogs &amp; Frames</a>
+  <a href="#keyboard">Keyboard &amp; Mouse</a>
+  <a href="#screenshots">Screenshots &amp; PDF</a>
+  <a href="#storage">Storage State</a>
+  <a href="#fixtures">Test Fixtures</a>
+  <a href="#hooks">Hooks &amp; Annotations</a>
+  <a href="#parallel">Parallelism &amp; Sharding</a>
+  <a href="#api">API Testing</a>
+  <a href="#trace">Tracing &amp; Debug</a>
+  <a href="#config">Playwright Config</a>
+</nav>
+
+<!-- ══════════ 1. INSTALL ══════════ -->
+<section class="section a1" id="install">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <div class="section-icon">⚙️</div>
+    <h2>Installation &amp; Project Setup</h2>
+  </div>
+  <div class="cards two-col">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">npm init &amp; install</span><span class="card-tag">Shell</span></div>
+      <pre><span class="cm"># Create new project with interactive setup</span>
+npm init playwright@latest
+
+<span class="cm"># Install into existing project</span>
+npm install -D @playwright/test
+
+<span class="cm"># Install browsers</span>
+npx playwright install
+
+<span class="cm"># Install specific browsers</span>
+npx playwright install chromium firefox webkit
+
+<span class="cm"># Install with system dependencies (CI)</span>
+npx playwright install --with-deps</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">CLI Commands</span><span class="card-tag">Shell</span></div>
+      <pre><span class="cm"># Run all tests</span>
+npx playwright test
+
+<span class="cm"># Run specific file</span>
+npx playwright test tests/login.spec.js
+
+<span class="cm"># Run with headed browser</span>
+npx playwright test --headed
+
+<span class="cm"># Run specific browser</span>
+npx playwright test --project=firefox
+
+<span class="cm"># Run in debug mode</span>
+npx playwright test --debug
+
+<span class="cm"># Open interactive UI Mode</span>
+npx playwright test --ui
+
+<span class="cm"># Generate test code (Codegen)</span>
+npx playwright codegen https://example.com
+
+<span class="cm"># Show HTML report</span>
+npx playwright show-report</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 2. BROWSER & CONTEXT ══════════ -->
+<section class="section a2" id="launch">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <div class="section-icon">🌐</div>
+    <h2>Browser &amp; Browser Context</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Launch Browser</span><span class="card-tag">API</span></div>
+      <pre><span class="kw">const</span> { chromium, firefox, webkit } = <span class="fn">require</span>(<span class="str">'@playwright/test'</span>);
+
+<span class="cm">// Launch headless (default)</span>
+<span class="kw">const</span> browser = <span class="at">await</span> chromium.<span class="pr">launch</span>();
+
+<span class="cm">// Launch headed</span>
+<span class="kw">const</span> browser = <span class="at">await</span> chromium.<span class="pr">launch</span>({
+  headless: <span class="bo">false</span>,
+  slowMo: <span class="num">50</span>,         <span class="cm">// ms delay between actions</span>
+  devtools: <span class="bo">true</span>,
+  args: [<span class="str">'--start-maximized'</span>],
+  executablePath: <span class="str">'/path/to/chrome'</span>,
+  channel: <span class="str">'chrome'</span>,   <span class="cm">// use installed Chrome</span>
+});
+
+<span class="at">await</span> browser.<span class="pr">close</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Browser Context</span><span class="card-tag">Isolation</span></div>
+      <pre><span class="cm">// New isolated context (like incognito)</span>
+<span class="kw">const</span> context = <span class="at">await</span> browser.<span class="pr">newContext</span>({
+  viewport: { width: <span class="num">1280</span>, height: <span class="num">720</span> },
+  locale: <span class="str">'en-US'</span>,
+  timezoneId: <span class="str">'America/New_York'</span>,
+  geolocation: { latitude: <span class="num">40.71</span>, longitude: <span class="num">-74.00</span> },
+  permissions: [<span class="str">'geolocation'</span>],
+  userAgent: <span class="str">'Custom UA string'</span>,
+  httpCredentials: { username: <span class="str">'u'</span>, password: <span class="str">'p'</span> },
+  ignoreHTTPSErrors: <span class="bo">true</span>,
+  colorScheme: <span class="str">'dark'</span>,          <span class="cm">// 'light' | 'dark' | 'no-preference'</span>
+  recordVideo: { dir: <span class="str">'videos/'</span> },
+  storageState: <span class="str">'auth.json'</span>,     <span class="cm">// pre-auth state</span>
+});
+
+<span class="kw">const</span> page = <span class="at">await</span> context.<span class="pr">newPage</span>();
+<span class="at">await</span> context.<span class="pr">close</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Mobile Emulation</span><span class="card-tag">Devices</span></div>
+      <pre><span class="kw">const</span> { devices } = <span class="fn">require</span>(<span class="str">'@playwright/test'</span>);
+<span class="kw">const</span> iPhone = devices[<span class="str">'iPhone 13'</span>];
+
+<span class="kw">const</span> context = <span class="at">await</span> browser.<span class="pr">newContext</span>({
+  ...iPhone,
+  locale: <span class="str">'en-US'</span>,
+});
+
+<span class="cm">// Available devices (sample):</span>
+<span class="cm">// 'Pixel 5', 'Galaxy S8', 'iPad Pro 11'</span>
+<span class="cm">// 'iPhone 12', 'iPhone 13 Pro Max'</span>
+<span class="cm">// 'Desktop Chrome', 'Blackberry PlayBook'</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Multiple Pages / Tabs</span><span class="card-tag">Multi-tab</span></div>
+      <pre><span class="cm">// Open new tab</span>
+<span class="kw">const</span> page2 = <span class="at">await</span> context.<span class="pr">newPage</span>();
+
+<span class="cm">// Listen for popup</span>
+<span class="kw">const</span> [popup] = <span class="at">await</span> Promise.<span class="pr">all</span>([
+  context.<span class="pr">waitForEvent</span>(<span class="str">'page'</span>),
+  page.<span class="fn">locator</span>(<span class="str">'text=Open Tab'</span>).<span class="pr">click</span>(),
+]);
+<span class="at">await</span> popup.<span class="pr">waitForLoadState</span>();
+
+<span class="cm">// All pages in context</span>
+<span class="kw">const</span> pages = context.<span class="pr">pages</span>();
+
+<span class="cm">// Bring page to front</span>
+<span class="at">await</span> page.<span class="pr">bringToFront</span>();</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 3. NAVIGATION ══════════ -->
+<section class="section a3" id="navigate">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <div class="section-icon">🧭</div>
+    <h2>Navigation</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Page Navigation</span><span class="card-tag">Core</span></div>
+      <pre><span class="cm">// Go to URL</span>
+<span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'https://example.com'</span>);
+
+<span class="cm">// With options</span>
+<span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'https://example.com'</span>, {
+  waitUntil: <span class="str">'networkidle'</span>, <span class="cm">// 'load'|'domcontentloaded'|'networkidle'|'commit'</span>
+  timeout: <span class="num">30000</span>,
+});
+
+<span class="cm">// Navigate back / forward</span>
+<span class="at">await</span> page.<span class="pr">goBack</span>();
+<span class="at">await</span> page.<span class="pr">goForward</span>();
+
+<span class="cm">// Reload</span>
+<span class="at">await</span> page.<span class="pr">reload</span>();
+
+<span class="cm">// Current URL</span>
+<span class="kw">const</span> url = page.<span class="pr">url</span>();
+
+<span class="cm">// Page title</span>
+<span class="kw">const</span> title = <span class="at">await</span> page.<span class="pr">title</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Wait for Load States</span><span class="card-tag">States</span></div>
+      <pre><span class="cm">// Wait for a load state</span>
+<span class="at">await</span> page.<span class="pr">waitForLoadState</span>(<span class="str">'networkidle'</span>);
+<span class="at">await</span> page.<span class="pr">waitForLoadState</span>(<span class="str">'domcontentloaded'</span>);
+<span class="at">await</span> page.<span class="pr">waitForLoadState</span>(<span class="str">'load'</span>);
+
+<span class="cm">// Wait for URL change</span>
+<span class="at">await</span> page.<span class="pr">waitForURL</span>(<span class="str">'**/dashboard'</span>);
+<span class="at">await</span> page.<span class="pr">waitForURL</span>(<span class="str">'https://example.com/login'</span>);
+<span class="at">await</span> page.<span class="pr">waitForURL</span>(/dashboard/);
+
+<span class="cm">// Wait for navigation</span>
+<span class="kw">const</span> [response] = <span class="at">await</span> Promise.<span class="pr">all</span>([
+  page.<span class="pr">waitForNavigation</span>(),
+  page.<span class="fn">locator</span>(<span class="str">'button'</span>).<span class="pr">click</span>(),
+]);</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 4. LOCATORS ══════════ -->
+<section class="section a5" id="locators">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <div class="section-icon">🔍</div>
+    <h2>Locators — Finding Elements</h2>
+  </div>
+  <div class="cards two-col">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Built-in Locators (Recommended)</span><span class="card-tag">Best Practice</span></div>
+      <pre><span class="cm">// By role (most preferred — accessible)</span>
+page.<span class="pr">getByRole</span>(<span class="str">'button'</span>, { name: <span class="str">'Submit'</span> })
+page.<span class="pr">getByRole</span>(<span class="str">'textbox'</span>, { name: <span class="str">'Email'</span> })
+page.<span class="pr">getByRole</span>(<span class="str">'heading'</span>, { name: <span class="str">'Welcome'</span>, level: <span class="num">1</span> })
+page.<span class="pr">getByRole</span>(<span class="str">'checkbox'</span>, { checked: <span class="bo">true</span> })
+page.<span class="pr">getByRole</span>(<span class="str">'link'</span>, { name: <span class="str">'Home'</span> })
+
+<span class="cm">// By label (form elements)</span>
+page.<span class="pr">getByLabel</span>(<span class="str">'Username'</span>)
+page.<span class="pr">getByLabel</span>(<span class="str">'Password'</span>)
+
+<span class="cm">// By placeholder</span>
+page.<span class="pr">getByPlaceholder</span>(<span class="str">'Enter your email'</span>)
+
+<span class="cm">// By text</span>
+page.<span class="pr">getByText</span>(<span class="str">'Sign In'</span>)
+page.<span class="pr">getByText</span>(<span class="str">'Hello'</span>, { exact: <span class="bo">true</span> })
+
+<span class="cm">// By alt text (images)</span>
+page.<span class="pr">getByAltText</span>(<span class="str">'Company Logo'</span>)
+
+<span class="cm">// By title attribute</span>
+page.<span class="pr">getByTitle</span>(<span class="str">'Close dialog'</span>)
+
+<span class="cm">// By test ID (data-testid)</span>
+page.<span class="pr">getByTestId</span>(<span class="str">'submit-btn'</span>)</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">CSS, XPath &amp; Chaining</span><span class="card-tag">Advanced</span></div>
+      <pre><span class="cm">// CSS selector</span>
+page.<span class="fn">locator</span>(<span class="str">'button.primary'</span>)
+page.<span class="fn">locator</span>(<span class="str">'input[name="email"]'</span>)
+page.<span class="fn">locator</span>(<span class="str">'#submit'</span>)
+page.<span class="fn">locator</span>(<span class="str">'div > p:first-child'</span>)
+
+<span class="cm">// XPath</span>
+page.<span class="fn">locator</span>(<span class="str">'xpath=//button[@type="submit"]'</span>)
+
+<span class="cm">// Chaining locators</span>
+page.<span class="fn">locator</span>(<span class="str">'.nav'</span>).<span class="fn">locator</span>(<span class="str">'a'</span>)
+page.<span class="pr">getByRole</span>(<span class="str">'listitem'</span>).<span class="pr">getByText</span>(<span class="str">'Home'</span>)
+
+<span class="cm">// Filter locators</span>
+page.<span class="pr">getByRole</span>(<span class="str">'listitem'</span>).<span class="pr">filter</span>({ hasText: <span class="str">'Buy'</span> })
+page.<span class="fn">locator</span>(<span class="str">'li'</span>).<span class="pr">filter</span>({ has: page.<span class="fn">locator</span>(<span class="str">'a'</span>) })
+page.<span class="fn">locator</span>(<span class="str">'li'</span>).<span class="pr">filter</span>({ hasNot: page.<span class="fn">locator</span>(<span class="str">'.disabled'</span>) })
+
+<span class="cm">// nth / first / last</span>
+page.<span class="fn">locator</span>(<span class="str">'li'</span>).<span class="pr">first</span>()
+page.<span class="fn">locator</span>(<span class="str">'li'</span>).<span class="pr">last</span>()
+page.<span class="fn">locator</span>(<span class="str">'li'</span>).<span class="pr">nth</span>(<span class="num">2</span>)
+
+<span class="cm">// and / or combinators</span>
+page.<span class="fn">locator</span>(<span class="str">'button'</span>).<span class="pr">and</span>(page.<span class="fn">locator</span>(<span class="str">'.primary'</span>))
+page.<span class="fn">locator</span>(<span class="str">'button'</span>).<span class="pr">or</span>(page.<span class="fn">locator</span>(<span class="str">'a.btn'</span>))</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Locator List Operations</span><span class="card-tag">Collections</span></div>
+      <pre><span class="cm">// Count elements</span>
+<span class="kw">const</span> count = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'li'</span>).<span class="pr">count</span>();
+
+<span class="cm">// Iterate all elements</span>
+<span class="kw">const</span> items = page.<span class="fn">locator</span>(<span class="str">'li'</span>);
+<span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i < <span class="at">await</span> items.<span class="pr">count</span>(); i++) {
+  <span class="kw">const</span> text = <span class="at">await</span> items.<span class="pr">nth</span>(i).<span class="pr">textContent</span>();
+  console.<span class="pr">log</span>(text);
+}
+
+<span class="cm">// All texts at once</span>
+<span class="kw">const</span> texts = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'li'</span>).<span class="pr">allTextContents</span>();
+<span class="kw">const</span> values = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input'</span>).<span class="pr">allInputValues</span>();
+<span class="kw">const</span> attrs = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'a'</span>).<span class="pr">allInnerTexts</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Shadow DOM &amp; iFrames</span><span class="card-tag">Special</span></div>
+      <pre><span class="cm">// Shadow DOM — pierced automatically</span>
+page.<span class="fn">locator</span>(<span class="str">'my-component button'</span>)
+page.<span class="fn">locator</span>(<span class="str">'>>>'</span>)   <span class="cm">// explicit deep combinator</span>
+
+<span class="cm">// iframe by selector</span>
+<span class="kw">const</span> frame = page.<span class="pr">frameLocator</span>(<span class="str">'iframe#editor'</span>);
+<span class="at">await</span> frame.<span class="pr">getByLabel</span>(<span class="str">'Body'</span>).<span class="pr">fill</span>(<span class="str">'Hello'</span>);
+
+<span class="cm">// Access Frame object</span>
+<span class="kw">const</span> frameEl = page.<span class="fn">frame</span>({ name: <span class="str">'myframe'</span> });
+<span class="kw">const</span> frameByUrl = page.<span class="fn">frame</span>({ url: /embed/ });
+<span class="kw">const</span> frames = page.<span class="pr">frames</span>();</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 5. ACTIONS ══════════ -->
+<section class="section a1" id="actions">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <div class="section-icon">🖱️</div>
+    <h2>Actions</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Click &amp; Tap</span><span class="card-tag">Interaction</span></div>
+      <pre><span class="cm">// Simple click</span>
+<span class="at">await</span> page.<span class="pr">getByRole</span>(<span class="str">'button'</span>).<span class="pr">click</span>();
+
+<span class="cm">// Click options</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#btn'</span>).<span class="pr">click</span>({
+  button: <span class="str">'right'</span>,      <span class="cm">// 'left'|'right'|'middle'</span>
+  clickCount: <span class="num">2</span>,        <span class="cm">// double-click</span>
+  delay: <span class="num">100</span>,           <span class="cm">// ms between mousedown/up</span>
+  position: { x: <span class="num">10</span>, y: <span class="num">20</span> },
+  modifiers: [<span class="str">'Shift'</span>, <span class="str">'Control'</span>],
+  force: <span class="bo">true</span>,           <span class="cm">// skip actionability checks</span>
+  noWaitAfter: <span class="bo">true</span>,
+  trial: <span class="bo">true</span>,           <span class="cm">// check but don't execute</span>
+});
+
+<span class="cm">// Double click</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'span'</span>).<span class="pr">dblclick</span>();
+
+<span class="cm">// Tap (mobile)</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'button'</span>).<span class="pr">tap</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Fill, Type &amp; Clear</span><span class="card-tag">Input</span></div>
+      <pre><span class="cm">// Fill — replaces value instantly</span>
+<span class="at">await</span> page.<span class="pr">getByLabel</span>(<span class="str">'Email'</span>).<span class="pr">fill</span>(<span class="str">'user@example.com'</span>);
+
+<span class="cm">// Type — simulates key presses</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input'</span>).<span class="pr">type</span>(<span class="str">'Hello'</span>, { delay: <span class="num">50</span> });
+
+<span class="cm">// Clear field</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input'</span>).<span class="pr">clear</span>();
+
+<span class="cm">// pressSequentially (v1.38+, replaces type)</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input'</span>).<span class="pr">pressSequentially</span>(<span class="str">'abc'</span>, { delay: <span class="num">100</span> });
+
+<span class="cm">// ContentEditable</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'[contenteditable]'</span>).<span class="pr">fill</span>(<span class="str">'Rich text'</span>);
+
+<span class="cm">// Checkbox &amp; Radio</span>
+<span class="at">await</span> page.<span class="pr">getByLabel</span>(<span class="str">'Accept Terms'</span>).<span class="pr">check</span>();
+<span class="at">await</span> page.<span class="pr">getByLabel</span>(<span class="str">'Accept Terms'</span>).<span class="pr">uncheck</span>();
+<span class="at">await</span> page.<span class="pr">getByLabel</span>(<span class="str">'Accept Terms'</span>).<span class="pr">setChecked</span>(<span class="bo">true</span>);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Select Dropdown</span><span class="card-tag">Forms</span></div>
+      <pre><span class="cm">// By value</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'select'</span>).<span class="pr">selectOption</span>(<span class="str">'blue'</span>);
+
+<span class="cm">// By label text</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'select'</span>).<span class="pr">selectOption</span>({ label: <span class="str">'Blue'</span> });
+
+<span class="cm">// By index</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'select'</span>).<span class="pr">selectOption</span>({ index: <span class="num">2</span> });
+
+<span class="cm">// Multiple selection</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'select[multiple]'</span>).<span class="pr">selectOption</span>([
+  <span class="str">'red'</span>, <span class="str">'blue'</span>, <span class="str">'green'</span>
+]);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">File Upload</span><span class="card-tag">Files</span></div>
+      <pre><span class="cm">// Single file</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input[type="file"]'</span>)
+  .<span class="pr">setInputFiles</span>(<span class="str">'path/to/file.pdf'</span>);
+
+<span class="cm">// Multiple files</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input[type="file"]'</span>)
+  .<span class="pr">setInputFiles</span>([<span class="str">'file1.jpg'</span>, <span class="str">'file2.jpg'</span>]);
+
+<span class="cm">// Remove all files</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input[type="file"]'</span>)
+  .<span class="pr">setInputFiles</span>([]);
+
+<span class="cm">// File from buffer</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input[type="file"]'</span>)
+  .<span class="pr">setInputFiles</span>({
+    name: <span class="str">'test.txt'</span>,
+    mimeType: <span class="str">'text/plain'</span>,
+    buffer: Buffer.<span class="pr">from</span>(<span class="str">'Hello!'</span>),
+  });</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Drag &amp; Drop</span><span class="card-tag">Gestures</span></div>
+      <pre><span class="cm">// Drag from one element to another</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#source'</span>).<span class="pr">dragTo</span>(
+  page.<span class="fn">locator</span>(<span class="str">'#target'</span>)
+);
+
+<span class="cm">// Manual drag with mouse</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#source'</span>).<span class="pr">hover</span>();
+<span class="at">await</span> page.mouse.<span class="pr">down</span>();
+<span class="at">await</span> page.mouse.<span class="pr">move</span>(<span class="num">300</span>, <span class="num">200</span>);
+<span class="at">await</span> page.mouse.<span class="pr">up</span>();
+
+<span class="cm">// Focus / Blur / Hover</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input'</span>).<span class="pr">focus</span>();
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input'</span>).<span class="pr">blur</span>();
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'.tooltip-trigger'</span>).<span class="pr">hover</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Scrolling</span><span class="card-tag">Scroll</span></div>
+      <pre><span class="cm">// Scroll element into view</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'footer'</span>).<span class="pr">scrollIntoViewIfNeeded</span>();
+
+<span class="cm">// Scroll page by pixels</span>
+<span class="at">await</span> page.<span class="pr">mouse</span>.<span class="pr">wheel</span>(<span class="num">0</span>, <span class="num">1000</span>);  <span class="cm">// x, y delta</span>
+
+<span class="cm">// Evaluate scroll</span>
+<span class="at">await</span> page.<span class="pr">evaluate</span>(() => window.<span class="pr">scrollTo</span>(<span class="num">0</span>, <span class="num">500</span>));
+
+<span class="cm">// Scroll within element</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'.scrollable'</span>).<span class="pr">evaluate</span>(el => {
+  el.scrollTop = <span class="num">200</span>;
+});</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 6. ASSERTIONS ══════════ -->
+<section class="section a6" id="assertions">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <div class="section-icon">✅</div>
+    <h2>Assertions — expect()</h2>
+  </div>
+  <div class="cards two-col">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Locator Assertions</span><span class="card-tag">Auto-retry</span></div>
+      <pre><span class="kw">const</span> { expect } = <span class="fn">require</span>(<span class="str">'@playwright/test'</span>);
+<span class="kw">const</span> locator = page.<span class="fn">locator</span>(<span class="str">'.message'</span>);
+
+<span class="cm">// Visibility</span>
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeVisible</span>();
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeHidden</span>();
+
+<span class="cm">// Text</span>
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveText</span>(<span class="str">'Hello'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toContainText</span>(<span class="str">'Hell'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveText</span>([<span class="str">'a'</span>, <span class="str">'b'</span>, <span class="str">'c'</span>]);
+
+<span class="cm">// Value</span>
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveValue</span>(<span class="str">'user@email.com'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveValues</span>([<span class="str">'opt1'</span>, <span class="str">'opt2'</span>]);
+
+<span class="cm">// Count</span>
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveCount</span>(<span class="num">5</span>);
+
+<span class="cm">// State</span>
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeEnabled</span>();
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeDisabled</span>();
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeChecked</span>();
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeFocused</span>();
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeEditable</span>();
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeEmpty</span>();
+
+<span class="cm">// Attribute &amp; CSS</span>
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveAttribute</span>(<span class="str">'type'</span>, <span class="str">'email'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveClass</span>(<span class="str">'active'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveCSS</span>(<span class="str">'color'</span>, <span class="str">'rgb(255,0,0)'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveId</span>(<span class="str">'submit'</span>);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Page Assertions &amp; Generic</span><span class="card-tag">Page &amp; API</span></div>
+      <pre><span class="cm">// Page URL</span>
+<span class="at">await</span> <span class="fn">expect</span>(page).<span class="pr">toHaveURL</span>(<span class="str">'https://example.com'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(page).<span class="pr">toHaveURL</span>(/dashboard/);
+
+<span class="cm">// Page title</span>
+<span class="at">await</span> <span class="fn">expect</span>(page).<span class="pr">toHaveTitle</span>(<span class="str">'Dashboard'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(page).<span class="pr">toHaveTitle</span>(/Dashboard/);
+
+<span class="cm">// Screenshot visual comparison</span>
+<span class="at">await</span> <span class="fn">expect</span>(page).<span class="pr">toHaveScreenshot</span>();
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toHaveScreenshot</span>(<span class="str">'button.png'</span>);
+
+<span class="cm">// Negate with .not</span>
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="kw">not</span>.<span class="pr">toBeVisible</span>();
+
+<span class="cm">// Custom timeout for this assertion</span>
+<span class="at">await</span> <span class="fn">expect</span>(locator).<span class="pr">toBeVisible</span>({ timeout: <span class="num">5000</span> });
+
+<span class="cm">// Generic expect (no retry)</span>
+<span class="fn">expect</span>(<span class="num">2</span> + <span class="num">2</span>).<span class="pr">toBe</span>(<span class="num">4</span>);
+<span class="fn">expect</span>(arr).<span class="pr">toContain</span>(<span class="str">'item'</span>);
+<span class="fn">expect</span>(obj).<span class="pr">toMatchObject</span>({ key: <span class="str">'value'</span> });
+<span class="fn">expect</span>(str).<span class="pr">toMatch</span>(/regex/);
+
+<span class="cm">// API Response assertion</span>
+<span class="kw">const</span> res = <span class="at">await</span> page.<span class="pr">request</span>.<span class="pr">get</span>(<span class="str">'/api/data'</span>);
+<span class="at">await</span> <span class="fn">expect</span>(res).<span class="pr">toBeOK</span>();
+<span class="fn">expect</span>(res.<span class="pr">status</span>()).<span class="pr">toBe</span>(<span class="num">200</span>);</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 7. WAITS ══════════ -->
+<section class="section a3" id="waits">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <div class="section-icon">⏳</div>
+    <h2>Waiting Strategies</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">waitFor Methods</span><span class="card-tag">Core</span></div>
+      <pre><span class="cm">// Wait for element state</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'.spinner'</span>).<span class="pr">waitFor</span>({ state: <span class="str">'hidden'</span> });
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'.result'</span>).<span class="pr">waitFor</span>({ state: <span class="str">'visible'</span> });
+<span class="cm">// states: 'attached'|'detached'|'visible'|'hidden'</span>
+
+<span class="cm">// Wait for timeout (avoid if possible)</span>
+<span class="at">await</span> page.<span class="pr">waitForTimeout</span>(<span class="num">1000</span>);
+
+<span class="cm">// Wait for function in page context</span>
+<span class="at">await</span> page.<span class="pr">waitForFunction</span>(() =>
+  document.<span class="pr">readyState</span> === <span class="str">'complete'</span>
+);
+
+<span class="at">await</span> page.<span class="pr">waitForFunction</span>(
+  selector => !!document.<span class="pr">querySelector</span>(selector),
+  <span class="str">'.dynamic-content'</span>
+);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Wait for Events</span><span class="card-tag">Events</span></div>
+      <pre><span class="cm">// Wait for network response</span>
+<span class="kw">const</span> response = <span class="at">await</span> page.<span class="pr">waitForResponse</span>(<span class="str">'/api/users'</span>);
+<span class="kw">const</span> response = <span class="at">await</span> page.<span class="pr">waitForResponse</span>(
+  res => res.<span class="pr">url</span>().<span class="pr">includes</span>(<span class="str">'/api'</span>) && res.<span class="pr">status</span>() === <span class="num">200</span>
+);
+
+<span class="cm">// Wait for network request</span>
+<span class="kw">const</span> req = <span class="at">await</span> page.<span class="pr">waitForRequest</span>(<span class="str">'**/submit'</span>);
+
+<span class="cm">// Wait for DOM event</span>
+<span class="at">await</span> page.<span class="pr">waitForEvent</span>(<span class="str">'console'</span>);
+<span class="at">await</span> page.<span class="pr">waitForEvent</span>(<span class="str">'popup'</span>);
+<span class="at">await</span> page.<span class="pr">waitForEvent</span>(<span class="str">'download'</span>);
+<span class="at">await</span> page.<span class="pr">waitForEvent</span>(<span class="str">'filechooser'</span>);
+
+<span class="cm">// Combine action + wait (race-condition-safe)</span>
+<span class="kw">const</span> [download] = <span class="at">await</span> Promise.<span class="pr">all</span>([
+  page.<span class="pr">waitForEvent</span>(<span class="str">'download'</span>),
+  page.<span class="fn">locator</span>(<span class="str">'#dl-btn'</span>).<span class="pr">click</span>(),
+]);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Actionability Checks</span><span class="card-tag">Auto-wait</span></div>
+      <pre><span class="cm">// Playwright auto-waits for these before actions:</span>
+<span class="cm">// ✓ Element is attached to DOM</span>
+<span class="cm">// ✓ Element is visible</span>
+<span class="cm">// ✓ Element is stable (not animating)</span>
+<span class="cm">// ✓ Element receives events</span>
+<span class="cm">// ✓ Element is enabled</span>
+
+<span class="cm">// Get element bounding box</span>
+<span class="kw">const</span> box = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#el'</span>).<span class="pr">boundingBox</span>();
+<span class="cm">// { x, y, width, height }</span>
+
+<span class="cm">// Check visibility without assertion</span>
+<span class="kw">const</span> isVisible = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#el'</span>).<span class="pr">isVisible</span>();
+<span class="kw">const</span> isEnabled = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#el'</span>).<span class="pr">isEnabled</span>();
+<span class="kw">const</span> isChecked = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#el'</span>).<span class="pr">isChecked</span>();</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 8. NETWORK ══════════ -->
+<section class="section a4" id="network">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <div class="section-icon">📡</div>
+    <h2>Network Interception &amp; Mocking</h2>
+  </div>
+  <div class="cards two-col">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Route — Intercept &amp; Mock</span><span class="card-tag">Intercept</span></div>
+      <pre><span class="cm">// Abort request</span>
+<span class="at">await</span> page.<span class="pr">route</span>(<span class="str">'**/*.png'</span>, route => route.<span class="pr">abort</span>());
+
+<span class="cm">// Fulfill with mock response</span>
+<span class="at">await</span> page.<span class="pr">route</span>(<span class="str">'**/api/users'</span>, route => route.<span class="pr">fulfill</span>({
+  status: <span class="num">200</span>,
+  contentType: <span class="str">'application/json'</span>,
+  body: JSON.<span class="pr">stringify</span>([{ id: <span class="num">1</span>, name: <span class="str">'Alice'</span> }]),
+}));
+
+<span class="cm">// Continue with modifications</span>
+<span class="at">await</span> page.<span class="pr">route</span>(<span class="str">'**/api/**'</span>, <span class="kw">async</span> route => {
+  <span class="kw">const</span> headers = {
+    ...route.<span class="pr">request</span>().<span class="pr">headers</span>(),
+    <span class="str">'X-Custom'</span>: <span class="str">'injected'</span>,
+  };
+  <span class="at">await</span> route.<span class="pr">continue</span>({ headers });
+});
+
+<span class="cm">// Fetch and modify response</span>
+<span class="at">await</span> page.<span class="pr">route</span>(<span class="str">'**/api/data'</span>, <span class="kw">async</span> route => {
+  <span class="kw">const</span> response = <span class="at">await</span> route.<span class="pr">fetch</span>();
+  <span class="kw">const</span> json = <span class="at">await</span> response.<span class="pr">json</span>();
+  json.<span class="pr">extra</span> = <span class="str">'injected'</span>;
+  <span class="at">await</span> route.<span class="pr">fulfill</span>({ response, json });
+});
+
+<span class="cm">// Remove route</span>
+<span class="at">await</span> page.<span class="pr">unroute</span>(<span class="str">'**/*.png'</span>);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Network Events &amp; HAR</span><span class="card-tag">Monitoring</span></div>
+      <pre><span class="cm">// Listen to requests</span>
+page.<span class="pr">on</span>(<span class="str">'request'</span>, req => {
+  console.<span class="pr">log</span>(req.<span class="pr">method</span>(), req.<span class="pr">url</span>());
+});
+
+<span class="cm">// Listen to responses</span>
+page.<span class="pr">on</span>(<span class="str">'response'</span>, res => {
+  console.<span class="pr">log</span>(res.<span class="pr">status</span>(), res.<span class="pr">url</span>());
+});
+
+<span class="cm">// Listen to failed requests</span>
+page.<span class="pr">on</span>(<span class="str">'requestfailed'</span>, req => {
+  console.<span class="pr">log</span>(req.<span class="pr">failure</span>().<span class="pr">errorText</span>);
+});
+
+<span class="cm">// Record HAR</span>
+<span class="kw">const</span> context = <span class="at">await</span> browser.<span class="pr">newContext</span>({
+  recordHar: { path: <span class="str">'trace.har'</span>, mode: <span class="str">'full'</span> },
+});
+<span class="at">await</span> context.<span class="pr">close</span>();  <span class="cm">// saves HAR</span>
+
+<span class="cm">// Replay from HAR</span>
+<span class="at">await</span> context.<span class="pr">routeFromHAR</span>(<span class="str">'trace.har'</span>, {
+  url: <span class="str">'**/api/**'</span>,
+  update: <span class="bo">false</span>,
+});</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 9. DIALOGS & FRAMES ══════════ -->
+<section class="section a2" id="dialogs">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <div class="section-icon">💬</div>
+    <h2>Dialogs, Downloads &amp; Frames</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Dialogs (alert / confirm / prompt)</span><span class="card-tag">Dialogs</span></div>
+      <pre><span class="cm">// Handle dialog — must register BEFORE triggering</span>
+page.<span class="pr">on</span>(<span class="str">'dialog'</span>, <span class="kw">async</span> dialog => {
+  console.<span class="pr">log</span>(dialog.<span class="pr">type</span>());     <span class="cm">// alert|confirm|prompt</span>
+  console.<span class="pr">log</span>(dialog.<span class="pr">message</span>());
+  console.<span class="pr">log</span>(dialog.<span class="pr">defaultValue</span>()); <span class="cm">// for prompt</span>
+
+  <span class="at">await</span> dialog.<span class="pr">accept</span>();           <span class="cm">// OK / Yes</span>
+  <span class="at">await</span> dialog.<span class="pr">accept</span>(<span class="str">'typed text'</span>); <span class="cm">// for prompt</span>
+  <span class="at">await</span> dialog.<span class="pr">dismiss</span>();          <span class="cm">// Cancel / No</span>
+});
+
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#alert-btn'</span>).<span class="pr">click</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Downloads</span><span class="card-tag">Files</span></div>
+      <pre><span class="cm">// Start download</span>
+<span class="kw">const</span> downloadPromise = page.<span class="pr">waitForEvent</span>(<span class="str">'download'</span>);
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#download-btn'</span>).<span class="pr">click</span>();
+<span class="kw">const</span> download = <span class="at">await</span> downloadPromise;
+
+<span class="cm">// Get download info</span>
+console.<span class="pr">log</span>(download.<span class="pr">suggestedFilename</span>());
+console.<span class="pr">log</span>(<span class="at">await</span> download.<span class="pr">path</span>()); <span class="cm">// temp path</span>
+
+<span class="cm">// Save download</span>
+<span class="at">await</span> download.<span class="pr">saveAs</span>(<span class="str">'/downloads/file.pdf'</span>);
+
+<span class="cm">// Get as stream</span>
+<span class="kw">const</span> stream = <span class="at">await</span> download.<span class="pr">createReadStream</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">File Chooser</span><span class="card-tag">Upload</span></div>
+      <pre><span class="cm">// Handle file chooser dialog</span>
+<span class="kw">const</span> fileChooserPromise = page.<span class="pr">waitForEvent</span>(<span class="str">'filechooser'</span>);
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#upload-btn'</span>).<span class="pr">click</span>();
+<span class="kw">const</span> fileChooser = <span class="at">await</span> fileChooserPromise;
+
+<span class="at">await</span> fileChooser.<span class="pr">setFiles</span>([<span class="str">'file.pdf'</span>]);
+console.<span class="pr">log</span>(fileChooser.<span class="pr">isMultiple</span>()); <span class="cm">// boolean</span></pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 10. KEYBOARD & MOUSE ══════════ -->
+<section class="section a7" id="keyboard">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <div class="section-icon">⌨️</div>
+    <h2>Keyboard &amp; Mouse</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Keyboard</span><span class="card-tag">Input</span></div>
+      <pre><span class="cm">// Press a key</span>
+<span class="at">await</span> page.keyboard.<span class="pr">press</span>(<span class="str">'Enter'</span>);
+<span class="at">await</span> page.keyboard.<span class="pr">press</span>(<span class="str">'Escape'</span>);
+<span class="at">await</span> page.keyboard.<span class="pr">press</span>(<span class="str">'Tab'</span>);
+<span class="at">await</span> page.keyboard.<span class="pr">press</span>(<span class="str">'Control+A'</span>);
+<span class="at">await</span> page.keyboard.<span class="pr">press</span>(<span class="str">'Shift+ArrowDown'</span>);
+<span class="at">await</span> page.keyboard.<span class="pr">press</span>(<span class="str">'F12'</span>);
+
+<span class="cm">// Locator shortcut</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input'</span>).<span class="pr">press</span>(<span class="str">'Enter'</span>);
+
+<span class="cm">// Hold &amp; release modifier</span>
+<span class="at">await</span> page.keyboard.<span class="pr">down</span>(<span class="str">'Shift'</span>);
+<span class="at">await</span> page.keyboard.<span class="pr">press</span>(<span class="str">'ArrowRight'</span>);
+<span class="at">await</span> page.keyboard.<span class="pr">up</span>(<span class="str">'Shift'</span>);
+
+<span class="cm">// Type text</span>
+<span class="at">await</span> page.keyboard.<span class="pr">type</span>(<span class="str">'Hello World!'</span>);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Mouse</span><span class="card-tag">Pointer</span></div>
+      <pre><span class="cm">// Move to coordinates</span>
+<span class="at">await</span> page.mouse.<span class="pr">move</span>(<span class="num">100</span>, <span class="num">200</span>);
+
+<span class="cm">// Click at coordinates</span>
+<span class="at">await</span> page.mouse.<span class="pr">click</span>(<span class="num">100</span>, <span class="num">200</span>);
+<span class="at">await</span> page.mouse.<span class="pr">click</span>(<span class="num">100</span>, <span class="num">200</span>, { button: <span class="str">'right'</span> });
+<span class="at">await</span> page.mouse.<span class="pr">dblclick</span>(<span class="num">100</span>, <span class="num">200</span>);
+
+<span class="cm">// Mouse down / up</span>
+<span class="at">await</span> page.mouse.<span class="pr">down</span>();
+<span class="at">await</span> page.mouse.<span class="pr">up</span>();
+
+<span class="cm">// Scroll wheel</span>
+<span class="at">await</span> page.mouse.<span class="pr">wheel</span>(<span class="num">0</span>, <span class="num">500</span>); <span class="cm">// deltaX, deltaY</span>
+
+<span class="cm">// Touch</span>
+<span class="at">await</span> page.touchscreen.<span class="pr">tap</span>(<span class="num">150</span>, <span class="num">300</span>);</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 11. SCREENSHOTS ══════════ -->
+<section class="section a5" id="screenshots">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <div class="section-icon">📸</div>
+    <h2>Screenshots, Video &amp; PDF</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Screenshots</span><span class="card-tag">Capture</span></div>
+      <pre><span class="cm">// Full page screenshot</span>
+<span class="at">await</span> page.<span class="pr">screenshot</span>({ path: <span class="str">'full.png'</span>, fullPage: <span class="bo">true</span> });
+
+<span class="cm">// Specific element</span>
+<span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'.card'</span>).<span class="pr">screenshot</span>({ path: <span class="str">'card.png'</span> });
+
+<span class="cm">// To buffer</span>
+<span class="kw">const</span> buf = <span class="at">await</span> page.<span class="pr">screenshot</span>({ type: <span class="str">'jpeg'</span>, quality: <span class="num">80</span> });
+
+<span class="cm">// Clip region</span>
+<span class="at">await</span> page.<span class="pr">screenshot</span>({
+  clip: { x: <span class="num">0</span>, y: <span class="num">0</span>, width: <span class="num">400</span>, height: <span class="num">300</span> }
+});
+
+<span class="cm">// Mask elements (redact sensitive data)</span>
+<span class="at">await</span> page.<span class="pr">screenshot</span>({
+  mask: [page.<span class="fn">locator</span>(<span class="str">'.password'</span>)],
+});</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Video &amp; PDF</span><span class="card-tag">Recording</span></div>
+      <pre><span class="cm">// Enable video recording at context level</span>
+<span class="kw">const</span> context = <span class="at">await</span> browser.<span class="pr">newContext</span>({
+  recordVideo: {
+    dir: <span class="str">'videos/'</span>,
+    size: { width: <span class="num">1280</span>, height: <span class="num">720</span> },
+  },
+});
+<span class="cm">// Video saved on context.close()</span>
+<span class="at">await</span> context.<span class="pr">close</span>();
+
+<span class="cm">// Get video path</span>
+<span class="kw">const</span> path = <span class="at">await</span> page.<span class="pr">video</span>().<span class="pr">path</span>();
+
+<span class="cm">// Generate PDF (Chromium only)</span>
+<span class="at">await</span> page.<span class="pr">pdf</span>({
+  path: <span class="str">'report.pdf'</span>,
+  format: <span class="str">'A4'</span>,
+  landscape: <span class="bo">false</span>,
+  printBackground: <span class="bo">true</span>,
+  margin: { top: <span class="str">'20px'</span>, bottom: <span class="str">'20px'</span> },
+});</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 12. STORAGE STATE ══════════ -->
+<section class="section a1" id="storage">
+  <div class="section-header">
+    <span class="section-num">12</span>
+    <div class="section-icon">💾</div>
+    <h2>Storage State &amp; Authentication</h2>
+  </div>
+  <div class="cards two-col">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Save &amp; Reuse Auth State</span><span class="card-tag">Auth</span></div>
+      <pre><span class="cm">// global-setup.js — run once</span>
+<span class="kw">const</span> { chromium } = <span class="fn">require</span>(<span class="str">'@playwright/test'</span>);
+
+<span class="kw">async function</span> <span class="fn">globalSetup</span>() {
+  <span class="kw">const</span> browser = <span class="at">await</span> chromium.<span class="pr">launch</span>();
+  <span class="kw">const</span> page = <span class="at">await</span> browser.<span class="pr">newPage</span>();
+  <span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'https://app.com/login'</span>);
+  <span class="at">await</span> page.<span class="pr">getByLabel</span>(<span class="str">'Email'</span>).<span class="pr">fill</span>(<span class="str">'user@example.com'</span>);
+  <span class="at">await</span> page.<span class="pr">getByLabel</span>(<span class="str">'Password'</span>).<span class="pr">fill</span>(<span class="str">'secret'</span>);
+  <span class="at">await</span> page.<span class="pr">getByRole</span>(<span class="str">'button'</span>, { name: <span class="str">'Login'</span> }).<span class="pr">click</span>();
+
+  <span class="cm">// Save cookies & localStorage</span>
+  <span class="at">await</span> page.context().<span class="pr">storageState</span>({ path: <span class="str">'auth.json'</span> });
+  <span class="at">await</span> browser.<span class="pr">close</span>();
+}
+
+module.<span class="pr">exports</span> = globalSetup;</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Cookies &amp; localStorage</span><span class="card-tag">Storage</span></div>
+      <pre><span class="cm">// Add cookies</span>
+<span class="at">await</span> context.<span class="pr">addCookies</span>([{
+  name: <span class="str">'session'</span>,
+  value: <span class="str">'abc123'</span>,
+  domain: <span class="str">'example.com'</span>,
+  path: <span class="str">'/'</span>,
+  httpOnly: <span class="bo">true</span>,
+  secure: <span class="bo">true</span>,
+}]);
+
+<span class="cm">// Get cookies</span>
+<span class="kw">const</span> cookies = <span class="at">await</span> context.<span class="pr">cookies</span>();
+<span class="kw">const</span> cookies = <span class="at">await</span> context.<span class="pr">cookies</span>(<span class="str">'https://example.com'</span>);
+
+<span class="cm">// Clear cookies</span>
+<span class="at">await</span> context.<span class="pr">clearCookies</span>();
+
+<span class="cm">// Manipulate localStorage</span>
+<span class="at">await</span> page.<span class="pr">evaluate</span>(() => {
+  localStorage.<span class="pr">setItem</span>(<span class="str">'token'</span>, <span class="str">'abc'</span>);
+  <span class="kw">return</span> localStorage.<span class="pr">getItem</span>(<span class="str">'token'</span>);
+});</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 13. TEST FIXTURES ══════════ -->
+<section class="section a2" id="fixtures">
+  <div class="section-header">
+    <span class="section-num">13</span>
+    <div class="section-icon">🧩</div>
+    <h2>Test Fixtures &amp; Structure</h2>
+  </div>
+  <div class="cards two-col">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Basic Test Structure</span><span class="card-tag">test.js</span></div>
+      <pre><span class="kw">const</span> { test, expect } = <span class="fn">require</span>(<span class="str">'@playwright/test'</span>);
+
+<span class="cm">// Basic test</span>
+<span class="fn">test</span>(<span class="str">'page title'</span>, <span class="kw">async</span> ({ page }) => {
+  <span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'https://playwright.dev'</span>);
+  <span class="at">await</span> <span class="fn">expect</span>(page).<span class="pr">toHaveTitle</span>(/Playwright/);
+});
+
+<span class="cm">// Test group</span>
+test.<span class="fn">describe</span>(<span class="str">'Authentication'</span>, () => {
+  test.<span class="fn">beforeEach</span>(<span class="kw">async</span> ({ page }) => {
+    <span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'/login'</span>);
+  });
+
+  <span class="fn">test</span>(<span class="str">'login with valid creds'</span>, <span class="kw">async</span> ({ page }) => { });
+  <span class="fn">test</span>(<span class="str">'login with invalid creds'</span>, <span class="kw">async</span> ({ page }) => { });
+});
+
+<span class="cm">// Use context & browser fixtures</span>
+<span class="fn">test</span>(<span class="str">'multi tab'</span>, <span class="kw">async</span> ({ context, browser }) => {
+  <span class="kw">const</span> page1 = <span class="at">await</span> context.<span class="pr">newPage</span>();
+  <span class="kw">const</span> page2 = <span class="at">await</span> context.<span class="pr">newPage</span>();
+});</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Custom Fixtures</span><span class="card-tag">Extend</span></div>
+      <pre><span class="cm">// fixtures.js</span>
+<span class="kw">const</span> { test: base, expect } = <span class="fn">require</span>(<span class="str">'@playwright/test'</span>);
+
+<span class="kw">export const</span> test = base.<span class="pr">extend</span>({
+  <span class="cm">// Fixture with default value</span>
+  <span class="at">baseURL</span>: [<span class="str">'https://staging.app.com'</span>, { option: <span class="bo">true</span> }],
+
+  <span class="cm">// Auto-use fixture (runs for every test)</span>
+  <span class="at">autoLogin</span>: [<span class="kw">async</span> ({ page }, use) => {
+    <span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'/login'</span>);
+    <span class="at">await</span> page.<span class="pr">getByLabel</span>(<span class="str">'Email'</span>).<span class="pr">fill</span>(<span class="str">'admin@test.com'</span>);
+    <span class="at">await</span> page.<span class="pr">getByRole</span>(<span class="str">'button'</span>, { name: <span class="str">'Login'</span> }).<span class="pr">click</span>();
+    <span class="at">await</span> <span class="fn">use</span>();  <span class="cm">// run test</span>
+    <span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'/logout'</span>);
+  }, { auto: <span class="bo">true</span> }],
+
+  <span class="cm">// Page Object fixture</span>
+  <span class="at">loginPage</span>: <span class="kw">async</span> ({ page }, use) => {
+    <span class="at">await</span> <span class="fn">use</span>(<span class="kw">new</span> <span class="cl">LoginPage</span>(page));
+  },
+});
+
+<span class="kw">export</span> { expect };</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 14. HOOKS ══════════ -->
+<section class="section a6" id="hooks">
+  <div class="section-header">
+    <span class="section-num">14</span>
+    <div class="section-icon">🔗</div>
+    <h2>Hooks, Annotations &amp; Tags</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Lifecycle Hooks</span><span class="card-tag">Setup/Teardown</span></div>
+      <pre>test.<span class="pr">beforeAll</span>(<span class="kw">async</span> ({ browser }) => {
+  <span class="cm">// runs once before all tests in describe</span>
+});
+
+test.<span class="pr">afterAll</span>(<span class="kw">async</span> () => {
+  <span class="cm">// runs once after all tests</span>
+});
+
+test.<span class="pr">beforeEach</span>(<span class="kw">async</span> ({ page }) => {
+  <span class="cm">// runs before each test</span>
+  <span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'/'</span>);
+});
+
+test.<span class="pr">afterEach</span>(<span class="kw">async</span> ({ page }, testInfo) => {
+  <span class="cm">// attach screenshot on failure</span>
+  <span class="kw">if</span> (testInfo.<span class="pr">status</span> !== testInfo.<span class="pr">expectedStatus</span>) {
+    <span class="kw">const</span> shot = <span class="at">await</span> page.<span class="pr">screenshot</span>();
+    <span class="at">await</span> testInfo.<span class="pr">attach</span>(<span class="str">'screenshot'</span>, {
+      body: shot, contentType: <span class="str">'image/png'</span>
+    });
+  }
+});</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Annotations &amp; Tags</span><span class="card-tag">Metadata</span></div>
+      <pre><span class="cm">// Skip test</span>
+test.<span class="fn">skip</span>(<span class="str">'skipped test'</span>, <span class="kw">async</span> () => {});
+
+<span class="cm">// Skip conditionally</span>
+<span class="fn">test</span>(<span class="str">'mobile only'</span>, <span class="kw">async</span> ({ page, isMobile }) => {
+  test.<span class="fn">skip</span>(!isMobile, <span class="str">'Mobile only'</span>);
+});
+
+<span class="cm">// Mark as failing (expected to fail)</span>
+test.<span class="fn">fail</span>(<span class="str">'known bug'</span>, <span class="kw">async</span> () => {});
+
+<span class="cm">// Only run this test</span>
+test.<span class="fn">only</span>(<span class="str">'focus test'</span>, <span class="kw">async</span> () => {});
+
+<span class="cm">// Slow test (3x timeout)</span>
+test.<span class="fn">slow</span>(<span class="str">'slow test'</span>, <span class="kw">async</span> () => {});
+
+<span class="cm">// Custom annotation</span>
+<span class="fn">test</span>(<span class="str">'tagged test'</span>, {
+  tag: [<span class="str">'@smoke'</span>, <span class="str">'@auth'</span>],
+  annotation: { type: <span class="str">'issue'</span>, description: <span class="str">'BUG-123'</span> },
+}, <span class="kw">async</span> ({ page }) => {});</pre>
+      <div class="note"><span class="note-icon">💡</span> Run tagged: <ic>--grep @smoke</ic></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">TestInfo &amp; Attachments</span><span class="card-tag">Runtime</span></div>
+      <pre><span class="fn">test</span>(<span class="str">'with info'</span>, <span class="kw">async</span> ({ page }, testInfo) => {
+  console.<span class="pr">log</span>(testInfo.<span class="pr">title</span>);
+  console.<span class="pr">log</span>(testInfo.<span class="pr">file</span>);
+  console.<span class="pr">log</span>(testInfo.<span class="pr">project</span>.<span class="pr">name</span>);
+  console.<span class="pr">log</span>(testInfo.<span class="pr">retry</span>);
+
+  <span class="cm">// Set custom timeout</span>
+  testInfo.<span class="pr">setTimeout</span>(<span class="num">60000</span>);
+
+  <span class="cm">// Attach file</span>
+  <span class="at">await</span> testInfo.<span class="pr">attach</span>(<span class="str">'log'</span>, {
+    path: <span class="str">'app.log'</span>, contentType: <span class="str">'text/plain'</span>
+  });
+
+  <span class="cm">// Output directory</span>
+  console.<span class="pr">log</span>(testInfo.<span class="pr">outputDir</span>);
+  <span class="kw">const</span> filePath = testInfo.<span class="pr">outputPath</span>(<span class="str">'data.json'</span>);
+});</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 15. PARALLEL ══════════ -->
+<section class="section a3" id="parallel">
+  <div class="section-header">
+    <span class="section-num">15</span>
+    <div class="section-icon">⚡</div>
+    <h2>Parallelism &amp; Sharding</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Parallel Modes</span><span class="card-tag">Config</span></div>
+      <pre><span class="cm">// playwright.config.js</span>
+<span class="kw">export default</span> {
+  workers: process.env.<span class="pr">CI</span> ? <span class="num">2</span> : <span class="kw">undefined</span>,
+  fullyParallel: <span class="bo">true</span>,   <span class="cm">// all tests in all files run in parallel</span>
+};
+
+<span class="cm">// In test file — parallelize within describe</span>
+test.describe.<span class="pr">configure</span>({ mode: <span class="str">'parallel'</span> });
+
+<span class="cm">// Force serial within describe</span>
+test.describe.<span class="pr">configure</span>({ mode: <span class="str">'serial'</span> });
+
+<span class="cm">// Retries on failure</span>
+<span class="kw">export default</span> {
+  retries: process.env.<span class="pr">CI</span> ? <span class="num">2</span> : <span class="num">0</span>,
+};</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Sharding (CI)</span><span class="card-tag">Distribute</span></div>
+      <pre><span class="cm"># Split tests across 4 CI machines</span>
+<span class="cm"># Machine 1:</span>
+npx playwright test --shard=1/4
+
+<span class="cm"># Machine 2:</span>
+npx playwright test --shard=2/4
+
+<span class="cm"># Machine 3:</span>
+npx playwright test --shard=3/4
+
+<span class="cm"># Machine 4:</span>
+npx playwright test --shard=4/4
+
+<span class="cm"># Merge blob reports from all shards</span>
+npx playwright merge-reports --reporter html ./all-blob-reports</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 16. API TESTING ══════════ -->
+<section class="section a4" id="api">
+  <div class="section-header">
+    <span class="section-num">16</span>
+    <div class="section-icon">🔌</div>
+    <h2>API Testing</h2>
+  </div>
+  <div class="cards two-col">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">APIRequestContext</span><span class="card-tag">HTTP</span></div>
+      <pre><span class="kw">const</span> { request } = <span class="fn">require</span>(<span class="str">'@playwright/test'</span>);
+
+<span class="cm">// Standalone API context</span>
+<span class="kw">const</span> apiContext = <span class="at">await</span> request.<span class="pr">newContext</span>({
+  baseURL: <span class="str">'https://api.example.com'</span>,
+  extraHTTPHeaders: {
+    <span class="str">'Authorization'</span>: <span class="str">`Bearer ${process.env.TOKEN}`</span>,
+    <span class="str">'Accept'</span>: <span class="str">'application/json'</span>,
+  },
+});
+
+<span class="cm">// GET</span>
+<span class="kw">const</span> res = <span class="at">await</span> apiContext.<span class="pr">get</span>(<span class="str">'/users'</span>);
+<span class="kw">const</span> users = <span class="at">await</span> res.<span class="pr">json</span>();
+
+<span class="cm">// POST</span>
+<span class="kw">const</span> res = <span class="at">await</span> apiContext.<span class="pr">post</span>(<span class="str">'/users'</span>, {
+  data: { name: <span class="str">'Alice'</span>, email: <span class="str">'alice@test.com'</span> },
+});
+
+<span class="cm">// PUT / PATCH / DELETE</span>
+<span class="at">await</span> apiContext.<span class="pr">put</span>(<span class="str">'/users/1'</span>, { data: { name: <span class="str">'Bob'</span> } });
+<span class="at">await</span> apiContext.<span class="pr">patch</span>(<span class="str">'/users/1'</span>, { data: { active: <span class="bo">true</span> } });
+<span class="at">await</span> apiContext.<span class="pr">delete</span>(<span class="str">'/users/1'</span>);
+
+<span class="cm">// Form data</span>
+<span class="at">await</span> apiContext.<span class="pr">post</span>(<span class="str">'/upload'</span>, {
+  multipart: {
+    file: { name: <span class="str">'f.png'</span>, mimeType: <span class="str">'image/png'</span>, buffer },
+    title: <span class="str">'My file'</span>,
+  },
+});
+
+<span class="at">await</span> apiContext.<span class="pr">dispose</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">API in Tests &amp; Assertions</span><span class="card-tag">Integration</span></div>
+      <pre><span class="fn">test</span>(<span class="str">'create &amp; verify user'</span>, <span class="kw">async</span> ({ request }) => {
+  <span class="cm">// POST via built-in request fixture</span>
+  <span class="kw">const</span> res = <span class="at">await</span> request.<span class="pr">post</span>(<span class="str">'/api/users'</span>, {
+    data: { name: <span class="str">'Alice'</span> },
+  });
+
+  <span class="at">await</span> <span class="fn">expect</span>(res).<span class="pr">toBeOK</span>();
+  <span class="fn">expect</span>(res.<span class="pr">status</span>()).<span class="pr">toBe</span>(<span class="num">201</span>);
+
+  <span class="kw">const</span> body = <span class="at">await</span> res.<span class="pr">json</span>();
+  <span class="fn">expect</span>(body).<span class="pr">toHaveProperty</span>(<span class="str">'id'</span>);
+
+  <span class="cm">// Response headers</span>
+  <span class="kw">const</span> ct = res.<span class="pr">headers</span>()[<span class="str">'content-type'</span>];
+  <span class="fn">expect</span>(ct).<span class="pr">toContain</span>(<span class="str">'application/json'</span>);
+
+  <span class="cm">// Raw text</span>
+  <span class="kw">const</span> text = <span class="at">await</span> res.<span class="pr">text</span>();
+
+  <span class="cm">// Body as buffer</span>
+  <span class="kw">const</span> buf = <span class="at">await</span> res.<span class="pr">body</span>();
+});
+
+<span class="cm">// Combine API + UI in same test</span>
+<span class="fn">test</span>(<span class="str">'api setup + ui verify'</span>, <span class="kw">async</span> ({ page, request }) => {
+  <span class="at">await</span> request.<span class="pr">post</span>(<span class="str">'/api/seed'</span>, { data: { count: <span class="num">5</span> } });
+  <span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'/users'</span>);
+  <span class="at">await</span> <span class="fn">expect</span>(page.<span class="fn">locator</span>(<span class="str">'tr'</span>)).<span class="pr">toHaveCount</span>(<span class="num">5</span>);
+});</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 17. EVALUATE ══════════ -->
+<section class="section a7" id="evaluate">
+  <div class="section-header">
+    <span class="section-num">17</span>
+    <div class="section-icon">🧠</div>
+    <h2>JavaScript Evaluation in Browser</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">page.evaluate()</span><span class="card-tag">Execute</span></div>
+      <pre><span class="cm">// Run in browser context, return serializable value</span>
+<span class="kw">const</span> title = <span class="at">await</span> page.<span class="pr">evaluate</span>(() => document.<span class="pr">title</span>);
+
+<span class="cm">// Pass argument</span>
+<span class="kw">const</span> len = <span class="at">await</span> page.<span class="pr">evaluate</span>(sel =>
+  document.<span class="pr">querySelectorAll</span>(sel).<span class="pr">length</span>, <span class="str">'li'</span>
+);
+
+<span class="cm">// evaluateHandle — returns live handle</span>
+<span class="kw">const</span> body = <span class="at">await</span> page.<span class="pr">evaluateHandle</span>(() => document.body);
+
+<span class="cm">// Element evaluate</span>
+<span class="kw">const</span> cls = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'#el'</span>).<span class="pr">evaluate</span>(
+  el => el.<span class="pr">className</span>
+);
+
+<span class="cm">// Expose Node.js function to browser</span>
+<span class="at">await</span> page.<span class="pr">exposeFunction</span>(<span class="str">'sha256'</span>, text =>
+  crypto.<span class="pr">createHash</span>(<span class="str">'sha256'</span>).<span class="pr">update</span>(text).<span class="pr">digest</span>(<span class="str">'hex'</span>)
+);
+<span class="at">await</span> page.<span class="pr">evaluate</span>(<span class="kw">async</span> () => {
+  <span class="kw">const</span> hash = <span class="at">await</span> <span class="fn">sha256</span>(<span class="str">'hello'</span>);
+});</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Extract Data from DOM</span><span class="card-tag">Scraping</span></div>
+      <pre><span class="cm">// textContent</span>
+<span class="kw">const</span> text = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'h1'</span>).<span class="pr">textContent</span>();
+
+<span class="cm">// innerText (visible text)</span>
+<span class="kw">const</span> inner = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'p'</span>).<span class="pr">innerText</span>();
+
+<span class="cm">// innerHTML</span>
+<span class="kw">const</span> html = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'div'</span>).<span class="pr">innerHTML</span>();
+
+<span class="cm">// Attribute value</span>
+<span class="kw">const</span> href = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'a'</span>).<span class="pr">getAttribute</span>(<span class="str">'href'</span>);
+
+<span class="cm">// Input value</span>
+<span class="kw">const</span> val = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'input'</span>).<span class="pr">inputValue</span>();
+
+<span class="cm">// Select options</span>
+<span class="kw">const</span> sel = <span class="at">await</span> page.<span class="fn">locator</span>(<span class="str">'select'</span>).<span class="pr">inputValue</span>();
+
+<span class="cm">// All link hrefs</span>
+<span class="kw">const</span> hrefs = <span class="at">await</span> page.<span class="pr">evaluate</span>(() =>
+  [...document.<span class="pr">querySelectorAll</span>(<span class="str">'a'</span>)].<span class="pr">map</span>(a => a.<span class="pr">href</span>)
+);</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 18. TRACE ══════════ -->
+<section class="section a4" id="trace">
+  <div class="section-header">
+    <span class="section-num">18</span>
+    <div class="section-icon">🔭</div>
+    <h2>Tracing &amp; Debugging</h2>
+  </div>
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Tracing</span><span class="card-tag">Trace Viewer</span></div>
+      <pre><span class="cm">// Start trace</span>
+<span class="at">await</span> context.<span class="pr">tracing</span>.<span class="pr">start</span>({
+  screenshots: <span class="bo">true</span>,
+  snapshots: <span class="bo">true</span>,
+  sources: <span class="bo">true</span>,
+});
+
+<span class="at">await</span> page.<span class="pr">goto</span>(<span class="str">'https://example.com'</span>);
+
+<span class="cm">// Save trace</span>
+<span class="at">await</span> context.<span class="pr">tracing</span>.<span class="pr">stop</span>({ path: <span class="str">'trace.zip'</span> });
+
+<span class="cm"># Open Trace Viewer</span>
+npx playwright show-trace trace.zip</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Console &amp; Page Errors</span><span class="card-tag">Logging</span></div>
+      <pre><span class="cm">// Listen to console messages</span>
+page.<span class="pr">on</span>(<span class="str">'console'</span>, msg => {
+  console.<span class="pr">log</span>(`[${msg.<span class="pr">type</span>()}]`, msg.<span class="pr">text</span>());
+  <span class="kw">for</span> (<span class="kw">const</span> arg <span class="kw">of</span> msg.<span class="pr">args</span>()) {
+    console.<span class="pr">log</span>(<span class="at">await</span> arg.<span class="pr">jsonValue</span>());
+  }
+});
+
+<span class="cm">// Listen to page errors / exceptions</span>
+page.<span class="pr">on</span>(<span class="str">'pageerror'</span>, err => {
+  console.<span class="pr">error</span>(<span class="str">'Page error:'</span>, err.<span class="pr">message</span>);
+});
+
+<span class="cm">// Listen to worker errors</span>
+page.<span class="pr">on</span>(<span class="str">'crash'</span>, () => console.<span class="pr">error</span>(<span class="str">'Page crashed!'</span>));</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Debug Helpers</span><span class="card-tag">Dev Tools</span></div>
+      <pre><span class="cm"># Interactive debugger (pauses at test)</span>
+npx playwright test --debug
+
+<span class="cm"># Debug specific test</span>
+npx playwright test login.spec.js --debug
+
+<span class="cm"># Pause in code</span>
+<span class="at">await</span> page.<span class="pr">pause</span>();   <span class="cm">// opens Playwright Inspector</span>
+
+<span class="cm"># Set env for verbose debug</span>
+DEBUG=pw:api npx playwright test
+
+<span class="cm"># Headed slow-motion</span>
+<span class="kw">const</span> browser = <span class="at">await</span> chromium.<span class="pr">launch</span>({
+  headless: <span class="bo">false</span>, slowMo: <span class="num">200</span>
+});</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ 19. CONFIG ══════════ -->
+<section class="section a1" id="config">
+  <div class="section-header">
+    <span class="section-num">19</span>
+    <div class="section-icon">⚙️</div>
+    <h2>playwright.config.js — Full Reference</h2>
+  </div>
+  <div class="cards wide">
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Complete Configuration</span><span class="card-tag">playwright.config.js</span></div>
+      <pre><span class="cm">// @ts-check</span>
+<span class="kw">const</span> { defineConfig, devices } = <span class="fn">require</span>(<span class="str">'@playwright/test'</span>);
+
+module.<span class="pr">exports</span> = <span class="fn">defineConfig</span>({
+  testDir: <span class="str">'./tests'</span>,
+  testMatch: [<span class="str">'**/*.spec.js'</span>],
+  testIgnore: [<span class="str">'**/skip/**'</span>],
+
+  <span class="cm">/* Run tests in files in parallel */</span>
+  fullyParallel: <span class="bo">true</span>,
+
+  <span class="cm">/* Fail build on test.only in CI */</span>
+  forbidOnly: !!process.env.<span class="pr">CI</span>,
+
+  <span class="cm">/* Retry on failure */</span>
+  retries: process.env.<span class="pr">CI</span> ? <span class="num">2</span> : <span class="num">0</span>,
+
+  <span class="cm">/* Parallel workers */</span>
+  workers: process.env.<span class="pr">CI</span> ? <span class="num">1</span> : <span class="kw">undefined</span>,
+
+  <span class="cm">/* Reporter */</span>
+  reporter: [
+    [<span class="str">'html'</span>, { open: <span class="str">'never'</span> }],
+    [<span class="str">'junit'</span>, { outputFile: <span class="str">'results.xml'</span> }],
+    [<span class="str">'line'</span>],   <span class="cm">// 'dot'|'list'|'verbose'|'github'|'blob'</span>
+  ],
+
+  <span class="cm">/* Global test options */</span>
+  use: {
+    baseURL: <span class="str">'http://localhost:3000'</span>,
+    trace: <span class="str">'on-first-retry'</span>,     <span class="cm">// 'on'|'off'|'retain-on-failure'</span>
+    screenshot: <span class="str">'only-on-failure'</span>, <span class="cm">// 'on'|'off'|'only-on-failure'</span>
+    video: <span class="str">'retain-on-failure'</span>,
+    headless: <span class="bo">true</span>,
+    viewport: { width: <span class="num">1280</span>, height: <span class="num">720</span> },
+    actionTimeout: <span class="num">10_000</span>,
+    navigationTimeout: <span class="num">30_000</span>,
+    ignoreHTTPSErrors: <span class="bo">true</span>,
+    storageState: <span class="str">'auth.json'</span>,
+    locale: <span class="str">'en-US'</span>,
+    timezoneId: <span class="str">'America/Chicago'</span>,
+    colorScheme: <span class="str">'dark'</span>,
+    bypassCSP: <span class="bo">true</span>,
+    geolocation: { longitude: <span class="num">12.5</span>, latitude: <span class="num">41.9</span> },
+    permissions: [<span class="str">'camera'</span>, <span class="str">'microphone'</span>],
+  },
+
+  <span class="cm">/* Global timeout per test */</span>
+  timeout: <span class="num">30_000</span>,
+  expect: { timeout: <span class="num">5_000</span> },
+
+  <span class="cm">/* Global setup / teardown */</span>
+  globalSetup: <span class="fn">require</span>.<span class="pr">resolve</span>(<span class="str">'./global-setup'</span>),
+  globalTeardown: <span class="fn">require</span>.<span class="pr">resolve</span>(<span class="str">'./global-teardown'</span>),
+
+  <span class="cm">/* Output directory for test artifacts */</span>
+  outputDir: <span class="str">'test-results/'</span>,
+
+  <span class="cm">/* Test Projects — multi-browser/device */</span>
+  projects: [
+    {
+      name: <span class="str">'chromium'</span>,
+      use: { ...devices[<span class="str">'Desktop Chrome'</span>] },
+    },
+    {
+      name: <span class="str">'firefox'</span>,
+      use: { ...devices[<span class="str">'Desktop Firefox'</span>] },
+    },
+    {
+      name: <span class="str">'webkit'</span>,
+      use: { ...devices[<span class="str">'Desktop Safari'</span>] },
+    },
+    {
+      name: <span class="str">'Mobile Chrome'</span>,
+      use: { ...devices[<span class="str">'Pixel 5'</span>] },
+    },
+    {
+      name: <span class="str">'Mobile Safari'</span>,
+      use: { ...devices[<span class="str">'iPhone 12'</span>] },
+    },
+    <span class="cm">/* Setup project for auth */</span>
+    {
+      name: <span class="str">'setup'</span>,
+      testMatch: <span class="str">'**/*.setup.js'</span>,
+    },
+    {
+      name: <span class="str">'authenticated'</span>,
+      use: { storageState: <span class="str">'.auth/user.json'</span> },
+      dependencies: [<span class="str">'setup'</span>],
+    },
+  ],
+
+  <span class="cm">/* Dev server */</span>
+  webServer: {
+    command: <span class="str">'npm run start'</span>,
+    url: <span class="str">'http://localhost:3000'</span>,
+    reuseExistingServer: !process.env.<span class="pr">CI</span>,
+    timeout: <span class="num">120_000</span>,
+  },
+});</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════ QUICK REFERENCE TABLE ══════════ -->
+<section class="section a5">
+  <div class="section-header">
+    <span class="section-num">20</span>
+    <div class="section-icon">📋</div>
+    <h2>Quick Reference — Common Patterns</h2>
+  </div>
+  <div class="cards wide">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Locator Cheat Table</span><span class="card-tag">Reference</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Method</th><th>Finds By</th><th>Example</th></tr>
+          </thead>
+          <tbody>
+            <tr class="hl"><td>getByRole()</td><td>ARIA role + name</td><td>getByRole('button', { name: 'Submit' })</td></tr>
+            <tr><td>getByLabel()</td><td>Form label</td><td>getByLabel('Email')</td></tr>
+            <tr><td>getByPlaceholder()</td><td>Input placeholder</td><td>getByPlaceholder('Search...')</td></tr>
+            <tr><td>getByText()</td><td>Visible text</td><td>getByText('Sign in', { exact: true })</td></tr>
+            <tr><td>getByAltText()</td><td>Image alt</td><td>getByAltText('Logo')</td></tr>
+            <tr><td>getByTitle()</td><td>Title attribute</td><td>getByTitle('Close')</td></tr>
+            <tr class="hl"><td>getByTestId()</td><td>data-testid attr</td><td>getByTestId('submit-btn')</td></tr>
+            <tr><td>locator(css)</td><td>CSS selector</td><td>locator('#nav .link')</td></tr>
+            <tr><td>locator(xpath=)</td><td>XPath</td><td>locator('xpath=//button')</td></tr>
+            <tr><td>frameLocator()</td><td>iframe</td><td>frameLocator('iframe#embed')</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">Assertion Cheat Table</span><span class="card-tag">Reference</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Assertion</th><th>Checks</th><th>Negation</th></tr>
+          </thead>
+          <tbody>
+            <tr class="hl"><td>toBeVisible()</td><td>In DOM + visible</td><td>.not.toBeVisible()</td></tr>
+            <tr><td>toBeHidden()</td><td>Not visible</td><td>.not.toBeHidden()</td></tr>
+            <tr><td>toBeEnabled()</td><td>Not disabled</td><td>.not.toBeEnabled()</td></tr>
+            <tr><td>toBeChecked()</td><td>Checkbox state</td><td>.not.toBeChecked()</td></tr>
+            <tr><td>toHaveText(str)</td><td>Exact/regex text</td><td>.not.toHaveText()</td></tr>
+            <tr><td>toContainText(str)</td><td>Partial text</td><td>.not.toContainText()</td></tr>
+            <tr><td>toHaveValue(v)</td><td>Input value</td><td>.not.toHaveValue()</td></tr>
+            <tr><td>toHaveCount(n)</td><td>Element count</td><td>.not.toHaveCount()</td></tr>
+            <tr><td>toHaveURL(url)</td><td>Page URL</td><td>.not.toHaveURL()</td></tr>
+            <tr class="hl"><td>toHaveScreenshot()</td><td>Visual regression</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><span class="card-title">CLI Flags Quick Reference</span><span class="card-tag">Shell</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Flag</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>--headed</td><td>Show browser UI</td></tr>
+            <tr><td>--debug</td><td>Open Inspector / pause</td></tr>
+            <tr><td>--ui</td><td>Interactive UI Mode</td></tr>
+            <tr><td>--project=chromium</td><td>Target specific project</td></tr>
+            <tr><td>--grep "login"</td><td>Run matching tests</td></tr>
+            <tr><td>--grep-invert "slow"</td><td>Exclude matching tests</td></tr>
+            <tr><td>--retries=2</td><td>Retry failures</td></tr>
+            <tr><td>--workers=4</td><td>Parallel workers</td></tr>
+            <tr><td>--reporter=line</td><td>Set reporter</td></tr>
+            <tr><td>--timeout=60000</td><td>Global test timeout (ms)</td></tr>
+            <tr><td>--update-snapshots</td><td>Refresh visual baselines</td></tr>
+            <tr><td>--shard=1/4</td><td>Shard for CI distribution</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>🎭 Playwright JS Cheatsheet — Based on <a href="https://playwright.dev/docs/intro" target="_blank">playwright.dev</a> official documentation</p>
+  <p>Generated for Playwright v1.44+ · Node.js 18+ · Last updated 2025</p>
+</footer>
+
+</div>
+</body>
+</html>
