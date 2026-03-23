@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C# Regex Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0c10;
+    --surface:   #0f1318;
+    --card:      #131820;
+    --border:    #1e2736;
+    --accent:    #00d4ff;
+    --accent2:   #7c5cfc;
+    --accent3:   #ff6b6b;
+    --accent4:   #4ade80;
+    --text:      #e2e8f0;
+    --muted:     #64748b;
+    --tag-bg:    #1a2235;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    position: relative;
+    padding: 48px 40px 36px;
+    border-bottom: 1px solid var(--border);
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(0,212,255,0.04) 0%, transparent 100%);
+  }
+
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .logo-block { flex: 1; min-width: 280px; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  h1 span.cs   { color: var(--accent2); }
+  h1 span.re   { color: var(--accent); }
+  h1 span.gex  { color: var(--text); opacity: .5; }
+
+  .subtitle {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+  }
+
+  .header-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    padding-bottom: 4px;
+  }
+
+  .badge {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .badge-blue  { color: var(--accent);  border-color: var(--accent);  background: rgba(0,212,255,.06); }
+  .badge-purple{ color: var(--accent2); border-color: var(--accent2); background: rgba(124,92,252,.06); }
+  .badge-green { color: var(--accent4); border-color: var(--accent4); background: rgba(74,222,128,.06); }
+
+  /* ── Search ── */
+  .search-bar {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .search-wrap {
+    position: relative;
+    max-width: 480px;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px 10px 40px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* ── Layout ── */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 12px 40px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 36px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 14px;
+  }
+  .grid-wide {
+    grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .2s, transform .2s;
+    animation: fadeUp .35s both;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(12px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .card-head {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card-title {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .card-tag {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: var(--tag-bg);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── Row ── */
+  .row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+    min-height: 40px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: rgba(0,212,255,.03); }
+
+  .cell-pat {
+    padding: 9px 14px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .cell-desc {
+    padding: 9px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    line-height: 1.5;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(0,212,255,.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  code.purple { color: var(--accent2); background: rgba(124,92,252,.1); }
+  code.green  { color: var(--accent4); background: rgba(74,222,128,.1); }
+  code.red    { color: var(--accent3); background: rgba(255,107,107,.1); }
+  code.white  { color: var(--text);    background: rgba(255,255,255,.06); }
+
+  /* ── Code block card ── */
+  .code-block {
+    padding: 0;
+  }
+  .code-block pre {
+    padding: 14px 16px;
+    font-size: 12px;
+    line-height: 1.8;
+    overflow-x: auto;
+    tab-size: 2;
+  }
+  .kw   { color: #7c5cfc; }
+  .ty   { color: #00d4ff; }
+  .str  { color: #4ade80; }
+  .cm   { color: #4a5568; font-style: italic; }
+  .num  { color: #ff6b6b; }
+  .met  { color: #fbbf24; }
+
+  /* ── Flags table ── */
+  .flags-table { width: 100%; border-collapse: collapse; }
+  .flags-table td {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .flags-table tr:last-child td { border-bottom: none; }
+  .flags-table td:first-child { width: 160px; }
+  .flags-table td:last-child { color: var(--muted); }
+
+  /* ── Live tester ── */
+  .tester-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    grid-column: 1 / -1;
+  }
+  .tester-body { padding: 16px; display: grid; gap: 12px; }
+  .tester-row  { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: center; }
+  .tester-label { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .tester-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+    transition: border-color .2s;
+  }
+  .tester-input:focus { border-color: var(--accent); }
+  .tester-output {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px;
+    min-height: 48px;
+    line-height: 1.7;
+    word-break: break-all;
+  }
+  .match-highlight { background: rgba(0,212,255,.25); color: var(--accent); border-radius: 3px; padding: 1px 2px; }
+  .no-match { color: var(--accent3); font-style: italic; }
+  .match-count { font-size: 11px; color: var(--accent4); margin-top: 6px; }
+
+  /* ── Hidden by search ── */
+  .hidden { display: none !important; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  @media (max-width: 640px) {
+    header, .search-bar, main { padding-left: 16px; padding-right: 16px; }
+    .row { grid-template-columns: 150px 1fr; }
+    .tester-row { grid-template-columns: 1fr; }
+    .tester-label { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="eyebrow">Reference · v2.0 · .NET 8</div>
+      <h1><span class="cs">C#</span> <span class="re">Re</span><span class="gex">gex</span></h1>
+      <p class="subtitle">Complete cheat sheet for <code style="background:transparent;padding:0;color:var(--accent)">System.Text.RegularExpressions</code> — patterns, options, methods, groups, lookarounds, and live testing.</p>
+    </div>
+    <div class="header-meta">
+      <span class="badge badge-blue">Regex Class</span>
+      <span class="badge badge-purple">Named Groups</span>
+      <span class="badge badge-green">Lookarounds</span>
+    </div>
+  </div>
+</header>
+
+<div class="search-bar">
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Filter patterns, e.g. lookahead, digit, anchor…">
+  </div>
+</div>
+
+<main>
+
+  <!-- ── LIVE TESTER ── -->
+  <div class="section-label">Live Tester</div>
+  <div class="grid">
+    <div class="tester-card card" data-search="live tester regex test">
+      <div class="card-head">
+        <span class="card-title">▶ Interactive Regex Tester</span>
+        <span class="card-tag">Live</span>
+      </div>
+      <div class="tester-body">
+        <div class="tester-row">
+          <span class="tester-label">Pattern</span>
+          <input class="tester-input" id="tPattern" placeholder="\b\w+\b" value="\b\d+\b">
+        </div>
+        <div class="tester-row">
+          <span class="tester-label">Test String</span>
+          <input class="tester-input" id="tInput" placeholder="Test your string here…" value="Order 12345 costs 299 USD, ref 007">
+        </div>
+        <div class="tester-row">
+          <span class="tester-label">Output</span>
+          <div>
+            <div class="tester-output" id="tOutput"></div>
+            <div class="match-count" id="tCount"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CHARACTER CLASSES ── -->
+  <div class="section-label" data-section="char">Character Classes</div>
+  <div class="grid" id="sec-char">
+
+    <div class="card" data-search="character classes digit word whitespace">
+      <div class="card-head"><span class="card-title">Shorthand Classes</span><span class="card-tag">Char</span></div>
+      <div class="row"><div class="cell-pat"><code>\d</code></div><div class="cell-desc">Any digit [0-9]</div></div>
+      <div class="row"><div class="cell-pat"><code>\D</code></div><div class="cell-desc">Non-digit</div></div>
+      <div class="row"><div class="cell-pat"><code>\w</code></div><div class="cell-desc">Word char [a-zA-Z0-9_]</div></div>
+      <div class="row"><div class="cell-pat"><code>\W</code></div><div class="cell-desc">Non-word char</div></div>
+      <div class="row"><div class="cell-pat"><code>\s</code></div><div class="cell-desc">Whitespace (space, tab, newline…)</div></div>
+      <div class="row"><div class="cell-pat"><code>\S</code></div><div class="cell-desc">Non-whitespace</div></div>
+      <div class="row"><div class="cell-pat"><code>.</code></div><div class="cell-desc">Any char except newline (use <code>Singleline</code> to include)</div></div>
+    </div>
+
+    <div class="card" data-search="character set range negation bracket">
+      <div class="card-head"><span class="card-title">Sets & Ranges</span><span class="card-tag">Char</span></div>
+      <div class="row"><div class="cell-pat"><code>[abc]</code></div><div class="cell-desc">Match a, b or c</div></div>
+      <div class="row"><div class="cell-pat"><code>[^abc]</code></div><div class="cell-desc">Anything except a, b, c</div></div>
+      <div class="row"><div class="cell-pat"><code>[a-z]</code></div><div class="cell-desc">Lowercase a–z</div></div>
+      <div class="row"><div class="cell-pat"><code>[A-Z]</code></div><div class="cell-desc">Uppercase A–Z</div></div>
+      <div class="row"><div class="cell-pat"><code>[0-9]</code></div><div class="cell-desc">Digits 0–9</div></div>
+      <div class="row"><div class="cell-pat"><code>[a-zA-Z]</code></div><div class="cell-desc">Any letter</div></div>
+      <div class="row"><div class="cell-pat"><code>[\u0041-\u005A]</code></div><div class="cell-desc">Unicode range (A–Z)</div></div>
+    </div>
+
+    <div class="card" data-search="unicode category letter number punctuation">
+      <div class="card-head"><span class="card-title">Unicode Categories</span><span class="card-tag">Unicode</span></div>
+      <div class="row"><div class="cell-pat"><code>\p{L}</code></div><div class="cell-desc">Any Unicode letter</div></div>
+      <div class="row"><div class="cell-pat"><code>\p{Lu}</code></div><div class="cell-desc">Uppercase letter</div></div>
+      <div class="row"><div class="cell-pat"><code>\p{Ll}</code></div><div class="cell-desc">Lowercase letter</div></div>
+      <div class="row"><div class="cell-pat"><code>\p{N}</code></div><div class="cell-desc">Any number</div></div>
+      <div class="row"><div class="cell-pat"><code>\p{P}</code></div><div class="cell-desc">Punctuation</div></div>
+      <div class="row"><div class="cell-pat"><code>\p{Z}</code></div><div class="cell-desc">Separator (space etc.)</div></div>
+      <div class="row"><div class="cell-pat"><code>\P{L}</code></div><div class="cell-desc">NOT a Unicode letter</div></div>
+    </div>
+
+  </div>
+
+  <!-- ── ANCHORS ── -->
+  <div class="section-label">Anchors & Boundaries</div>
+  <div class="grid">
+
+    <div class="card" data-search="anchor start end line word boundary">
+      <div class="card-head"><span class="card-title">Anchors</span><span class="card-tag">Position</span></div>
+      <div class="row"><div class="cell-pat"><code>^</code></div><div class="cell-desc">Start of string (or line in Multiline)</div></div>
+      <div class="row"><div class="cell-pat"><code>$</code></div><div class="cell-desc">End of string (or line in Multiline)</div></div>
+      <div class="row"><div class="cell-pat"><code>\A</code></div><div class="cell-desc">Always start of string</div></div>
+      <div class="row"><div class="cell-pat"><code>\Z</code></div><div class="cell-desc">End of string (before optional \n)</div></div>
+      <div class="row"><div class="cell-pat"><code>\z</code></div><div class="cell-desc">Absolute end of string</div></div>
+      <div class="row"><div class="cell-pat"><code>\b</code></div><div class="cell-desc">Word boundary</div></div>
+      <div class="row"><div class="cell-pat"><code>\B</code></div><div class="cell-desc">Non-word boundary</div></div>
+      <div class="row"><div class="cell-pat"><code>\G</code></div><div class="cell-desc">Where previous match ended</div></div>
+    </div>
+
+  </div>
+
+  <!-- ── QUANTIFIERS ── -->
+  <div class="section-label">Quantifiers</div>
+  <div class="grid">
+
+    <div class="card" data-search="quantifier greedy lazy optional repeat star plus">
+      <div class="card-head"><span class="card-title">Greedy Quantifiers</span><span class="card-tag">Greedy</span></div>
+      <div class="row"><div class="cell-pat"><code>*</code></div><div class="cell-desc">0 or more (greedy)</div></div>
+      <div class="row"><div class="cell-pat"><code>+</code></div><div class="cell-desc">1 or more (greedy)</div></div>
+      <div class="row"><div class="cell-pat"><code>?</code></div><div class="cell-desc">0 or 1 (greedy)</div></div>
+      <div class="row"><div class="cell-pat"><code>{n}</code></div><div class="cell-desc">Exactly n times</div></div>
+      <div class="row"><div class="cell-pat"><code>{n,}</code></div><div class="cell-desc">n or more times</div></div>
+      <div class="row"><div class="cell-pat"><code>{n,m}</code></div><div class="cell-desc">Between n and m times</div></div>
+    </div>
+
+    <div class="card" data-search="lazy reluctant minimal quantifier">
+      <div class="card-head"><span class="card-title">Lazy (Non-Greedy)</span><span class="card-tag">Lazy</span></div>
+      <div class="row"><div class="cell-pat"><code>*?</code></div><div class="cell-desc">0 or more (lazy — fewest chars)</div></div>
+      <div class="row"><div class="cell-pat"><code>+?</code></div><div class="cell-desc">1 or more (lazy)</div></div>
+      <div class="row"><div class="cell-pat"><code>??</code></div><div class="cell-desc">0 or 1 (lazy)</div></div>
+      <div class="row"><div class="cell-pat"><code>{n,m}?</code></div><div class="cell-desc">n to m (lazy)</div></div>
+      <div class="row"><div class="cell-pat"><code>*+</code></div><div class="cell-desc">Possessive — no backtracking</div></div>
+      <div class="row"><div class="cell-pat"><code>++</code></div><div class="cell-desc">Possessive 1 or more</div></div>
+    </div>
+
+  </div>
+
+  <!-- ── GROUPS ── -->
+  <div class="section-label">Groups & Capturing</div>
+  <div class="grid">
+
+    <div class="card" data-search="group capture named backreference non-capturing">
+      <div class="card-head"><span class="card-title">Capturing Groups</span><span class="card-tag">Groups</span></div>
+      <div class="row"><div class="cell-pat"><code>(abc)</code></div><div class="cell-desc">Capture group (numbered from 1)</div></div>
+      <div class="row"><div class="cell-pat"><code>(?&lt;name&gt;abc)</code></div><div class="cell-desc">Named capture group</div></div>
+      <div class="row"><div class="cell-pat"><code>(?:abc)</code></div><div class="cell-desc">Non-capturing group</div></div>
+      <div class="row"><div class="cell-pat"><code>\1 \2</code></div><div class="cell-desc">Backreference to group 1, 2…</div></div>
+      <div class="row"><div class="cell-pat"><code>\k&lt;name&gt;</code></div><div class="cell-desc">Backreference by name</div></div>
+      <div class="row"><div class="cell-pat"><code>(?&gt;abc)</code></div><div class="cell-desc">Atomic group (no backtrack)</div></div>
+    </div>
+
+    <div class="card" data-search="alternation or pipe conditional">
+      <div class="card-head"><span class="card-title">Alternation & Conditional</span><span class="card-tag">Groups</span></div>
+      <div class="row"><div class="cell-pat"><code>a|b</code></div><div class="cell-desc">a or b</div></div>
+      <div class="row"><div class="cell-pat"><code>(a|b|c)</code></div><div class="cell-desc">Grouped alternation</div></div>
+      <div class="row"><div class="cell-pat"><code>(?(1)yes|no)</code></div><div class="cell-desc">Conditional: if group 1 matched, use "yes" pattern, else "no"</div></div>
+      <div class="row"><div class="cell-pat"><code>(?(?=cond)yes|no)</code></div><div class="cell-desc">Lookahead-based conditional</div></div>
+    </div>
+
+    <div class="card" data-search="balancing group stack nested">
+      <div class="card-head"><span class="card-title">Balancing Groups (.NET)</span><span class="card-tag">Advanced</span></div>
+      <div class="row"><div class="cell-pat"><code>(?&lt;open&gt;\()</code></div><div class="cell-desc">Push to "open" stack</div></div>
+      <div class="row"><div class="cell-pat"><code>(?&lt;-open&gt;\))</code></div><div class="cell-desc">Pop from "open" stack</div></div>
+      <div class="row"><div class="cell-pat"><code>(?(open)(?!))</code></div><div class="cell-desc">Fail if stack is non-empty</div></div>
+      <div class="row"><div class="cell-pat"><code class="purple">.NET only</code></div><div class="cell-desc">Unique to C# regex engine — match nested structures</div></div>
+    </div>
+
+  </div>
+
+  <!-- ── LOOKAROUNDS ── -->
+  <div class="section-label">Lookahead & Lookbehind</div>
+  <div class="grid">
+
+    <div class="card" data-search="lookahead lookbehind positive negative zero-width assertion">
+      <div class="card-head"><span class="card-title">Lookarounds</span><span class="card-tag">Zero-width</span></div>
+      <div class="row"><div class="cell-pat"><code>(?=abc)</code></div><div class="cell-desc">Positive lookahead — followed by abc</div></div>
+      <div class="row"><div class="cell-pat"><code>(?!abc)</code></div><div class="cell-desc">Negative lookahead — not followed by abc</div></div>
+      <div class="row"><div class="cell-pat"><code>(?&lt;=abc)</code></div><div class="cell-desc">Positive lookbehind — preceded by abc</div></div>
+      <div class="row"><div class="cell-pat"><code>(?&lt;!abc)</code></div><div class="cell-desc">Negative lookbehind — not preceded by abc</div></div>
+    </div>
+
+    <div class="card" data-search="lookaround example price pound dollar digit">
+      <div class="card-head"><span class="card-title">Lookaround Examples</span><span class="card-tag">Examples</span></div>
+      <div class="row"><div class="cell-pat"><code>\d+(?= USD)</code></div><div class="cell-desc">Number before " USD"</div></div>
+      <div class="row"><div class="cell-pat"><code>\d+(?! USD)</code></div><div class="cell-desc">Number NOT before " USD"</div></div>
+      <div class="row"><div class="cell-pat"><code>(?&lt;=£)\d+</code></div><div class="cell-desc">Digits after £ sign</div></div>
+      <div class="row"><div class="cell-pat"><code>(?&lt;!un)\w+</code></div><div class="cell-desc">Word not preceded by "un"</div></div>
+      <div class="row"><div class="cell-pat"><code>\w+(?=\b)</code></div><div class="cell-desc">Word at boundary</div></div>
+    </div>
+
+  </div>
+
+  <!-- ── OPTIONS / FLAGS ── -->
+  <div class="section-label">RegexOptions Flags</div>
+  <div class="grid">
+
+    <div class="card" data-search="options flags ignorecase multiline singleline compiled">
+      <div class="card-head"><span class="card-title">RegexOptions Enum</span><span class="card-tag">Options</span></div>
+      <table class="flags-table">
+        <tr><td><code class="purple">IgnoreCase</code></td><td>Case-insensitive matching</td></tr>
+        <tr><td><code class="purple">Multiline</code></td><td>^ and $ match line start/end</td></tr>
+        <tr><td><code class="purple">Singleline</code></td><td">. matches \n too</td></tr>
+        <tr><td><code class="purple">IgnorePatternWhitespace</code></td><td>Allow # comments in pattern</td></tr>
+        <tr><td><code class="purple">ExplicitCapture</code></td><td>Only named groups captured</td></tr>
+        <tr><td><code class="purple">Compiled</code></td><td>Compiles to IL — faster for heavy use</td></tr>
+        <tr><td><code class="purple">NonBacktracking</code></td><td>.NET 7+ linear time engine</td></tr>
+        <tr><td><code class="purple">RightToLeft</code></td><td>Match right to left</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-search="inline flag mode modifier comment">
+      <div class="card-head"><span class="card-title">Inline Mode Modifiers</span><span class="card-tag">Inline</span></div>
+      <div class="row"><div class="cell-pat"><code>(?i)</code></div><div class="cell-desc">Turn on IgnoreCase from here</div></div>
+      <div class="row"><div class="cell-pat"><code>(?-i)</code></div><div class="cell-desc">Turn off IgnoreCase</div></div>
+      <div class="row"><div class="cell-pat"><code>(?m)</code></div><div class="cell-desc">Turn on Multiline</div></div>
+      <div class="row"><div class="cell-pat"><code>(?s)</code></div><div class="cell-desc">Turn on Singleline</div></div>
+      <div class="row"><div class="cell-pat"><code>(?x)</code></div><div class="cell-desc">Verbose/IgnorePatternWhitespace</div></div>
+      <div class="row"><div class="cell-pat"><code>(?i:abc)</code></div><div class="cell-desc">Scoped modifier (only inside group)</div></div>
+      <div class="row"><div class="cell-pat"><code>#comment</code></div><div class="cell-desc">Comment when (?x) is on</div></div>
+    </div>
+
+  </div>
+
+  <!-- ── METHODS ── -->
+  <div class="section-label">Regex Class Methods</div>
+  <div class="grid grid-wide">
+
+    <div class="card code-block" data-search="ismatch match matches replace split static method">
+      <div class="card-head"><span class="card-title">IsMatch · Match · Matches</span><span class="card-tag">Methods</span></div>
+      <pre><span class="cm">// ── IsMatch ──────────────────────────────────</span>
+<span class="kw">bool</span> found = Regex.<span class="met">IsMatch</span>(<span class="str">"Hello World"</span>, <span class="str">@"\bWorld\b"</span>);
+<span class="cm">// true</span>
+
+<span class="cm">// ── Match (first match) ──────────────────────</span>
+Match m = Regex.<span class="met">Match</span>(<span class="str">"Price: £299"</span>, <span class="str">@"£(\d+)"</span>);
+<span class="kw">if</span> (m.Success)
+    Console.<span class="met">WriteLine</span>(m.Groups[<span class="num">1</span>].Value); <span class="cm">// 299</span>
+
+<span class="cm">// ── Matches (all matches) ────────────────────</span>
+<span class="kw">var</span> all = Regex.<span class="met">Matches</span>(<span class="str">"1 fish 2 fish"</span>, <span class="str">@"\d"</span>);
+<span class="kw">foreach</span> (Match hit <span class="kw">in</span> all)
+    Console.<span class="met">WriteLine</span>(hit.Value);  <span class="cm">// "1", "2"</span>
+
+<span class="cm">// ── Compiled instance (reuse for performance) ─</span>
+<span class="kw">private static readonly</span> <span class="ty">Regex</span> _re =
+    <span class="kw">new</span>(<span class="str">@"\d+"</span>, RegexOptions.Compiled);</pre>
+    </div>
+
+    <div class="card code-block" data-search="named group capture groups index value">
+      <div class="card-head"><span class="card-title">Named Captures & Groups</span><span class="card-tag">Groups</span></div>
+      <pre><span class="kw">var</span> pattern = <span class="str">@"(?&lt;year&gt;\d{4})-(?&lt;month&gt;\d{2})-(?&lt;day&gt;\d{2})"</span>;
+Match m = Regex.<span class="met">Match</span>(<span class="str">"Date: 2024-03-15"</span>, pattern);
+
+<span class="kw">if</span> (m.Success)
+{
+    <span class="kw">string</span> year  = m.Groups[<span class="str">"year"</span>].Value;   <span class="cm">// "2024"</span>
+    <span class="kw">string</span> month = m.Groups[<span class="str">"month"</span>].Value;  <span class="cm">// "03"</span>
+    <span class="kw">string</span> day   = m.Groups[<span class="str">"day"</span>].Value;    <span class="cm">// "15"</span>
+}
+
+<span class="cm">// Iterate all groups</span>
+<span class="kw">foreach</span> (Group g <span class="kw">in</span> m.Groups)
+    Console.<span class="met">WriteLine</span>(<span class="str">$"{g.Name}: {g.Value}"</span>);
+
+<span class="cm">// Capture collection (multiple hits of one group)</span>
+<span class="kw">var</span> digits = Regex.<span class="met">Match</span>(<span class="str">"a1b2c3"</span>, <span class="str">@"(\d)+"</span>);
+<span class="kw">foreach</span> (Capture c <span class="kw">in</span> digits.Groups[<span class="num">1</span>].Captures)
+    Console.<span class="met">Write</span>(c.Value);  <span class="cm">// 1 2 3</span></pre>
+    </div>
+
+    <div class="card code-block" data-search="replace substitution replacementstring dollar group">
+      <div class="card-head"><span class="card-title">Replace & Substitution</span><span class="card-tag">Replace</span></div>
+      <pre><span class="cm">// ── Simple replace ───────────────────────────</span>
+<span class="kw">string</span> r = Regex.<span class="met">Replace</span>(<span class="str">"foo bar"</span>, <span class="str">@"\s+"</span>, <span class="str">"-"</span>);
+<span class="cm">// "foo-bar"</span>
+
+<span class="cm">// ── Substitution tokens ──────────────────────</span>
+<span class="cm">// $0  entire match     $1 $2   group by index</span>
+<span class="cm">// ${name}  named group  $`  before match</span>
+<span class="cm">// $'  after match       $+  last captured group</span>
+
+Regex.<span class="met">Replace</span>(<span class="str">"2024-03-15"</span>, <span class="str">@"(\d{4})-(\d{2})-(\d{2})"</span>,
+             <span class="str">"$3/$2/$1"</span>);  <span class="cm">// "15/03/2024"</span>
+
+<span class="cm">// ── MatchEvaluator (lambda) ──────────────────</span>
+<span class="kw">string</span> result = Regex.<span class="met">Replace</span>(<span class="str">"hello world"</span>, <span class="str">@"\b\w"</span>,
+    m => m.Value.<span class="met">ToUpper</span>());
+<span class="cm">// "Hello World"</span></pre>
+    </div>
+
+    <div class="card code-block" data-search="split tokenize delimiter">
+      <div class="card-head"><span class="card-title">Split</span><span class="card-tag">Split</span></div>
+      <pre><span class="cm">// ── Basic split ──────────────────────────────</span>
+<span class="kw">string</span>[] parts = Regex.<span class="met">Split</span>(<span class="str">"a1b22c333d"</span>, <span class="str">@"\d+"</span>);
+<span class="cm">// ["a", "b", "c", "d"]</span>
+
+<span class="cm">// ── Keep delimiters (use capturing group) ────</span>
+<span class="kw">string</span>[] kept = Regex.<span class="met">Split</span>(<span class="str">"one, two; three"</span>, <span class="str">@"([,;]\s*)"</span>);
+<span class="cm">// ["one", ", ", "two", "; ", "three"]</span>
+
+<span class="cm">// ── Limit count ──────────────────────────────</span>
+<span class="kw">var</span> re = <span class="kw">new</span> <span class="ty">Regex</span>(<span class="str">@"\s+"</span>);
+<span class="kw">string</span>[] two = re.<span class="met">Split</span>(<span class="str">"a b c d"</span>, <span class="num">2</span>);
+<span class="cm">// ["a", "b c d"]</span></pre>
+    </div>
+
+  </div>
+
+  <!-- ── SOURCE GEN / MODERN ── -->
+  <div class="section-label">Modern C# — Source Generators</div>
+  <div class="grid grid-wide">
+
+    <div class="card code-block" data-search="source generator GeneratedRegex attribute partial method net7 net8">
+      <div class="card-head"><span class="card-title">GeneratedRegex (.NET 7+)</span><span class="card-tag">.NET 7+</span></div>
+      <pre><span class="cm">// Compile regex at build time — zero startup cost</span>
+<span class="kw">using</span> System.Text.RegularExpressions;
+
+<span class="kw">public partial class</span> <span class="ty">Parser</span>
+{
+    [<span class="ty">GeneratedRegex</span>(<span class="str">@"\b\d{4}\b"</span>, RegexOptions.IgnoreCase)]
+    <span class="kw">private static partial</span> <span class="ty">Regex</span> <span class="met">FourDigitRegex</span>();
+
+    <span class="kw">public void</span> <span class="met">Run</span>(<span class="kw">string</span> input)
+    {
+        <span class="kw">var</span> m = <span class="met">FourDigitRegex</span>().<span class="met">Match</span>(input);
+        Console.<span class="met">WriteLine</span>(m.Value);
+    }
+}
+
+<span class="cm">// Benefits:  no reflection · AOT-safe · faster startup</span></pre>
+    </div>
+
+    <div class="card code-block" data-search="span readonly struct performance allocation">
+      <div class="card-head"><span class="card-title">Span & Performance Tips</span><span class="card-tag">Perf</span></div>
+      <pre><span class="cm">// ── Avoid new Regex() on every call ─────────</span>
+<span class="kw">private static readonly</span> <span class="ty">Regex</span> _email =
+    <span class="kw">new</span>(<span class="str">@"^[\w.+-]+@[\w-]+\.[a-z]{2,}$"</span>,
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+<span class="cm">// ── ValueMatchEnumerator (no heap alloc) ────</span>
+<span class="kw">foreach</span> (<span class="kw">var</span> m <span class="kw">in</span> <span class="met">FourDigitRegex</span>().<span class="met">EnumerateMatches</span>(input.<span class="met">AsSpan</span>()))
+    Console.<span class="met">WriteLine</span>(input.<span class="met">Substring</span>(m.Index, m.Length));
+
+<span class="cm">// ── Timeout to prevent ReDoS ─────────────── </span>
+<span class="kw">var</span> safe = <span class="kw">new</span> <span class="ty">Regex</span>(<span class="str">@"(a+)+"</span>,
+    RegexOptions.None,
+    matchTimeout: TimeSpan.<span class="met">FromMilliseconds</span>(<span class="num">100</span>));</pre>
+    </div>
+
+  </div>
+
+  <!-- ── COMMON PATTERNS ── -->
+  <div class="section-label">Common Real-World Patterns</div>
+  <div class="grid">
+
+    <div class="card" data-search="email address pattern validate">
+      <div class="card-head"><span class="card-title">Email</span><span class="card-tag">Validate</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">^[\w.+-]+@[\w-]+\.[a-z]{2,}$</code></div></div>
+    </div>
+
+    <div class="card" data-search="url http https pattern">
+      <div class="card-head"><span class="card-title">URL</span><span class="card-tag">Validate</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">https?://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*)</code></div></div>
+    </div>
+
+    <div class="card" data-search="phone number uk us international">
+      <div class="card-head"><span class="card-title">Phone (intl)</span><span class="card-tag">Validate</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">^\+?[1-9]\d{6,14}$</code></div></div>
+    </div>
+
+    <div class="card" data-search="date iso yyyy-mm-dd">
+      <div class="card-head"><span class="card-title">ISO Date</span><span class="card-tag">Parse</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">(?&lt;y&gt;\d{4})-(?&lt;m&gt;\d{2})-(?&lt;d&gt;\d{2})</code></div></div>
+    </div>
+
+    <div class="card" data-search="guid uuid pattern">
+      <div class="card-head"><span class="card-title">GUID / UUID</span><span class="card-tag">Validate</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}</code></div></div>
+    </div>
+
+    <div class="card" data-search="ipv4 ip address network">
+      <div class="card-head"><span class="card-title">IPv4 Address</span><span class="card-tag">Validate</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$</code></div></div>
+    </div>
+
+    <div class="card" data-search="postcode uk zip postal">
+      <div class="card-head"><span class="card-title">UK Postcode</span><span class="card-tag">Validate</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$</code></div></div>
+    </div>
+
+    <div class="card" data-search="currency price decimal number amount">
+      <div class="card-head"><span class="card-title">Currency Amount</span><span class="card-tag">Finance</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">(?&lt;=[$£€])\s*\d{1,3}(,\d{3})*(\.\d{2})?</code></div></div>
+    </div>
+
+    <div class="card" data-search="html tag strip remove">
+      <div class="card-head"><span class="card-title">Strip HTML Tags</span><span class="card-tag">Transform</span></div>
+      <div class="row"><div class="cell-pat" style="grid-column:1/-1;padding:10px 14px;"><code style="font-size:11px">&lt;[^&gt;]+&gt;</code></div></div>
+    </div>
+
+    <div class="card" data-search="password strength uppercase digit special">
+      <div class="card-head"><span class="card-title">Password Strength</span><span class="card-tag">Validate</span></div>
+      <div class="row"><div class="cell-pat"><code>(?=.*[A-Z])</code></div><div class="cell-desc">Has uppercase</div></div>
+      <div class="row"><div class="cell-pat"><code>(?=.*\d)</code></div><div class="cell-desc">Has digit</div></div>
+      <div class="row"><div class="cell-pat"><code>(?=.*[\W_])</code></div><div class="cell-desc">Has special char</div></div>
+      <div class="row"><div class="cell-pat"><code>.{8,}</code></div><div class="cell-desc">Min 8 chars</div></div>
+    </div>
+
+  </div>
+
+  <!-- ── ESCAPE REFERENCE ── -->
+  <div class="section-label">Escape Sequences</div>
+  <div class="grid">
+
+    <div class="card" data-search="escape sequence tab newline carriage return">
+      <div class="card-head"><span class="card-title">Escape Chars</span><span class="card-tag">Escape</span></div>
+      <div class="row"><div class="cell-pat"><code>\t</code></div><div class="cell-desc">Tab</div></div>
+      <div class="row"><div class="cell-pat"><code>\n</code></div><div class="cell-desc">Newline (LF)</div></div>
+      <div class="row"><div class="cell-pat"><code>\r</code></div><div class="cell-desc">Carriage return (CR)</div></div>
+      <div class="row"><div class="cell-pat"><code>\f</code></div><div class="cell-desc">Form feed</div></div>
+      <div class="row"><div class="cell-pat"><code>\v</code></div><div class="cell-desc">Vertical tab</div></div>
+      <div class="row"><div class="cell-pat"><code>\0</code></div><div class="cell-desc">Null character</div></div>
+      <div class="row"><div class="cell-pat"><code>\xHH</code></div><div class="cell-desc">Hex escape (e.g. \x41 = A)</div></div>
+      <div class="row"><div class="cell-pat"><code>\uHHHH</code></div><div class="cell-desc">Unicode code point</div></div>
+    </div>
+
+    <div class="card" data-search="metacharacter escape dot star backslash literal">
+      <div class="card-head"><span class="card-title">Metachar Escaping</span><span class="card-tag">Escape</span></div>
+      <div class="row"><div class="cell-pat"><code>\.</code></div><div class="cell-desc">Literal dot</div></div>
+      <div class="row"><div class="cell-pat"><code>\*</code></div><div class="cell-desc">Literal asterisk</div></div>
+      <div class="row"><div class="cell-pat"><code>\+</code></div><div class="cell-desc">Literal plus</div></div>
+      <div class="row"><div class="cell-pat"><code>\?</code></div><div class="cell-desc">Literal question mark</div></div>
+      <div class="row"><div class="cell-pat"><code>\(  \)</code></div><div class="cell-desc">Literal parentheses</div></div>
+      <div class="row"><div class="cell-pat"><code>\[  \]</code></div><div class="cell-desc">Literal brackets</div></div>
+      <div class="row"><div class="cell-pat"><code>\\</code></div><div class="cell-desc">Literal backslash</div></div>
+      <div class="row"><div class="cell-pat"><code>Regex.<span style="color:var(--accent4)">Escape</span>(s)</code></div><div class="cell-desc">Escape an arbitrary string programmatically</div></div>
+    </div>
+
+  </div>
+
+</main>
+
+<script>
+  // ── Live Tester ──────────────────────────────────────────
+  const tPattern = document.getElementById('tPattern');
+  const tInput   = document.getElementById('tInput');
+  const tOutput  = document.getElementById('tOutput');
+  const tCount   = document.getElementById('tCount');
+
+  function runTester() {
+    const pat = tPattern.value;
+    const str = tInput.value;
+    tOutput.innerHTML = '';
+    tCount.textContent = '';
+    if (!pat) { tOutput.innerHTML = '<span class="no-match">Enter a pattern…</span>'; return; }
+
+    let re;
+    try { re = new RegExp(pat, 'g'); }
+    catch(e) { tOutput.innerHTML = `<span class="no-match">⚠ ${e.message}</span>`; return; }
+
+    const matches = [...str.matchAll(re)];
+    if (!matches.length) {
+      tOutput.innerHTML = `<span class="no-match">No matches</span>`;
+      tCount.textContent = '0 matches';
+      return;
+    }
+
+    // Build highlighted output
+    let out = ''; let last = 0;
+    for (const m of matches) {
+      out += esc(str.slice(last, m.index));
+      out += `<span class="match-highlight">${esc(m[0])}</span>`;
+      last = m.index + m[0].length;
+    }
+    out += esc(str.slice(last));
+    tOutput.innerHTML = out;
+    tCount.textContent = `${matches.length} match${matches.length !== 1 ? 'es' : ''} found`;
+  }
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  tPattern.addEventListener('input', runTester);
+  tInput.addEventListener('input', runTester);
+  runTester();
+
+  // ── Search Filter ─────────────────────────────────────────
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    document.querySelectorAll('.card').forEach(card => {
+      const text = (card.dataset.search || '') + ' ' + card.textContent.toLowerCase();
+      card.classList.toggle('hidden', q.length > 0 && !text.includes(q));
+    });
+    // Hide empty section labels
+    document.querySelectorAll('.section-label').forEach(lbl => {
+      const next = lbl.nextElementSibling;
+      if (!next) return;
+      const visible = [...next.querySelectorAll('.card')].some(c => !c.classList.contains('hidden'));
+      lbl.classList.toggle('hidden', !visible);
+    });
+  });
+</script>
+</body>
+</html>
