@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C# LINQ Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@400;500;600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF8F4;
+    --surface: #FFFFFF;
+    --surface-2: #F4F1EC;
+    --border: #E5E0D8;
+    --border-strong: #C8C0B4;
+    --text: #1A1714;
+    --text-2: #4A453F;
+    --text-3: #7A736A;
+    --accent: #C75B3B;
+    --accent-light: #FAF0EC;
+    --accent-2: #2D6A4F;
+    --accent-2-light: #EAF4EF;
+    --accent-3: #2563A8;
+    --accent-3-light: #EBF2FB;
+    --accent-4: #7B4F9E;
+    --accent-4-light: #F3EEF9;
+    --yellow: #C49B0A;
+    --yellow-light: #FDF8E8;
+    --code-bg: #F0ECE6;
+    --keyword: #C75B3B;
+    --type: #2563A8;
+    --method: #2D6A4F;
+    --string: #7B4F9E;
+    --comment: #8A827A;
+    --number: #C49B0A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Figtree', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    padding: 48px 64px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(199,91,59,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 200px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(37,99,168,0.07) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-light);
+    border: 1px solid rgba(199,91,59,0.2);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  header h1 span {
+    color: var(--accent);
+  }
+
+  header p {
+    font-size: 16px;
+    color: var(--text-2);
+    max-width: 600px;
+    margin-bottom: 28px;
+  }
+
+  .header-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+
+  nav ul {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  nav ul::-webkit-scrollbar { display: none; }
+
+  nav a {
+    display: block;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-3);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  nav a:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ─── MAIN ─── */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 64px 80px;
+  }
+
+  /* ─── SECTION ─── */
+  .section {
+    margin-bottom: 64px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .section-header p {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-top: 2px;
+  }
+
+  /* ─── GRID ─── */
+  .grid {
+    display: grid;
+    gap: 20px;
+  }
+  .grid-2 { grid-template-columns: repeat(auto-fill, minmax(580px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .card:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+
+  .card-header {
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .card-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .badge-filter { background: var(--accent-light); color: var(--accent); }
+  .badge-proj   { background: var(--accent-3-light); color: var(--accent-3); }
+  .badge-aggr   { background: var(--accent-2-light); color: var(--accent-2); }
+  .badge-sort   { background: var(--yellow-light); color: var(--yellow); }
+  .badge-group  { background: var(--accent-4-light); color: var(--accent-4); }
+  .badge-join   { background: var(--accent-2-light); color: var(--accent-2); }
+  .badge-set    { background: var(--accent-light); color: var(--accent); }
+  .badge-elem   { background: var(--accent-3-light); color: var(--accent-3); }
+  .badge-quant  { background: var(--yellow-light); color: var(--yellow); }
+  .badge-part   { background: var(--accent-4-light); color: var(--accent-4); }
+  .badge-gen    { background: var(--accent-2-light); color: var(--accent-2); }
+  .badge-conv   { background: var(--accent-light); color: var(--accent); }
+  .badge-async  { background: var(--accent-3-light); color: var(--accent-3); }
+
+  .card-body {
+    padding: 0;
+  }
+
+  .card-desc {
+    padding: 12px 18px 6px;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+
+  /* ─── CODE ─── */
+  pre {
+    background: var(--code-bg);
+    padding: 16px 18px;
+    margin: 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--code-bg);
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: var(--text);
+  }
+
+  .kw  { color: var(--keyword); font-weight: 600; }
+  .ty  { color: var(--type); }
+  .mt  { color: var(--method); font-weight: 500; }
+  .st  { color: var(--string); }
+  .cm  { color: var(--comment); font-style: italic; }
+  .nm  { color: var(--number); }
+  .vr  { color: var(--text); }
+
+  /* ─── SYNTAX COMPARISON TABLE ─── */
+  .syntax-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .syntax-table th {
+    background: var(--surface-2);
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .syntax-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .syntax-table tr:last-child td { border-bottom: none; }
+  .syntax-table tr:hover td { background: var(--surface-2); }
+
+  .syntax-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--method);
+    width: 160px;
+  }
+
+  .syntax-table td code {
+    display: block;
+    background: transparent;
+    padding: 0;
+    font-size: 12px;
+  }
+
+  /* ─── INFO BOX ─── */
+  .info-box {
+    background: var(--accent-3-light);
+    border: 1px solid rgba(37,99,168,0.15);
+    border-left: 3px solid var(--accent-3);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    color: var(--text-2);
+  }
+
+  .info-box strong { color: var(--accent-3); }
+
+  .tip-box {
+    background: var(--accent-2-light);
+    border: 1px solid rgba(45,106,79,0.15);
+    border-left: 3px solid var(--accent-2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    color: var(--text-2);
+  }
+
+  .tip-box strong { color: var(--accent-2); }
+
+  .warn-box {
+    background: var(--yellow-light);
+    border: 1px solid rgba(196,155,10,0.2);
+    border-left: 3px solid var(--yellow);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 13.5px;
+    color: var(--text-2);
+  }
+
+  .warn-box strong { color: var(--yellow); }
+
+  /* ─── TWO-TONE CARD ─── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+
+  .two-col > div {
+    padding: 14px 18px;
+  }
+
+  .two-col > div:first-child {
+    border-right: 1px solid var(--border);
+  }
+
+  .two-col .col-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 8px;
+  }
+
+  .two-col pre {
+    border-top: none;
+    padding: 0;
+    background: transparent;
+    font-size: 12px;
+  }
+
+  /* ─── FULL CARD ─── */
+  .full-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .full-card-header {
+    padding: 14px 20px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .full-card-header h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .full-card pre {
+    border-top: none;
+    border-radius: 0;
+  }
+
+  /* ─── OPERATOR TABLE ─── */
+  .op-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .op-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.2s;
+  }
+
+  .op-item:hover { border-color: var(--border-strong); }
+
+  .op-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--method);
+    margin-bottom: 4px;
+  }
+
+  .op-desc {
+    font-size: 12.5px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+
+  .op-return {
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--type);
+    background: var(--accent-3-light);
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    text-align: center;
+    padding: 40px 64px;
+    border-top: 1px solid var(--border);
+    color: var(--text-3);
+    font-size: 13px;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    header, nav, main, footer { padding-left: 24px; padding-right: 24px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .two-col > div:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+    header h1 { font-size: 32px; }
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(1) { animation-delay: 0.05s; }
+  .section:nth-child(2) { animation-delay: 0.10s; }
+  .section:nth-child(3) { animation-delay: 0.15s; }
+  .section:nth-child(4) { animation-delay: 0.20s; }
+  .section:nth-child(5) { animation-delay: 0.25s; }
+  .section:nth-child(6) { animation-delay: 0.30s; }
+  .section:nth-child(7) { animation-delay: 0.35s; }
+  .section:nth-child(8) { animation-delay: 0.40s; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════ HEADER ════════ -->
+<header>
+  <div class="header-inner">
+    <div class="header-badge">📘 Reference Guide</div>
+    <h1>C# <span>LINQ</span> Cheatsheet</h1>
+    <p>Language-Integrated Query — a comprehensive quick reference for filtering, projecting, aggregating, and transforming data in C#.</p>
+    <div class="header-tags">
+      <span class="tag">.NET 6+</span>
+      <span class="tag">System.Linq</span>
+      <span class="tag">IEnumerable&lt;T&gt;</span>
+      <span class="tag">IQueryable&lt;T&gt;</span>
+      <span class="tag">Deferred Execution</span>
+      <span class="tag">Lambda Expressions</span>
+      <span class="tag">Query Syntax</span>
+      <span class="tag">Method Syntax</span>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════ NAV ════════ -->
+<nav>
+  <ul>
+    <li><a href="#basics">Basics</a></li>
+    <li><a href="#filtering">Filtering</a></li>
+    <li><a href="#projection">Projection</a></li>
+    <li><a href="#ordering">Ordering</a></li>
+    <li><a href="#aggregation">Aggregation</a></li>
+    <li><a href="#grouping">Grouping</a></li>
+    <li><a href="#joining">Joining</a></li>
+    <li><a href="#set-ops">Set Ops</a></li>
+    <li><a href="#element">Element</a></li>
+    <li><a href="#quantifiers">Quantifiers</a></li>
+    <li><a href="#partitioning">Partitioning</a></li>
+    <li><a href="#generation">Generation</a></li>
+    <li><a href="#conversion">Conversion</a></li>
+    <li><a href="#patterns">Patterns</a></li>
+  </ul>
+</nav>
+
+<!-- ════════════════════════════════════════ MAIN ════════ -->
+<main>
+
+<!-- ──────────────────────────────────────── SECTION 1 ── -->
+<section class="section" id="basics">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FAF0EC;">🔍</div>
+    <div>
+      <h2>Syntax Basics</h2>
+      <p>Query syntax vs Method (fluent) syntax — two ways to write the same query</p>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>What is LINQ?</strong> LINQ (Language-Integrated Query) provides a unified model for querying any data source (arrays, lists, XML, databases, APIs) using C# language syntax. Add <code>using System.Linq;</code> to use it.
+  </div>
+
+  <div class="full-card">
+    <div class="full-card-header">
+      <h3>Query Syntax vs Method Syntax</h3>
+      <span class="card-badge badge-proj">Side-by-side</span>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="col-label">Query Syntax (SQL-like)</div>
+        <pre><span class="cm">// Must end with select or group</span>
+<span class="kw">var</span> result = <span class="kw">from</span> <span class="vr">n</span> <span class="kw">in</span> <span class="vr">numbers</span>
+             <span class="kw">where</span> <span class="vr">n</span> > <span class="nm">5</span>
+             <span class="kw">orderby</span> <span class="vr">n</span> descending
+             <span class="kw">select</span> <span class="vr">n</span> * <span class="nm">2</span>;</pre>
+      </div>
+      <div>
+        <div class="col-label">Method (Fluent) Syntax</div>
+        <pre><span class="cm">// Extension methods on IEnumerable&lt;T&gt;</span>
+<span class="kw">var</span> result = <span class="vr">numbers</span>
+    .<span class="mt">Where</span>(<span class="vr">n</span> => <span class="vr">n</span> > <span class="nm">5</span>)
+    .<span class="mt">OrderByDescending</span>(<span class="vr">n</span> => <span class="vr">n</span>)
+    .<span class="mt">Select</span>(<span class="vr">n</span> => <span class="vr">n</span> * <span class="nm">2</span>);</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>Deferred vs Immediate Execution</h3>
+        <span class="card-badge badge-filter">Important</span>
+      </div>
+      <div class="card-desc">Most LINQ operators use deferred execution — the query runs when iterated, not when defined.</div>
+      <pre><span class="kw">var</span> <span class="vr">query</span> = <span class="vr">list</span>.<span class="mt">Where</span>(<span class="vr">x</span> => <span class="vr">x</span> > <span class="nm">3</span>); <span class="cm">// not executed yet</span>
+<span class="kw">foreach</span> (<span class="kw">var</span> <span class="vr">item</span> <span class="kw">in</span> <span class="vr">query</span>) { } <span class="cm">// executed NOW</span>
+
+<span class="cm">// Force immediate execution:</span>
+<span class="kw">var</span> <span class="vr">snapshot</span> = <span class="vr">query</span>.<span class="mt">ToList</span>();  <span class="cm">// immediately</span>
+<span class="kw">var</span> <span class="vr">arr</span>      = <span class="vr">query</span>.<span class="mt">ToArray</span>(); <span class="cm">// immediately</span>
+<span class="kw">var</span> <span class="vr">count</span>    = <span class="vr">query</span>.<span class="mt">Count</span>();   <span class="cm">// immediately</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Lambda Expression Anatomy</h3>
+        <span class="card-badge badge-proj">Syntax</span>
+      </div>
+      <div class="card-desc">Lambdas are the backbone of LINQ method syntax.</div>
+      <pre><span class="cm">// (parameters) => expression</span>
+<span class="vr">x</span> => <span class="vr">x</span> > <span class="nm">5</span>                    <span class="cm">// single param</span>
+(<span class="vr">x</span>, <span class="vr">y</span>) => <span class="vr">x</span> + <span class="vr">y</span>               <span class="cm">// multi param</span>
+(<span class="ty">int</span> <span class="vr">x</span>) => <span class="vr">x</span> * <span class="nm">2</span>              <span class="cm">// typed param</span>
+<span class="vr">x</span> => { <span class="kw">return</span> <span class="vr">x</span> * <span class="nm">2</span>; }        <span class="cm">// block body</span>
+
+<span class="cm">// Using in LINQ</span>
+.<span class="mt">Where</span>(<span class="vr">p</span> => <span class="vr">p</span>.Age > <span class="nm">18</span>)
+.<span class="mt">Select</span>(<span class="vr">p</span> => <span class="kw">new</span> { <span class="vr">p</span>.Name, <span class="vr">p</span>.Age })</pre>
+    </div>
+  </div>
+
+  <div class="warn-box">
+    <strong>⚠️ Multiple Enumeration:</strong> Calling a deferred LINQ query multiple times re-executes it each time. Call <code>.ToList()</code> or <code>.ToArray()</code> to cache results and avoid repeated work.
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 2 ── -->
+<section class="section" id="filtering">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FAF0EC;">🔎</div>
+    <div>
+      <h2>Filtering</h2>
+      <p>Restrict elements based on conditions</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>Where</h3>
+        <span class="card-badge badge-filter">Filter</span>
+      </div>
+      <div class="card-desc">Returns elements that satisfy a predicate. The most common LINQ operator.</div>
+      <pre><span class="kw">var</span> <span class="vr">adults</span> = <span class="vr">people</span>.<span class="mt">Where</span>(<span class="vr">p</span> => <span class="vr">p</span>.Age >= <span class="nm">18</span>);
+
+<span class="cm">// Multiple conditions</span>
+<span class="kw">var</span> <span class="vr">result</span> = <span class="vr">people</span>.<span class="mt">Where</span>(<span class="vr">p</span> => <span class="vr">p</span>.Age >= <span class="nm">18</span>
+                         && <span class="vr">p</span>.Country == <span class="st">"UK"</span>);
+
+<span class="cm">// With index overload</span>
+<span class="kw">var</span> <span class="vr">everyOther</span> = <span class="vr">items</span>.<span class="mt">Where</span>((<span class="vr">x</span>, <span class="vr">i</span>) => <span class="vr">i</span> % <span class="nm">2</span> == <span class="nm">0</span>);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>OfType&lt;T&gt;</h3>
+        <span class="card-badge badge-filter">Filter</span>
+      </div>
+      <div class="card-desc">Filters elements by type, returning only those that are (or cast to) the specified type.</div>
+      <pre><span class="ty">IEnumerable</span>&lt;<span class="kw">object</span>&gt; <span class="vr">mixed</span> = <span class="kw">new object</span>[]
+    { <span class="nm">1</span>, <span class="st">"hello"</span>, <span class="nm">3.14</span>, <span class="st">"world"</span>, <span class="nm">42</span> };
+
+<span class="kw">var</span> <span class="vr">strings</span> = <span class="vr">mixed</span>.<span class="mt">OfType</span>&lt;<span class="ty">string</span>&gt;();
+<span class="cm">// → "hello", "world"</span>
+
+<span class="kw">var</span> <span class="vr">ints</span>    = <span class="vr">mixed</span>.<span class="mt">OfType</span>&lt;<span class="ty">int</span>&gt;();
+<span class="cm">// → 1, 42  (3.14 excluded — it's a double)</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 3 ── -->
+<section class="section" id="projection">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EBF2FB;">📐</div>
+    <div>
+      <h2>Projection</h2>
+      <p>Transform elements into new shapes</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>Select</h3>
+        <span class="card-badge badge-proj">Project</span>
+      </div>
+      <div class="card-desc">Maps each element to a new form — shapes the output data.</div>
+      <pre><span class="cm">// Simple value projection</span>
+<span class="kw">var</span> <span class="vr">names</span> = <span class="vr">people</span>.<span class="mt">Select</span>(<span class="vr">p</span> => <span class="vr">p</span>.Name);
+
+<span class="cm">// Anonymous type projection</span>
+<span class="kw">var</span> <span class="vr">dtos</span> = <span class="vr">people</span>.<span class="mt">Select</span>(<span class="vr">p</span> => <span class="kw">new</span>
+{
+    <span class="vr">p</span>.Name,
+    AgeGroup = <span class="vr">p</span>.Age < <span class="nm">18</span> ? <span class="st">"Minor"</span> : <span class="st">"Adult"</span>
+});
+
+<span class="cm">// With index</span>
+<span class="kw">var</span> <span class="vr">indexed</span> = <span class="vr">items</span>.<span class="mt">Select</span>((<span class="vr">x</span>, <span class="vr">i</span>) => <span class="kw">new</span> { <span class="vr">x</span>, <span class="vr">i</span> });</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>SelectMany</h3>
+        <span class="card-badge badge-proj">Flatten</span>
+      </div>
+      <div class="card-desc">Flattens nested collections — "map then flatten". Equivalent to <code>flatMap</code> in other languages.</div>
+      <pre><span class="cm">// Flatten list of lists</span>
+<span class="kw">var</span> <span class="vr">orders</span> = <span class="vr">customers</span>
+    .<span class="mt">SelectMany</span>(<span class="vr">c</span> => <span class="vr">c</span>.Orders);
+
+<span class="cm">// Access parent + child</span>
+<span class="kw">var</span> <span class="vr">pairs</span> = <span class="vr">customers</span>
+    .<span class="mt">SelectMany</span>(<span class="vr">c</span> => <span class="vr">c</span>.Orders,
+        (<span class="vr">c</span>, <span class="vr">o</span>) => <span class="kw">new</span> { <span class="vr">c</span>.Name, <span class="vr">o</span>.Total });
+
+<span class="cm">// Flatten strings to chars</span>
+<span class="kw">var</span> <span class="vr">chars</span> = <span class="kw">new</span>[] { <span class="st">"ab"</span>, <span class="st">"cd"</span> }
+    .<span class="mt">SelectMany</span>(<span class="vr">s</span> => <span class="vr">s</span>); <span class="cm">// → 'a','b','c','d'</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Zip</h3>
+        <span class="card-badge badge-proj">Combine</span>
+      </div>
+      <div class="card-desc">Merges two (or three) sequences element-by-element using a result selector.</div>
+      <pre><span class="kw">var</span> <span class="vr">names</span>  = <span class="kw">new</span>[] { <span class="st">"Alice"</span>, <span class="st">"Bob"</span> };
+<span class="kw">var</span> <span class="vr">scores</span> = <span class="kw">new</span>[] { <span class="nm">95</span>, <span class="nm">87</span> };
+
+<span class="cm">// With selector</span>
+<span class="kw">var</span> <span class="vr">result</span> = <span class="vr">names</span>.<span class="mt">Zip</span>(<span class="vr">scores</span>,
+    (<span class="vr">n</span>, <span class="vr">s</span>) => <span class="st">$"</span>{<span class="vr">n</span>}<span class="st">: </span>{<span class="vr">s</span>}<span class="st">"</span>);
+<span class="cm">// → "Alice: 95", "Bob: 87"</span>
+
+<span class="cm">// .NET 5+: returns tuples</span>
+<span class="kw">var</span> <span class="vr">tuples</span> = <span class="vr">names</span>.<span class="mt">Zip</span>(<span class="vr">scores</span>);
+<span class="cm">// → (Alice, 95), (Bob, 87)</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Cast&lt;T&gt;</h3>
+        <span class="card-badge badge-proj">Cast</span>
+      </div>
+      <div class="card-desc">Casts each element to a type. Throws if cast fails (unlike <code>OfType</code>).</div>
+      <pre><span class="ty">ArrayList</span> <span class="vr">legacy</span> = <span class="kw">new</span> <span class="ty">ArrayList</span> { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span> };
+
+<span class="kw">var</span> <span class="vr">ints</span> = <span class="vr">legacy</span>.<span class="mt">Cast</span>&lt;<span class="ty">int</span>&gt;();
+<span class="cm">// → 1, 2, 3 as IEnumerable&lt;int&gt;</span>
+
+<span class="cm">// vs OfType — silently skips non-matching</span>
+<span class="kw">var</span> <span class="vr">safe</span> = <span class="vr">legacy</span>.<span class="mt">OfType</span>&lt;<span class="ty">int</span>&gt;();</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 4 ── -->
+<section class="section" id="ordering">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FDF8E8;">↕️</div>
+    <div>
+      <h2>Ordering</h2>
+      <p>Sort sequences ascending, descending, or by multiple keys</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>OrderBy / OrderByDescending</h3>
+        <span class="card-badge badge-sort">Sort</span>
+      </div>
+      <pre><span class="cm">// Primary sort ascending</span>
+<span class="kw">var</span> <span class="vr">sorted</span> = <span class="vr">people</span>.<span class="mt">OrderBy</span>(<span class="vr">p</span> => <span class="vr">p</span>.LastName);
+
+<span class="cm">// Primary sort descending</span>
+<span class="kw">var</span> <span class="vr">desc</span> = <span class="vr">people</span>.<span class="mt">OrderByDescending</span>(<span class="vr">p</span> => <span class="vr">p</span>.Age);
+
+<span class="cm">// Multi-key sort</span>
+<span class="kw">var</span> <span class="vr">multi</span> = <span class="vr">people</span>
+    .<span class="mt">OrderBy</span>(<span class="vr">p</span> => <span class="vr">p</span>.LastName)
+    .<span class="mt">ThenBy</span>(<span class="vr">p</span> => <span class="vr">p</span>.FirstName)
+    .<span class="mt">ThenByDescending</span>(<span class="vr">p</span> => <span class="vr">p</span>.Age);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Reverse</h3>
+        <span class="card-badge badge-sort">Sort</span>
+      </div>
+      <div class="card-desc">Reverses the order of a sequence. Note: <code>List&lt;T&gt;.Reverse()</code> is in-place — <code>.Reverse()</code> from LINQ returns a new sequence.</div>
+      <pre><span class="kw">var</span> <span class="vr">nums</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span> };
+<span class="kw">var</span> <span class="vr">rev</span>  = <span class="vr">nums</span>.<span class="mt">Reverse</span>(); <span class="cm">// → 5,4,3,2,1</span>
+
+<span class="cm">// ⚠️ List&lt;T&gt;.Reverse() is in-place (void)</span>
+<span class="ty">List</span>&lt;<span class="ty">int</span>&gt; <span class="vr">myList</span> = <span class="kw">new</span>() { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span> };
+<span class="vr">myList</span>.<span class="mt">Reverse</span>();         <span class="cm">// modifies myList</span>
+
+<span class="cm">// LINQ version (non-destructive):</span>
+<span class="kw">var</span> <span class="vr">safe</span> = <span class="vr">myList</span>.<span class="mt">AsEnumerable</span>().<span class="mt">Reverse</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Order / OrderDescending (.NET 7+)</h3>
+        <span class="card-badge badge-sort">Sort</span>
+      </div>
+      <div class="card-desc">Shorthand for sorting elements that are themselves comparable (no key selector needed).</div>
+      <pre><span class="kw">var</span> <span class="vr">nums</span>    = <span class="kw">new</span>[] { <span class="nm">3</span>, <span class="nm">1</span>, <span class="nm">4</span>, <span class="nm">1</span>, <span class="nm">5</span> };
+<span class="kw">var</span> <span class="vr">sorted</span>  = <span class="vr">nums</span>.<span class="mt">Order</span>();
+<span class="cm">// → 1, 1, 3, 4, 5</span>
+
+<span class="kw">var</span> <span class="vr">words</span>   = <span class="kw">new</span>[] { <span class="st">"banana"</span>, <span class="st">"apple"</span>, <span class="st">"cherry"</span> };
+<span class="kw">var</span> <span class="vr">sorted2</span> = <span class="vr">words</span>.<span class="mt">OrderDescending</span>();
+<span class="cm">// → cherry, banana, apple</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Custom IComparer</h3>
+        <span class="card-badge badge-sort">Sort</span>
+      </div>
+      <pre><span class="cm">// Case-insensitive string sort</span>
+<span class="kw">var</span> <span class="vr">result</span> = <span class="vr">words</span>.<span class="mt">OrderBy</span>(
+    <span class="vr">w</span> => <span class="vr">w</span>,
+    <span class="ty">StringComparer</span>.OrdinalIgnoreCase);
+
+<span class="cm">// Null-safe natural sort pattern</span>
+<span class="kw">var</span> <span class="vr">sorted</span> = <span class="vr">items</span>
+    .<span class="mt">OrderBy</span>(<span class="vr">x</span> => <span class="vr">x</span>.Value == <span class="kw">null</span>)
+    .<span class="mt">ThenBy</span>(<span class="vr">x</span> => <span class="vr">x</span>.Value);</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 5 ── -->
+<section class="section" id="aggregation">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EAF4EF;">∑</div>
+    <div>
+      <h2>Aggregation</h2>
+      <p>Reduce sequences to a single value</p>
+    </div>
+  </div>
+
+  <div class="op-grid">
+    <div class="op-item">
+      <div class="op-name">Count()</div>
+      <div class="op-desc">Number of elements (optionally matching a predicate)</div>
+      <div class="op-return">→ int</div>
+    </div>
+    <div class="op-item">
+      <div class="op-name">LongCount()</div>
+      <div class="op-desc">Count for very large sequences</div>
+      <div class="op-return">→ long</div>
+    </div>
+    <div class="op-item">
+      <div class="op-name">Sum()</div>
+      <div class="op-desc">Sum of numeric values (int, double, decimal…)</div>
+      <div class="op-return">→ numeric</div>
+    </div>
+    <div class="op-item">
+      <div class="op-name">Average()</div>
+      <div class="op-desc">Arithmetic mean. Returns double/decimal</div>
+      <div class="op-return">→ double</div>
+    </div>
+    <div class="op-item">
+      <div class="op-name">Min() / Max()</div>
+      <div class="op-desc">Minimum or maximum value</div>
+      <div class="op-return">→ T</div>
+    </div>
+    <div class="op-item">
+      <div class="op-name">MinBy() / MaxBy()</div>
+      <div class="op-desc">.NET 6+ — returns the element with min/max key</div>
+      <div class="op-return">→ T</div>
+    </div>
+    <div class="op-item">
+      <div class="op-name">Aggregate()</div>
+      <div class="op-desc">Custom fold/reduce with a seed and accumulator function</div>
+      <div class="op-return">→ TAccumulate</div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:20px;">
+    <div class="card">
+      <div class="card-header">
+        <h3>Common Aggregates</h3>
+        <span class="card-badge badge-aggr">Aggregate</span>
+      </div>
+      <pre><span class="kw">var</span> <span class="vr">orders</span> = <span class="vr">db</span>.<span class="vr">Orders</span>;
+
+<span class="ty">int</span>     <span class="vr">count</span>   = <span class="vr">orders</span>.<span class="mt">Count</span>();
+<span class="ty">int</span>     <span class="vr">above</span>   = <span class="vr">orders</span>.<span class="mt">Count</span>(<span class="vr">o</span> => <span class="vr">o</span>.Total > <span class="nm">100</span>);
+<span class="ty">decimal</span> <span class="vr">total</span>   = <span class="vr">orders</span>.<span class="mt">Sum</span>(<span class="vr">o</span> => <span class="vr">o</span>.Total);
+<span class="ty">double</span>  <span class="vr">avg</span>     = <span class="vr">orders</span>.<span class="mt">Average</span>(<span class="vr">o</span> => <span class="vr">o</span>.Total);
+<span class="ty">decimal</span> <span class="vr">max</span>     = <span class="vr">orders</span>.<span class="mt">Max</span>(<span class="vr">o</span> => <span class="vr">o</span>.Total);
+<span class="ty">decimal</span> <span class="vr">min</span>     = <span class="vr">orders</span>.<span class="mt">Min</span>(<span class="vr">o</span> => <span class="vr">o</span>.Total);
+<span class="ty">Order</span>   <span class="vr">biggest</span> = <span class="vr">orders</span>.<span class="mt">MaxBy</span>(<span class="vr">o</span> => <span class="vr">o</span>.Total);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Aggregate (custom reduce)</h3>
+        <span class="card-badge badge-aggr">Aggregate</span>
+      </div>
+      <pre><span class="kw">var</span> <span class="vr">nums</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span> };
+
+<span class="cm">// Product of all numbers</span>
+<span class="ty">int</span> <span class="vr">product</span> = <span class="vr">nums</span>.<span class="mt">Aggregate</span>((<span class="vr">acc</span>, <span class="vr">x</span>) => <span class="vr">acc</span> * <span class="vr">x</span>);
+<span class="cm">// → 120</span>
+
+<span class="cm">// With seed value</span>
+<span class="ty">int</span> <span class="vr">sum10</span> = <span class="vr">nums</span>.<span class="mt">Aggregate</span>(<span class="nm">10</span>, (<span class="vr">acc</span>, <span class="vr">x</span>) => <span class="vr">acc</span> + <span class="vr">x</span>);
+<span class="cm">// → 25 (10 + 1+2+3+4+5)</span>
+
+<span class="cm">// With seed + result selector</span>
+<span class="ty">string</span> <span class="vr">csv</span> = <span class="vr">nums</span>.<span class="mt">Aggregate</span>(<span class="st">""</span>,
+    (<span class="vr">a</span>, <span class="vr">x</span>) => <span class="vr">a</span> + <span class="st">","</span> + <span class="vr">x</span>,
+    <span class="vr">a</span> => <span class="vr">a</span>.<span class="mt">TrimStart</span>(<span class="st">','</span>)); <span class="cm">// → "1,2,3,4,5"</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 6 ── -->
+<section class="section" id="grouping">
+  <div class="section-header">
+    <div class="section-icon" style="background:#F3EEF9;">📦</div>
+    <div>
+      <h2>Grouping</h2>
+      <p>Partition sequences into groups by a key</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>GroupBy</h3>
+        <span class="card-badge badge-group">Group</span>
+      </div>
+      <div class="card-desc">Returns <code>IEnumerable&lt;IGrouping&lt;TKey, TElement&gt;&gt;</code> — each group has a <code>.Key</code> and is iterable.</div>
+      <pre><span class="cm">// Group people by country</span>
+<span class="kw">var</span> <span class="vr">byCountry</span> = <span class="vr">people</span>.<span class="mt">GroupBy</span>(<span class="vr">p</span> => <span class="vr">p</span>.Country);
+
+<span class="kw">foreach</span> (<span class="kw">var</span> <span class="vr">group</span> <span class="kw">in</span> <span class="vr">byCountry</span>)
+{
+    <span class="ty">Console</span>.<span class="mt">WriteLine</span>(<span class="vr">group</span>.Key); <span class="cm">// country name</span>
+    <span class="kw">foreach</span> (<span class="kw">var</span> <span class="vr">p</span> <span class="kw">in</span> <span class="vr">group</span>)
+        <span class="ty">Console</span>.<span class="mt">WriteLine</span>(<span class="vr">p</span>.Name);
+}
+
+<span class="cm">// With element selector</span>
+<span class="kw">var</span> <span class="vr">namesByCountry</span> = <span class="vr">people</span>.<span class="mt">GroupBy</span>(
+    <span class="vr">p</span> => <span class="vr">p</span>.Country,      <span class="cm">// key selector</span>
+    <span class="vr">p</span> => <span class="vr">p</span>.Name);         <span class="cm">// element selector</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>GroupBy with aggregation</h3>
+        <span class="card-badge badge-group">Group</span>
+      </div>
+      <pre><span class="cm">// Count, sum within groups</span>
+<span class="kw">var</span> <span class="vr">stats</span> = <span class="vr">people</span>
+    .<span class="mt">GroupBy</span>(<span class="vr">p</span> => <span class="vr">p</span>.Department)
+    .<span class="mt">Select</span>(<span class="vr">g</span> => <span class="kw">new</span>
+    {
+        Dept    = <span class="vr">g</span>.Key,
+        Count   = <span class="vr">g</span>.<span class="mt">Count</span>(),
+        AvgAge  = <span class="vr">g</span>.<span class="mt">Average</span>(<span class="vr">p</span> => <span class="vr">p</span>.Age),
+        MaxSal  = <span class="vr">g</span>.<span class="mt">Max</span>(<span class="vr">p</span> => <span class="vr">p</span>.Salary)
+    });
+
+<span class="cm">// Query syntax equivalent</span>
+<span class="kw">var</span> <span class="vr">stats2</span> = <span class="kw">from</span> <span class="vr">p</span> <span class="kw">in</span> <span class="vr">people</span>
+             <span class="kw">group</span> <span class="vr">p</span> <span class="kw">by</span> <span class="vr">p</span>.Department <span class="kw">into</span> <span class="vr">g</span>
+             <span class="kw">select new</span> { Dept = <span class="vr">g</span>.Key, Count = <span class="vr">g</span>.<span class="mt">Count</span>() };</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>ToLookup</h3>
+        <span class="card-badge badge-group">Group</span>
+      </div>
+      <div class="card-desc">Like <code>GroupBy</code> but executes immediately and returns a random-access <code>ILookup&lt;TKey, T&gt;</code>.</div>
+      <pre><span class="cm">// Builds lookup once (eager)</span>
+<span class="ty">ILookup</span>&lt;<span class="ty">string</span>, <span class="ty">Person</span>&gt; <span class="vr">lookup</span> =
+    <span class="vr">people</span>.<span class="mt">ToLookup</span>(<span class="vr">p</span> => <span class="vr">p</span>.Country);
+
+<span class="cm">// Random access by key</span>
+<span class="kw">var</span> <span class="vr">uk</span>  = <span class="vr">lookup</span>[<span class="st">"UK"</span>];
+<span class="kw">var</span> <span class="vr">usa</span> = <span class="vr">lookup</span>[<span class="st">"USA"</span>];
+
+<span class="cm">// Missing key returns empty (no exception)</span>
+<span class="kw">var</span> <span class="vr">none</span> = <span class="vr">lookup</span>[<span class="st">"Mars"</span>]; <span class="cm">// empty, no throw</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Multi-key grouping</h3>
+        <span class="card-badge badge-group">Group</span>
+      </div>
+      <pre><span class="cm">// Group by composite (anonymous type) key</span>
+<span class="kw">var</span> <span class="vr">grouped</span> = <span class="vr">orders</span>.<span class="mt">GroupBy</span>(<span class="vr">o</span> => <span class="kw">new</span>
+{
+    <span class="vr">o</span>.Year,
+    <span class="vr">o</span>.Category
+});
+
+<span class="kw">foreach</span> (<span class="kw">var</span> <span class="vr">g</span> <span class="kw">in</span> <span class="vr">grouped</span>)
+{
+    <span class="ty">Console</span>.<span class="mt">WriteLine</span>(<span class="st">$"</span>{<span class="vr">g</span>.Key.Year}<span class="st">/</span>{<span class="vr">g</span>.Key.Category}<span class="st">"</span>);
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 7 ── -->
+<section class="section" id="joining">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EAF4EF;">🔗</div>
+    <div>
+      <h2>Joining</h2>
+      <p>Correlate elements from two sequences</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>Join (inner join)</h3>
+        <span class="card-badge badge-join">Join</span>
+      </div>
+      <div class="card-desc">Returns matches from both sequences on a key. Unmatched elements are excluded.</div>
+      <pre><span class="kw">var</span> <span class="vr">result</span> = <span class="vr">orders</span>.<span class="mt">Join</span>(
+    <span class="vr">customers</span>,              <span class="cm">// inner sequence</span>
+    <span class="vr">o</span> => <span class="vr">o</span>.CustomerId,      <span class="cm">// outer key</span>
+    <span class="vr">c</span> => <span class="vr">c</span>.Id,              <span class="cm">// inner key</span>
+    (<span class="vr">o</span>, <span class="vr">c</span>) => <span class="kw">new</span>           <span class="cm">// result</span>
+    {
+        <span class="vr">c</span>.Name,
+        <span class="vr">o</span>.Total,
+        <span class="vr">o</span>.Date
+    });
+
+<span class="cm">// Query syntax</span>
+<span class="kw">var</span> <span class="vr">q</span> = <span class="kw">from</span> <span class="vr">o</span> <span class="kw">in</span> <span class="vr">orders</span>
+        <span class="kw">join</span> <span class="vr">c</span> <span class="kw">in</span> <span class="vr">customers</span>
+          <span class="kw">on</span> <span class="vr">o</span>.CustomerId <span class="kw">equals</span> <span class="vr">c</span>.Id
+        <span class="kw">select new</span> { <span class="vr">c</span>.Name, <span class="vr">o</span>.Total };</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>GroupJoin (left join)</h3>
+        <span class="card-badge badge-join">Join</span>
+      </div>
+      <div class="card-desc">Like a left outer join — keeps all outer elements, attaches matching inner elements as a sub-collection.</div>
+      <pre><span class="kw">var</span> <span class="vr">result</span> = <span class="vr">customers</span>.<span class="mt">GroupJoin</span>(
+    <span class="vr">orders</span>,
+    <span class="vr">c</span> => <span class="vr">c</span>.Id,
+    <span class="vr">o</span> => <span class="vr">o</span>.CustomerId,
+    (<span class="vr">c</span>, <span class="vr">orderGroup</span>) => <span class="kw">new</span>
+    {
+        <span class="vr">c</span>.Name,
+        OrderCount = <span class="vr">orderGroup</span>.<span class="mt">Count</span>(),
+        Total      = <span class="vr">orderGroup</span>.<span class="mt">Sum</span>(<span class="vr">o</span> => <span class="vr">o</span>.Amount)
+    });
+
+<span class="cm">// Customers with zero orders still appear!</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Left Outer Join (LINQ pattern)</h3>
+        <span class="card-badge badge-join">Join</span>
+      </div>
+      <pre><span class="kw">var</span> <span class="vr">leftJoin</span> = <span class="vr">customers</span>
+    .<span class="mt">GroupJoin</span>(<span class="vr">orders</span>,
+        <span class="vr">c</span> => <span class="vr">c</span>.Id, <span class="vr">o</span> => <span class="vr">o</span>.CustId,
+        (<span class="vr">c</span>, <span class="vr">og</span>) => <span class="kw">new</span> { <span class="vr">c</span>, <span class="vr">og</span> })
+    .<span class="mt">SelectMany</span>(
+        <span class="vr">x</span> => <span class="vr">x</span>.og.<span class="mt">DefaultIfEmpty</span>(),
+        (<span class="vr">x</span>, <span class="vr">o</span>) => <span class="kw">new</span>
+        {
+            <span class="vr">x</span>.c.Name,
+            OrderTotal = <span class="vr">o</span>?<span class="vr">.Total</span> ?? <span class="nm">0</span>
+        });</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Cross Join</h3>
+        <span class="card-badge badge-join">Join</span>
+      </div>
+      <div class="card-desc">Cartesian product — every combination of elements from both sequences.</div>
+      <pre><span class="kw">var</span> <span class="vr">colors</span> = <span class="kw">new</span>[] { <span class="st">"Red"</span>, <span class="st">"Blue"</span> };
+<span class="kw">var</span> <span class="vr">sizes</span>  = <span class="kw">new</span>[] { <span class="st">"S"</span>, <span class="st">"M"</span>, <span class="st">"L"</span> };
+
+<span class="kw">var</span> <span class="vr">combos</span> = <span class="vr">colors</span>.<span class="mt">SelectMany</span>(
+    <span class="vr">_</span> => <span class="vr">sizes</span>,
+    (<span class="vr">c</span>, <span class="vr">s</span>) => <span class="st">$"</span>{<span class="vr">c</span>}<span class="st"> </span>{<span class="vr">s</span>}<span class="st">"</span>);
+<span class="cm">// → Red S, Red M, Red L, Blue S…</span>
+
+<span class="cm">// Query syntax</span>
+<span class="kw">var</span> <span class="vr">q</span> = <span class="kw">from</span> <span class="vr">c</span> <span class="kw">in</span> <span class="vr">colors</span>
+        <span class="kw">from</span> <span class="vr">s</span> <span class="kw">in</span> <span class="vr">sizes</span>
+        <span class="kw">select</span> <span class="st">$"</span>{<span class="vr">c</span>}<span class="st"> </span>{<span class="vr">s</span>}<span class="st">"</span>;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 8 ── -->
+<section class="section" id="set-ops">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FAF0EC;">⋂</div>
+    <div>
+      <h2>Set Operations</h2>
+      <p>Distinct, union, intersect, except</p>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header"><h3>Distinct / DistinctBy</h3><span class="card-badge badge-set">Set</span></div>
+      <pre><span class="kw">var</span> <span class="vr">nums</span> = <span class="kw">new</span>[] {<span class="nm">1</span>,<span class="nm">2</span>,<span class="nm">2</span>,<span class="nm">3</span>,<span class="nm">3</span>};
+<span class="kw">var</span> <span class="vr">d</span> = <span class="vr">nums</span>.<span class="mt">Distinct</span>();
+<span class="cm">// → 1, 2, 3</span>
+
+<span class="cm">// .NET 6+: distinct by key</span>
+<span class="kw">var</span> <span class="vr">unique</span> = <span class="vr">people</span>
+    .<span class="mt">DistinctBy</span>(<span class="vr">p</span> => <span class="vr">p</span>.Email);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Union / UnionBy</h3><span class="card-badge badge-set">Set</span></div>
+      <pre><span class="kw">var</span> <span class="vr">a</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span> };
+<span class="kw">var</span> <span class="vr">b</span> = <span class="kw">new</span>[] { <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span> };
+<span class="kw">var</span> <span class="vr">u</span> = <span class="vr">a</span>.<span class="mt">Union</span>(<span class="vr">b</span>);
+<span class="cm">// → 1, 2, 3, 4</span>
+
+<span class="cm">// .NET 6+: union by key</span>
+<span class="kw">var</span> <span class="vr">all</span> = <span class="vr">list1</span>.<span class="mt">UnionBy</span>(<span class="vr">list2</span>,
+    <span class="vr">p</span> => <span class="vr">p</span>.Id);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Intersect / IntersectBy</h3><span class="card-badge badge-set">Set</span></div>
+      <pre><span class="kw">var</span> <span class="vr">a</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span> };
+<span class="kw">var</span> <span class="vr">b</span> = <span class="kw">new</span>[] { <span class="nm">2</span>, <span class="nm">3</span>, <span class="nm">4</span> };
+<span class="kw">var</span> <span class="vr">i</span> = <span class="vr">a</span>.<span class="mt">Intersect</span>(<span class="vr">b</span>);
+<span class="cm">// → 2, 3</span>
+
+<span class="cm">// .NET 6+: intersect by key</span>
+<span class="kw">var</span> <span class="vr">common</span> = <span class="vr">list1</span>
+    .<span class="mt">IntersectBy</span>(<span class="vr">list2</span>.<span class="mt">Select</span>(<span class="vr">x</span> => <span class="vr">x</span>.Id),
+        <span class="vr">x</span> => <span class="vr">x</span>.Id);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Except / ExceptBy</h3><span class="card-badge badge-set">Set</span></div>
+      <pre><span class="kw">var</span> <span class="vr">a</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span> };
+<span class="kw">var</span> <span class="vr">b</span> = <span class="kw">new</span>[] { <span class="nm">2</span>, <span class="nm">3</span> };
+<span class="kw">var</span> <span class="vr">e</span> = <span class="vr">a</span>.<span class="mt">Except</span>(<span class="vr">b</span>);
+<span class="cm">// → 1 (a minus b)</span>
+
+<span class="cm">// .NET 6+: except by key</span>
+<span class="kw">var</span> <span class="vr">notIn2</span> = <span class="vr">list1</span>
+    .<span class="mt">ExceptBy</span>(<span class="vr">list2</span>.<span class="mt">Select</span>(<span class="vr">x</span> => <span class="vr">x</span>.Id),
+        <span class="vr">x</span> => <span class="vr">x</span>.Id);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>SequenceEqual</h3><span class="card-badge badge-set">Set</span></div>
+      <pre><span class="kw">var</span> <span class="vr">a</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span> };
+<span class="kw">var</span> <span class="vr">b</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">2</span>, <span class="nm">3</span> };
+<span class="ty">bool</span> <span class="vr">eq</span> = <span class="vr">a</span>.<span class="mt">SequenceEqual</span>(<span class="vr">b</span>);
+<span class="cm">// → true</span>
+
+<span class="cm">// With custom comparer</span>
+<span class="ty">bool</span> <span class="vr">eq2</span> = <span class="vr">strA</span>.<span class="mt">SequenceEqual</span>(<span class="vr">strB</span>,
+    <span class="ty">StringComparer</span>.OrdinalIgnoreCase);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Concat</h3><span class="card-badge badge-set">Combine</span></div>
+      <pre><span class="kw">var</span> <span class="vr">a</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">2</span> };
+<span class="kw">var</span> <span class="vr">b</span> = <span class="kw">new</span>[] { <span class="nm">3</span>, <span class="nm">4</span> };
+<span class="kw">var</span> <span class="vr">c</span> = <span class="vr">a</span>.<span class="mt">Concat</span>(<span class="vr">b</span>);
+<span class="cm">// → 1, 2, 3, 4 (duplicates kept)</span>
+
+<span class="cm">// Append / Prepend single element</span>
+<span class="kw">var</span> <span class="vr">d</span> = <span class="vr">a</span>.<span class="mt">Append</span>(<span class="nm">99</span>);  <span class="cm">// → 1,2,99</span>
+<span class="kw">var</span> <span class="vr">e</span> = <span class="vr">a</span>.<span class="mt">Prepend</span>(<span class="nm">0</span>); <span class="cm">// → 0,1,2</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 9 ── -->
+<section class="section" id="element">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EBF2FB;">①</div>
+    <div>
+      <h2>Element Operators</h2>
+      <p>Retrieve a single element from a sequence</p>
+    </div>
+  </div>
+
+  <div class="full-card">
+    <div class="full-card-header">
+      <h3>Element Operator Reference</h3>
+    </div>
+    <table class="syntax-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Description</th>
+          <th>If empty / not found</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>First()</td>
+          <td>First element (or matching predicate)</td>
+          <td><span style="color:var(--accent)">throws</span> InvalidOperationException</td>
+        </tr>
+        <tr>
+          <td>FirstOrDefault()</td>
+          <td>First element or default (null/0)</td>
+          <td>returns <code>default(T)</code></td>
+        </tr>
+        <tr>
+          <td>Last()</td>
+          <td>Last element (or matching predicate)</td>
+          <td><span style="color:var(--accent)">throws</span> InvalidOperationException</td>
+        </tr>
+        <tr>
+          <td>LastOrDefault()</td>
+          <td>Last element or default</td>
+          <td>returns <code>default(T)</code></td>
+        </tr>
+        <tr>
+          <td>Single()</td>
+          <td>Exactly one element (error if 0 or 2+)</td>
+          <td><span style="color:var(--accent)">throws</span> on 0 or multiple</td>
+        </tr>
+        <tr>
+          <td>SingleOrDefault()</td>
+          <td>One or zero elements</td>
+          <td>returns default; <span style="color:var(--accent)">throws</span> if multiple</td>
+        </tr>
+        <tr>
+          <td>ElementAt(n)</td>
+          <td>Element at zero-based index</td>
+          <td><span style="color:var(--accent)">throws</span> ArgumentOutOfRangeException</td>
+        </tr>
+        <tr>
+          <td>ElementAtOrDefault(n)</td>
+          <td>Element at index or default</td>
+          <td>returns <code>default(T)</code></td>
+        </tr>
+        <tr>
+          <td>DefaultIfEmpty()</td>
+          <td>Sequence with single default if empty</td>
+          <td>returns <code>[default(T)]</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>Safe element access patterns</h3>
+        <span class="card-badge badge-elem">Element</span>
+      </div>
+      <pre><span class="cm">// With fallback default (.NET 6+)</span>
+<span class="kw">var</span> <span class="vr">first</span> = <span class="vr">list</span>.<span class="mt">FirstOrDefault</span>(<span class="vr">x</span> => <span class="vr">x</span> > <span class="nm">5</span>, <span class="nm">-1</span>);
+<span class="cm">// returns -1 if nothing matches</span>
+
+<span class="cm">// Defensive coding</span>
+<span class="ty">Person</span>? <span class="vr">found</span> = <span class="vr">people</span>
+    .<span class="mt">FirstOrDefault</span>(<span class="vr">p</span> => <span class="vr">p</span>.Id == <span class="vr">id</span>);
+
+<span class="kw">if</span> (<span class="vr">found</span> <span class="kw">is null</span>)
+    <span class="kw">throw new</span> <span class="ty">KeyNotFoundException</span>(<span class="st">$"Id </span>{<span class="vr">id</span>}<span class="st"> not found"</span>);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Index from end (.NET 6+)</h3>
+        <span class="card-badge badge-elem">Element</span>
+      </div>
+      <pre><span class="kw">var</span> <span class="vr">items</span> = <span class="kw">new</span>[] { <span class="nm">10</span>, <span class="nm">20</span>, <span class="nm">30</span>, <span class="nm">40</span>, <span class="nm">50</span> };
+
+<span class="cm">// .NET 6+: Index from end with ^</span>
+<span class="kw">var</span> <span class="vr">last</span>       = <span class="vr">items</span>.<span class="mt">ElementAt</span>(<span class="nm">^1</span>); <span class="cm">// → 50</span>
+<span class="kw">var</span> <span class="vr">secondLast</span> = <span class="vr">items</span>.<span class="mt">ElementAt</span>(<span class="nm">^2</span>); <span class="cm">// → 40</span>
+
+<span class="cm">// DefaultIfEmpty example</span>
+<span class="kw">var</span> <span class="vr">safe</span> = <span class="vr">emptyList</span>
+    .<span class="mt">DefaultIfEmpty</span>(<span class="nm">0</span>)
+    .<span class="mt">Sum</span>(); <span class="cm">// → 0 instead of exception</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 10 ── -->
+<section class="section" id="quantifiers">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FDF8E8;">∀</div>
+    <div>
+      <h2>Quantifiers</h2>
+      <p>Test conditions across sequences</p>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header"><h3>Any</h3><span class="card-badge badge-quant">Bool</span></div>
+      <div class="card-desc">Returns true if any element matches (or if sequence is non-empty with no predicate).</div>
+      <pre><span class="ty">bool</span> <span class="vr">hasAdults</span> = <span class="vr">people</span>
+    .<span class="mt">Any</span>(<span class="vr">p</span> => <span class="vr">p</span>.Age >= <span class="nm">18</span>);
+
+<span class="ty">bool</span> <span class="vr">notEmpty</span> = <span class="vr">list</span>.<span class="mt">Any</span>();
+<span class="cm">// faster than Count() > 0</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>All</h3><span class="card-badge badge-quant">Bool</span></div>
+      <div class="card-desc">Returns true only if every element matches. Returns true for empty sequences.</div>
+      <pre><span class="ty">bool</span> <span class="vr">allAdults</span> = <span class="vr">people</span>
+    .<span class="mt">All</span>(<span class="vr">p</span> => <span class="vr">p</span>.Age >= <span class="nm">18</span>);
+
+<span class="cm">// Empty sequence returns true:</span>
+<span class="ty">bool</span> <span class="vr">trivially</span> = <span class="ty">Enumerable</span>
+    .<span class="mt">Empty</span>&lt;<span class="ty">int</span>&gt;().<span class="mt">All</span>(<span class="vr">x</span> => <span class="vr">x</span> > <span class="nm">0</span>);
+<span class="cm">// → true (vacuously true)</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Contains</h3><span class="card-badge badge-quant">Bool</span></div>
+      <div class="card-desc">Tests if a specific value is in the sequence.</div>
+      <pre><span class="ty">bool</span> <span class="vr">has5</span> = <span class="vr">numbers</span>.<span class="mt">Contains</span>(<span class="nm">5</span>);
+
+<span class="cm">// With custom comparer</span>
+<span class="ty">bool</span> <span class="vr">found</span> = <span class="vr">names</span>.<span class="mt">Contains</span>(
+    <span class="st">"alice"</span>,
+    <span class="ty">StringComparer</span>.OrdinalIgnoreCase);
+<span class="cm">// → true for "Alice" or "ALICE"</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 11 ── -->
+<section class="section" id="partitioning">
+  <div class="section-header">
+    <div class="section-icon" style="background:#F3EEF9;">✂️</div>
+    <div>
+      <h2>Partitioning</h2>
+      <p>Skip and take — slicing sequences and pagination</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>Take / Skip / Range</h3>
+        <span class="card-badge badge-part">Partition</span>
+      </div>
+      <pre><span class="kw">var</span> <span class="vr">page1</span>   = <span class="vr">items</span>.<span class="mt">Take</span>(<span class="nm">10</span>);          <span class="cm">// first 10</span>
+<span class="kw">var</span> <span class="vr">page2</span>   = <span class="vr">items</span>.<span class="mt">Skip</span>(<span class="nm">10</span>).<span class="mt">Take</span>(<span class="nm">10</span>); <span class="cm">// next 10</span>
+<span class="kw">var</span> <span class="vr">last5</span>   = <span class="vr">items</span>.<span class="mt">TakeLast</span>(<span class="nm">5</span>);       <span class="cm">// .NET 2+</span>
+<span class="kw">var</span> <span class="vr">drop5</span>   = <span class="vr">items</span>.<span class="mt">SkipLast</span>(<span class="nm">5</span>);       <span class="cm">// .NET 2+</span>
+
+<span class="cm">// .NET 6+: Range index</span>
+<span class="kw">var</span> <span class="vr">slice</span>   = <span class="vr">items</span>.<span class="mt">Take</span>(<span class="nm">2</span>..<span class="nm">8</span>);         <span class="cm">// index 2-7</span>
+<span class="kw">var</span> <span class="vr">last3</span>   = <span class="vr">items</span>.<span class="mt">Take</span>(<span class="nm">^3</span>..);         <span class="cm">// last 3</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>TakeWhile / SkipWhile</h3>
+        <span class="card-badge badge-part">Partition</span>
+      </div>
+      <div class="card-desc">Predicate-based partitioning — stops at the first non-matching element.</div>
+      <pre><span class="kw">var</span> <span class="vr">nums</span> = <span class="kw">new</span>[] { <span class="nm">1</span>, <span class="nm">3</span>, <span class="nm">5</span>, <span class="nm">6</span>, <span class="nm">8</span>, <span class="nm">9</span> };
+
+<span class="cm">// Take while odd</span>
+<span class="kw">var</span> <span class="vr">tw</span> = <span class="vr">nums</span>.<span class="mt">TakeWhile</span>(<span class="vr">n</span> => <span class="vr">n</span> % <span class="nm">2</span> != <span class="nm">0</span>);
+<span class="cm">// → 1, 3, 5 (stops at 6)</span>
+
+<span class="cm">// Skip while odd</span>
+<span class="kw">var</span> <span class="vr">sw</span> = <span class="vr">nums</span>.<span class="mt">SkipWhile</span>(<span class="vr">n</span> => <span class="vr">n</span> % <span class="nm">2</span> != <span class="nm">0</span>);
+<span class="cm">// → 6, 8, 9</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Pagination helper pattern</h3>
+        <span class="card-badge badge-part">Pattern</span>
+      </div>
+      <pre><span class="kw">static</span> <span class="ty">IQueryable</span>&lt;<span class="ty">T</span>&gt; <span class="mt">Paginate</span>&lt;<span class="ty">T</span>&gt;(
+    <span class="ty">IQueryable</span>&lt;<span class="ty">T</span>&gt; <span class="vr">query</span>,
+    <span class="ty">int</span> <span class="vr">page</span>,       <span class="cm">// 1-based page number</span>
+    <span class="ty">int</span> <span class="vr">pageSize</span>)   <span class="cm">// items per page</span>
+{
+    <span class="kw">return</span> <span class="vr">query</span>
+        .<span class="mt">Skip</span>((<span class="vr">page</span> - <span class="nm">1</span>) * <span class="vr">pageSize</span>)
+        .<span class="mt">Take</span>(<span class="vr">pageSize</span>);
+}</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Chunk (.NET 6+)</h3>
+        <span class="card-badge badge-part">Partition</span>
+      </div>
+      <div class="card-desc">Splits a sequence into fixed-size chunks — perfect for batch processing.</div>
+      <pre><span class="kw">var</span> <span class="vr">ids</span> = <span class="ty">Enumerable</span>.<span class="mt">Range</span>(<span class="nm">1</span>, <span class="nm">100</span>);
+
+<span class="kw">foreach</span> (<span class="kw">var</span> <span class="vr">batch</span> <span class="kw">in</span> <span class="vr">ids</span>.<span class="mt">Chunk</span>(<span class="nm">10</span>))
+{
+    <span class="cm">// each batch is int[] of up to 10 items</span>
+    <span class="kw">await</span> <span class="mt">ProcessBatchAsync</span>(<span class="vr">batch</span>);
+}
+<span class="cm">// Perfect for API rate limiting, bulk inserts</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 12 ── -->
+<section class="section" id="generation">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EAF4EF;">✨</div>
+    <div>
+      <h2>Generation Operators</h2>
+      <p>Create sequences from scratch</p>
+    </div>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <div class="card-header"><h3>Enumerable.Range</h3><span class="card-badge badge-gen">Generate</span></div>
+      <pre><span class="cm">// Range(start, count)</span>
+<span class="kw">var</span> <span class="vr">r1</span> = <span class="ty">Enumerable</span>.<span class="mt">Range</span>(<span class="nm">1</span>, <span class="nm">10</span>);
+<span class="cm">// → 1..10</span>
+
+<span class="kw">var</span> <span class="vr">squares</span> = <span class="ty">Enumerable</span>
+    .<span class="mt">Range</span>(<span class="nm">1</span>, <span class="nm">5</span>)
+    .<span class="mt">Select</span>(<span class="vr">n</span> => <span class="vr">n</span> * <span class="vr">n</span>);
+<span class="cm">// → 1, 4, 9, 16, 25</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Enumerable.Repeat</h3><span class="card-badge badge-gen">Generate</span></div>
+      <pre><span class="cm">// Repeat(value, count)</span>
+<span class="kw">var</span> <span class="vr">zeros</span> = <span class="ty">Enumerable</span>
+    .<span class="mt">Repeat</span>(<span class="nm">0</span>, <span class="nm">5</span>);
+<span class="cm">// → 0, 0, 0, 0, 0</span>
+
+<span class="kw">var</span> <span class="vr">fills</span> = <span class="ty">Enumerable</span>
+    .<span class="mt">Repeat</span>(<span class="st">"N/A"</span>, <span class="nm">3</span>);<span class="cm">// → "N/A" ×3</span></pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3>Enumerable.Empty</h3><span class="card-badge badge-gen">Generate</span></div>
+      <pre><span class="cm">// Zero-element typed sequence</span>
+<span class="kw">var</span> <span class="vr">empty</span> = <span class="ty">Enumerable</span>
+    .<span class="mt">Empty</span>&lt;<span class="ty">string</span>&gt;();
+
+<span class="cm">// Useful as a safe default</span>
+<span class="ty">IEnumerable</span>&lt;<span class="ty">Order</span>&gt; <span class="mt">GetOrders</span>() =>
+    <span class="vr">_cache</span> ?? <span class="ty">Enumerable</span>.<span class="mt">Empty</span>&lt;<span class="ty">Order</span>&gt;();</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 13 ── -->
+<section class="section" id="conversion">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FAF0EC;">🔄</div>
+    <div>
+      <h2>Conversion Operators</h2>
+      <p>Convert sequences to collections and dictionaries</p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>ToList / ToArray / ToHashSet</h3>
+        <span class="card-badge badge-conv">Convert</span>
+      </div>
+      <pre><span class="ty">List</span>&lt;<span class="ty">Person</span>&gt; <span class="vr">list</span>    = <span class="vr">query</span>.<span class="mt">ToList</span>();
+<span class="ty">Person</span>[]      <span class="vr">arr</span>     = <span class="vr">query</span>.<span class="mt">ToArray</span>();
+<span class="ty">HashSet</span>&lt;<span class="ty">int</span>&gt;  <span class="vr">set</span>     = <span class="vr">ids</span>.<span class="mt">ToHashSet</span>();
+
+<span class="cm">// ToHashSet with comparer</span>
+<span class="ty">HashSet</span>&lt;<span class="ty">string</span>&gt; <span class="vr">ci</span> = <span class="vr">names</span>.<span class="mt">ToHashSet</span>(
+    <span class="ty">StringComparer</span>.OrdinalIgnoreCase);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>ToDictionary / ToLookup</h3>
+        <span class="card-badge badge-conv">Convert</span>
+      </div>
+      <pre><span class="cm">// Key must be unique or throws</span>
+<span class="ty">Dictionary</span>&lt;<span class="ty">int</span>, <span class="ty">Person</span>&gt; <span class="vr">byId</span> = <span class="vr">people</span>
+    .<span class="mt">ToDictionary</span>(<span class="vr">p</span> => <span class="vr">p</span>.Id);
+
+<span class="cm">// Key + value selector</span>
+<span class="ty">Dictionary</span>&lt;<span class="ty">int</span>, <span class="ty">string</span>&gt; <span class="vr">map</span> = <span class="vr">people</span>
+    .<span class="mt">ToDictionary</span>(<span class="vr">p</span> => <span class="vr">p</span>.Id, <span class="vr">p</span> => <span class="vr">p</span>.Name);
+
+<span class="cm">// Multiple per key → ToLookup</span>
+<span class="ty">ILookup</span>&lt;<span class="ty">string</span>, <span class="ty">Person</span>&gt; <span class="vr">lkp</span> = <span class="vr">people</span>
+    .<span class="mt">ToLookup</span>(<span class="vr">p</span> => <span class="vr">p</span>.Country);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>AsEnumerable / AsQueryable</h3>
+        <span class="card-badge badge-conv">Convert</span>
+      </div>
+      <div class="card-desc">Switch between LINQ to Objects (in-memory) and LINQ to SQL/EF (expression trees).</div>
+      <pre><span class="cm">// Force client-side evaluation</span>
+<span class="kw">var</span> <span class="vr">result</span> = <span class="vr">dbContext</span>.<span class="vr">Products</span>
+    .<span class="mt">Where</span>(<span class="vr">p</span> => <span class="vr">p</span>.Active)     <span class="cm">// SQL</span>
+    .<span class="mt">AsEnumerable</span>()           <span class="cm">// switch to memory</span>
+    .<span class="mt">Where</span>(<span class="vr">p</span> => <span class="mt">MyComplexFn</span>(<span class="vr">p</span>)); <span class="cm">// in-memory</span>
+
+<span class="cm">// Wrap IEnumerable as IQueryable</span>
+<span class="kw">var</span> <span class="vr">q</span> = <span class="vr">list</span>.<span class="mt">AsQueryable</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>string.Join (LINQ + strings)</h3>
+        <span class="card-badge badge-conv">Pattern</span>
+      </div>
+      <pre><span class="kw">var</span> <span class="vr">names</span> = <span class="vr">people</span>
+    .<span class="mt">Select</span>(<span class="vr">p</span> => <span class="vr">p</span>.Name);
+
+<span class="ty">string</span> <span class="vr">csv</span>  = <span class="ty">string</span>.<span class="mt">Join</span>(<span class="st">", "</span>, <span class="vr">names</span>);
+<span class="ty">string</span> <span class="vr">list</span> = <span class="ty">string</span>.<span class="mt">Join</span>(<span class="st">"\n"</span>, <span class="vr">names</span>);
+
+<span class="cm">// .NET 6+ — chunk into string batches</span>
+<span class="kw">var</span> <span class="vr">batches</span> = <span class="vr">ids</span>
+    .<span class="mt">Chunk</span>(<span class="nm">100</span>)
+    .<span class="mt">Select</span>(<span class="vr">b</span> => <span class="ty">string</span>.<span class="mt">Join</span>(<span class="st">","</span>, <span class="vr">b</span>));</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ──────────────────────────────────────── SECTION 14 ── -->
+<section class="section" id="patterns">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EAF4EF;">💡</div>
+    <div>
+      <h2>Common Patterns & Best Practices</h2>
+      <p>Real-world recipes and performance tips</p>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    <strong>✅ Performance tips:</strong> Use <code>Any()</code> over <code>Count() > 0</code>. Prefer <code>FirstOrDefault()</code> over <code>Where().First()</code>. On EF Core, keep filters before <code>AsEnumerable()</code> to translate to SQL. Avoid <code>ToList()</code> inside loops.
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header">
+        <h3>Null-safe LINQ</h3>
+        <span class="card-badge badge-proj">Pattern</span>
+      </div>
+      <pre><span class="cm">// Null-safe iteration</span>
+<span class="kw">var</span> <span class="vr">safe</span> = (<span class="vr">maybeNull</span> ?? <span class="ty">Enumerable</span>.<span class="mt">Empty</span>&lt;<span class="ty">T</span>&gt;())
+    .<span class="mt">Where</span>(<span class="vr">x</span> => <span class="vr">x</span> <span class="kw">is not null</span>);
+
+<span class="cm">// Filter out nulls (.NET 6+ pattern)</span>
+<span class="kw">var</span> <span class="vr">nonNull</span> = <span class="vr">list</span>
+    .<span class="mt">Where</span>(<span class="vr">x</span> => <span class="vr">x</span> <span class="kw">is not null</span>)
+    .<span class="mt">Select</span>(<span class="vr">x</span> => <span class="vr">x</span>!);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Flattening nested data</h3>
+        <span class="card-badge badge-proj">Pattern</span>
+      </div>
+      <pre><span class="cm">// Flatten 3 levels deep</span>
+<span class="kw">var</span> <span class="vr">allTags</span> = <span class="vr">posts</span>
+    .<span class="mt">SelectMany</span>(<span class="vr">p</span> => <span class="vr">p</span>.Tags)
+    .<span class="mt">Distinct</span>()
+    .<span class="mt">OrderBy</span>(<span class="vr">t</span> => <span class="vr">t</span>);
+
+<span class="cm">// Flatten with correlation</span>
+<span class="kw">var</span> <span class="vr">flat</span> = <span class="vr">categories</span>
+    .<span class="mt">SelectMany</span>(<span class="vr">c</span> => <span class="vr">c</span>.Products,
+        (<span class="vr">c</span>, <span class="vr">p</span>) => <span class="kw">new</span> { <span class="vr">c</span>.CategoryName, <span class="vr">p</span>.Name });</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Dynamic / conditional filtering</h3>
+        <span class="card-badge badge-filter">Pattern</span>
+      </div>
+      <pre><span class="ty">IQueryable</span>&lt;<span class="ty">Product</span>&gt; <span class="vr">q</span> = <span class="vr">db</span>.<span class="vr">Products</span>;
+
+<span class="kw">if</span> (<span class="vr">minPrice</span>.<span class="mt">HasValue</span>())
+    <span class="vr">q</span> = <span class="vr">q</span>.<span class="mt">Where</span>(<span class="vr">p</span> => <span class="vr">p</span>.Price >= <span class="vr">minPrice</span>);
+
+<span class="kw">if</span> (!<span class="ty">string</span>.<span class="mt">IsNullOrEmpty</span>(<span class="vr">category</span>))
+    <span class="vr">q</span> = <span class="vr">q</span>.<span class="mt">Where</span>(<span class="vr">p</span> => <span class="vr">p</span>.Category == <span class="vr">category</span>);
+
+<span class="kw">return</span> <span class="kw">await</span> <span class="vr">q</span>.<span class="mt">ToListAsync</span>();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>String search / contains</h3>
+        <span class="card-badge badge-filter">Pattern</span>
+      </div>
+      <pre><span class="kw">var</span> <span class="vr">term</span> = <span class="st">"alice"</span>;
+
+<span class="cm">// Case-insensitive search</span>
+<span class="kw">var</span> <span class="vr">found</span> = <span class="vr">people</span>.<span class="mt">Where</span>(<span class="vr">p</span> =>
+    <span class="vr">p</span>.Name.<span class="mt">Contains</span>(<span class="vr">term</span>,
+        <span class="ty">StringComparison</span>.OrdinalIgnoreCase));
+
+<span class="cm">// In EF Core (translates to LIKE)</span>
+<span class="kw">var</span> <span class="vr">efSearch</span> = <span class="vr">db</span>.<span class="vr">People</span>.<span class="mt">Where</span>(<span class="vr">p</span> =>
+    <span class="ty">EF</span>.<span class="mt">Functions</span>.<span class="mt">Like</span>(<span class="vr">p</span>.Name, <span class="st">$"%</span>{<span class="vr">term</span>}<span class="st">%"</span>));</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Batch deduplication</h3>
+        <span class="card-badge badge-set">Pattern</span>
+      </div>
+      <pre><span class="cm">// Deduplicate by composite key</span>
+<span class="kw">var</span> <span class="vr">unique</span> = <span class="vr">records</span>
+    .<span class="mt">GroupBy</span>(<span class="vr">r</span> => <span class="kw">new</span> { <span class="vr">r</span>.Name, <span class="vr">r</span>.Date })
+    .<span class="mt">Select</span>(<span class="vr">g</span> => <span class="vr">g</span>.<span class="mt">First</span>());
+
+<span class="cm">// Or with DistinctBy (.NET 6+)</span>
+<span class="kw">var</span> <span class="vr">unique2</span> = <span class="vr">records</span>
+    .<span class="mt">DistinctBy</span>(<span class="vr">r</span> => (<span class="vr">r</span>.Name, <span class="vr">r</span>.Date));</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Async LINQ (EF Core)</h3>
+        <span class="card-badge badge-async">Async</span>
+      </div>
+      <pre><span class="kw">using</span> <span class="ty">Microsoft.EntityFrameworkCore</span>;
+
+<span class="cm">// Async terminal operators</span>
+<span class="ty">List</span>&lt;<span class="ty">Product</span>&gt; <span class="vr">list</span>  = <span class="kw">await</span> <span class="vr">q</span>.<span class="mt">ToListAsync</span>();
+<span class="ty">int</span>           <span class="vr">count</span> = <span class="kw">await</span> <span class="vr">q</span>.<span class="mt">CountAsync</span>();
+<span class="ty">Product</span>?      <span class="vr">first</span> = <span class="kw">await</span> <span class="vr">q</span>.<span class="mt">FirstOrDefaultAsync</span>();
+<span class="ty">bool</span>          <span class="vr">any</span>   = <span class="kw">await</span> <span class="vr">q</span>.<span class="mt">AnyAsync</span>(<span class="vr">p</span> => <span class="vr">p</span>.Active);
+
+<span class="cm">// Async streaming (.NET 6+)</span>
+<span class="kw">await foreach</span> (<span class="kw">var</span> <span class="vr">item</span> <span class="kw">in</span> <span class="vr">q</span>.<span class="mt">AsAsyncEnumerable</span>())
+    <span class="mt">Process</span>(<span class="vr">item</span>);</pre>
+    </div>
+  </div>
+
+  <div class="full-card">
+    <div class="full-card-header">
+      <h3>Quick Reference: LINQ Operator Cheat Table</h3>
+    </div>
+    <table class="syntax-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Operators</th>
+          <th>Returns</th>
+          <th>Execution</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Filtering</td>
+          <td><code>Where</code>, <code>OfType&lt;T&gt;</code></td>
+          <td><code>IEnumerable&lt;T&gt;</code></td>
+          <td>Deferred</td>
+        </tr>
+        <tr>
+          <td>Projection</td>
+          <td><code>Select</code>, <code>SelectMany</code>, <code>Zip</code>, <code>Cast</code></td>
+          <td><code>IEnumerable&lt;T&gt;</code></td>
+          <td>Deferred</td>
+        </tr>
+        <tr>
+          <td>Ordering</td>
+          <td><code>OrderBy</code>, <code>OrderByDescending</code>, <code>ThenBy</code>, <code>Reverse</code></td>
+          <td><code>IOrderedEnumerable&lt;T&gt;</code></td>
+          <td>Deferred</td>
+        </tr>
+        <tr>
+          <td>Grouping</td>
+          <td><code>GroupBy</code>, <code>ToLookup</code></td>
+          <td><code>IGrouping / ILookup</code></td>
+          <td>Deferred / Immediate</td>
+        </tr>
+        <tr>
+          <td>Joining</td>
+          <td><code>Join</code>, <code>GroupJoin</code></td>
+          <td><code>IEnumerable&lt;T&gt;</code></td>
+          <td>Deferred</td>
+        </tr>
+        <tr>
+          <td>Set Ops</td>
+          <td><code>Distinct</code>, <code>Union</code>, <code>Intersect</code>, <code>Except</code>, <code>Concat</code></td>
+          <td><code>IEnumerable&lt;T&gt;</code></td>
+          <td>Deferred</td>
+        </tr>
+        <tr>
+          <td>Aggregation</td>
+          <td><code>Count</code>, <code>Sum</code>, <code>Average</code>, <code>Min</code>, <code>Max</code>, <code>Aggregate</code></td>
+          <td>Scalar value</td>
+          <td>Immediate</td>
+        </tr>
+        <tr>
+          <td>Quantifiers</td>
+          <td><code>Any</code>, <code>All</code>, <code>Contains</code></td>
+          <td><code>bool</code></td>
+          <td>Immediate</td>
+        </tr>
+        <tr>
+          <td>Element</td>
+          <td><code>First</code>, <code>Last</code>, <code>Single</code>, <code>ElementAt</code>, <code>DefaultIfEmpty</code></td>
+          <td>Single element</td>
+          <td>Immediate</td>
+        </tr>
+        <tr>
+          <td>Partitioning</td>
+          <td><code>Take</code>, <code>Skip</code>, <code>TakeWhile</code>, <code>SkipWhile</code>, <code>Chunk</code></td>
+          <td><code>IEnumerable&lt;T&gt;</code></td>
+          <td>Deferred</td>
+        </tr>
+        <tr>
+          <td>Generation</td>
+          <td><code>Range</code>, <code>Repeat</code>, <code>Empty</code></td>
+          <td><code>IEnumerable&lt;T&gt;</code></td>
+          <td>Deferred</td>
+        </tr>
+        <tr>
+          <td>Conversion</td>
+          <td><code>ToList</code>, <code>ToArray</code>, <code>ToDictionary</code>, <code>ToHashSet</code></td>
+          <td>Collection</td>
+          <td>Immediate</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<!-- ════════════════════════════════════════ FOOTER ════════ -->
+<footer>
+  <p>C# LINQ Cheatsheet · .NET 6+ · <code>System.Linq</code> · <code>System.Linq.Queryable</code> · Microsoft.EntityFrameworkCore</p>
+</footer>
+
+</body>
+</html>
