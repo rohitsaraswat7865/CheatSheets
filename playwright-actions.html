@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playwright Browser Actions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --card: #16161f;
+      --border: #2a2a3d;
+      --accent: #7c6aff;
+      --accent2: #ff6a9b;
+      --accent3: #6affda;
+      --text: #e8e8f0;
+      --muted: #7878a0;
+      --code-bg: #0d0d18;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 180px;
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.4;
+    }
+
+    /* Ambient glow */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(124,106,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 72px 24px 56px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(124,106,255,0.35);
+      padding: 5px 14px;
+      border-radius: 2px;
+      margin-bottom: 24px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.6rem, 6vw, 5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      animation: fadeDown 0.6s 0.1s ease both;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      animation: fadeDown 0.6s 0.2s ease both;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 40px;
+      animation: fadeDown 0.6s 0.3s ease both;
+    }
+
+    .stat { text-align: center; }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent3), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; margin-top: 2px; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    nav::-webkit-scrollbar { display: none; }
+
+    .nav-inner {
+      display: flex;
+      gap: 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    nav a:hover { color: var(--text); border-color: var(--accent); }
+    nav a .nav-icon { font-size: 14px; }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ── SECTION ── */
+    .section {
+      margin-bottom: 56px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .section-icon {
+      font-size: 22px;
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .section-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── CARDS GRID ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      cursor: default;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(124,106,255,0.12);
+    }
+
+    .card-method {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent3);
+      margin-bottom: 6px;
+    }
+
+    .card-method code {
+      background: var(--code-bg);
+      border: 1px solid rgba(106,255,218,0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12.5px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* ── COLOR VARIANTS ── */
+    .s0 .section-icon { background: rgba(124,106,255,0.15); }
+    .s1 .section-icon { background: rgba(255,106,155,0.15); }
+    .s2 .section-icon { background: rgba(106,255,218,0.15); }
+    .s3 .section-icon { background: rgba(255,200,80,0.15); }
+    .s4 .section-icon { background: rgba(124,106,255,0.15); }
+    .s5 .section-icon { background: rgba(255,106,155,0.15); }
+    .s6 .section-icon { background: rgba(106,255,218,0.15); }
+    .s7 .section-icon { background: rgba(255,200,80,0.15); }
+    .s8 .section-icon { background: rgba(124,106,255,0.15); }
+    .s9 .section-icon { background: rgba(255,106,155,0.15); }
+    .s10 .section-icon { background: rgba(106,255,218,0.15); }
+    .s11 .section-icon { background: rgba(255,200,80,0.15); }
+
+    .s0 .card:hover { border-color: #7c6aff; box-shadow: 0 8px 32px rgba(124,106,255,0.12); }
+    .s1 .card:hover { border-color: #ff6a9b; box-shadow: 0 8px 32px rgba(255,106,155,0.12); }
+    .s2 .card:hover { border-color: #6affda; box-shadow: 0 8px 32px rgba(106,255,218,0.12); }
+    .s3 .card:hover { border-color: #ffc850; box-shadow: 0 8px 32px rgba(255,200,80,0.12); }
+    .s4 .card:hover { border-color: #7c6aff; box-shadow: 0 8px 32px rgba(124,106,255,0.12); }
+    .s5 .card:hover { border-color: #ff6a9b; box-shadow: 0 8px 32px rgba(255,106,155,0.12); }
+    .s6 .card:hover { border-color: #6affda; box-shadow: 0 8px 32px rgba(106,255,218,0.12); }
+    .s7 .card:hover { border-color: #ffc850; box-shadow: 0 8px 32px rgba(255,200,80,0.12); }
+    .s8 .card:hover { border-color: #7c6aff; box-shadow: 0 8px 32px rgba(124,106,255,0.12); }
+    .s9 .card:hover { border-color: #ff6a9b; box-shadow: 0 8px 32px rgba(255,106,155,0.12); }
+    .s10 .card:hover { border-color: #6affda; box-shadow: 0 8px 32px rgba(106,255,218,0.12); }
+    .s11 .card:hover { border-color: #ffc850; box-shadow: 0 8px 32px rgba(255,200,80,0.12); }
+
+    /* different code colors per section */
+    .s1 .card-method code { color: #ff6a9b; border-color: rgba(255,106,155,0.2); }
+    .s2 .card-method code { color: #6affda; border-color: rgba(106,255,218,0.2); }
+    .s3 .card-method code { color: #ffc850; border-color: rgba(255,200,80,0.2); }
+    .s4 .card-method code { color: #7c6aff; border-color: rgba(124,106,255,0.2); }
+    .s5 .card-method code { color: #ff6a9b; border-color: rgba(255,106,155,0.2); }
+    .s6 .card-method code { color: #6affda; border-color: rgba(106,255,218,0.2); }
+    .s7 .card-method code { color: #ffc850; border-color: rgba(255,200,80,0.2); }
+    .s8 .card-method code { color: #7c6aff; border-color: rgba(124,106,255,0.2); }
+    .s9 .card-method code { color: #ff6a9b; border-color: rgba(255,106,155,0.2); }
+    .s10 .card-method code { color: #6affda; border-color: rgba(106,255,218,0.2); }
+    .s11 .card-method code { color: #ffc850; border-color: rgba(255,200,80,0.2); }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 8px 0 48px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 28px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .section:nth-child(1)  { animation-delay: 0.05s; }
+    .section:nth-child(2)  { animation-delay: 0.10s; }
+    .section:nth-child(3)  { animation-delay: 0.15s; }
+    .section:nth-child(4)  { animation-delay: 0.20s; }
+    .section:nth-child(5)  { animation-delay: 0.25s; }
+    .section:nth-child(6)  { animation-delay: 0.30s; }
+    .section:nth-child(7)  { animation-delay: 0.35s; }
+    .section:nth-child(8)  { animation-delay: 0.40s; }
+    .section:nth-child(9)  { animation-delay: 0.45s; }
+    .section:nth-child(10) { animation-delay: 0.50s; }
+    .section:nth-child(11) { animation-delay: 0.55s; }
+    .section:nth-child(12) { animation-delay: 0.60s; }
+
+    /* Search */
+    .search-bar {
+      position: relative;
+      max-width: 480px;
+      margin: 32px auto 0;
+      animation: fadeDown 0.6s 0.4s ease both;
+    }
+    .search-bar input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 16px 11px 42px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .search-bar input::placeholder { color: var(--muted); }
+    .search-bar input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,106,255,0.15);
+    }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 16px;
+      pointer-events: none;
+    }
+
+    .no-results {
+      display: none;
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="badge">📋 Reference Guide</div>
+  <h1>Playwright <span>Browser Actions</span></h1>
+  <p class="subtitle">A complete reference of all browser automation actions available in Playwright</p>
+
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search" placeholder="Search actions e.g. click, goto, route..." autocomplete="off" />
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">12</div><div class="stat-label">Categories</div></div>
+    <div class="stat"><div class="stat-num">70+</div><div class="stat-label">Actions</div></div>
+    <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Possibilities</div></div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#mouse"><span class="nav-icon">🖱️</span> Mouse</a>
+    <a href="#keyboard"><span class="nav-icon">⌨️</span> Keyboard</a>
+    <a href="#forms"><span class="nav-icon">✅</span> Forms</a>
+    <a href="#navigation"><span class="nav-icon">🌐</span> Navigation</a>
+    <a href="#waiting"><span class="nav-icon">🔍</span> Waiting</a>
+    <a href="#visual"><span class="nav-icon">📸</span> Visual</a>
+    <a href="#js"><span class="nav-icon">📦</span> JavaScript</a>
+    <a href="#frames"><span class="nav-icon">🗂️</span> Frames & Tabs</a>
+    <a href="#network"><span class="nav-icon">🌍</span> Network</a>
+    <a href="#storage"><span class="nav-icon">🍪</span> Storage</a>
+    <a href="#device"><span class="nav-icon">📱</span> Device</a>
+    <a href="#introspection"><span class="nav-icon">🔎</span> Introspection</a>
+    <a href="#dialogs"><span class="nav-icon">📂</span> Dialogs</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+  <div class="no-results" id="no-results">No actions found matching your search.</div>
+
+  <!-- 1. Mouse -->
+  <section class="section s0" id="mouse">
+    <div class="section-header">
+      <div class="section-icon">🖱️</div>
+      <span class="section-title">Mouse &amp; Click Actions</span>
+      <span class="section-count">7 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>click()</code></div><div class="card-desc">Single left-click on an element</div></div>
+      <div class="card"><div class="card-method"><code>dblclick()</code></div><div class="card-desc">Double-click on an element</div></div>
+      <div class="card"><div class="card-method"><code>click({ button: 'right' })</code></div><div class="card-desc">Right-click / context menu trigger</div></div>
+      <div class="card"><div class="card-method"><code>hover()</code></div><div class="card-desc">Move mouse over an element</div></div>
+      <div class="card"><div class="card-method"><code>dragAndDrop()</code></div><div class="card-desc">Drag from one element and drop onto another</div></div>
+      <div class="card"><div class="card-method"><code>mouse.move() / .down() / .up()</code></div><div class="card-desc">Raw low-level mouse control</div></div>
+      <div class="card"><div class="card-method"><code>tap()</code></div><div class="card-desc">Tap gesture for touch/mobile emulation</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 2. Keyboard -->
+  <section class="section s1" id="keyboard">
+    <div class="section-header">
+      <div class="section-icon">⌨️</div>
+      <span class="section-title">Keyboard &amp; Input Actions</span>
+      <span class="section-count">6 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>fill()</code></div><div class="card-desc">Clear and type into an input field instantly</div></div>
+      <div class="card"><div class="card-method"><code>type()</code></div><div class="card-desc">Type text character by character, triggering key events</div></div>
+      <div class="card"><div class="card-method"><code>press()</code></div><div class="card-desc">Press a specific key e.g. Enter, Tab, Escape</div></div>
+      <div class="card"><div class="card-method"><code>keyboard.down() / .up()</code></div><div class="card-desc">Hold or release a specific keyboard key</div></div>
+      <div class="card"><div class="card-method"><code>keyboard.insertText()</code></div><div class="card-desc">Insert text without firing individual key events</div></div>
+      <div class="card"><div class="card-method"><code>clear()</code></div><div class="card-desc">Clear the current value of an input field</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 3. Forms -->
+  <section class="section s2" id="forms">
+    <div class="section-header">
+      <div class="section-icon">✅</div>
+      <span class="section-title">Form Actions</span>
+      <span class="section-count">6 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>check()</code></div><div class="card-desc">Check a checkbox or radio button</div></div>
+      <div class="card"><div class="card-method"><code>uncheck()</code></div><div class="card-desc">Uncheck a checkbox</div></div>
+      <div class="card"><div class="card-method"><code>selectOption()</code></div><div class="card-desc">Select option(s) from a &lt;select&gt; dropdown</div></div>
+      <div class="card"><div class="card-method"><code>setInputFiles()</code></div><div class="card-desc">Upload files via a file input element</div></div>
+      <div class="card"><div class="card-method"><code>focus()</code></div><div class="card-desc">Focus on a specific element</div></div>
+      <div class="card"><div class="card-method"><code>blur()</code></div><div class="card-desc">Remove focus (blur) from an element</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 4. Navigation -->
+  <section class="section s3" id="navigation">
+    <div class="section-header">
+      <div class="section-icon">🌐</div>
+      <span class="section-title">Navigation Actions</span>
+      <span class="section-count">5 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>goto()</code></div><div class="card-desc">Navigate the page to a specified URL</div></div>
+      <div class="card"><div class="card-method"><code>goBack() / goForward()</code></div><div class="card-desc">Navigate browser history back or forward</div></div>
+      <div class="card"><div class="card-method"><code>reload()</code></div><div class="card-desc">Reload the currently loaded page</div></div>
+      <div class="card"><div class="card-method"><code>waitForURL()</code></div><div class="card-desc">Wait until the page URL matches a pattern</div></div>
+      <div class="card"><div class="card-method"><code>waitForNavigation()</code></div><div class="card-desc">Wait for a page navigation event to complete</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 5. Waiting -->
+  <section class="section s4" id="waiting">
+    <div class="section-header">
+      <div class="section-icon">🔍</div>
+      <span class="section-title">Waiting &amp; Assertion Actions</span>
+      <span class="section-count">6 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>waitForSelector()</code></div><div class="card-desc">Wait for an element to appear in the DOM</div></div>
+      <div class="card"><div class="card-method"><code>waitForLoadState()</code></div><div class="card-desc">Wait for load, domcontentloaded, or networkidle</div></div>
+      <div class="card"><div class="card-method"><code>waitForResponse()</code></div><div class="card-desc">Wait for a specific network response to arrive</div></div>
+      <div class="card"><div class="card-method"><code>waitForRequest()</code></div><div class="card-desc">Wait for a specific network request to be made</div></div>
+      <div class="card"><div class="card-method"><code>waitForTimeout()</code></div><div class="card-desc">Wait for a fixed duration in milliseconds</div></div>
+      <div class="card"><div class="card-method"><code>waitForFunction()</code></div><div class="card-desc">Wait until a JavaScript function returns truthy</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 6. Visual -->
+  <section class="section s5" id="visual">
+    <div class="section-header">
+      <div class="section-icon">📸</div>
+      <span class="section-title">Screenshot &amp; Visual Actions</span>
+      <span class="section-count">3 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>screenshot()</code></div><div class="card-desc">Capture a screenshot of the page or a specific element</div></div>
+      <div class="card"><div class="card-method"><code>pdf()</code></div><div class="card-desc">Generate a PDF of the current page</div></div>
+      <div class="card"><div class="card-method"><code>video (context option)</code></div><div class="card-desc">Record a full video of the browser session</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 7. JavaScript -->
+  <section class="section s6" id="js">
+    <div class="section-header">
+      <div class="section-icon">📦</div>
+      <span class="section-title">JavaScript Execution</span>
+      <span class="section-count">5 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>evaluate()</code></div><div class="card-desc">Run JS in browser context and return a serializable value</div></div>
+      <div class="card"><div class="card-method"><code>evaluateHandle()</code></div><div class="card-desc">Run JS and return a DOM element handle</div></div>
+      <div class="card"><div class="card-method"><code>exposeFunction()</code></div><div class="card-desc">Expose a Node.js function to browser-side JS</div></div>
+      <div class="card"><div class="card-method"><code>addScriptTag()</code></div><div class="card-desc">Inject a &lt;script&gt; tag into the page</div></div>
+      <div class="card"><div class="card-method"><code>addStyleTag()</code></div><div class="card-desc">Inject a &lt;style&gt; tag into the page</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 8. Frames & Tabs -->
+  <section class="section s7" id="frames">
+    <div class="section-header">
+      <div class="section-icon">🗂️</div>
+      <span class="section-title">Frame &amp; Tab Actions</span>
+      <span class="section-count">5 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>frame() / frameLocator()</code></div><div class="card-desc">Switch to or interact with elements inside iframes</div></div>
+      <div class="card"><div class="card-method"><code>context.newPage()</code></div><div class="card-desc">Open a new browser tab in the current context</div></div>
+      <div class="card"><div class="card-method"><code>page.bringToFront()</code></div><div class="card-desc">Bring a specific tab to the foreground/focus</div></div>
+      <div class="card"><div class="card-method"><code>context.pages()</code></div><div class="card-desc">List all open pages and tabs in the context</div></div>
+      <div class="card"><div class="card-method"><code>page.close()</code></div><div class="card-desc">Close a tab or page</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 9. Network -->
+  <section class="section s8" id="network">
+    <div class="section-header">
+      <div class="section-icon">🌍</div>
+      <span class="section-title">Network &amp; Interception</span>
+      <span class="section-count">6 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>route()</code></div><div class="card-desc">Intercept and modify or mock outgoing network requests</div></div>
+      <div class="card"><div class="card-method"><code>unroute()</code></div><div class="card-desc">Remove a previously registered network route handler</div></div>
+      <div class="card"><div class="card-method"><code>context.setExtraHTTPHeaders()</code></div><div class="card-desc">Add custom HTTP headers to all outgoing requests</div></div>
+      <div class="card"><div class="card-method"><code>page.setOffline()</code></div><div class="card-desc">Simulate offline / no network connection mode</div></div>
+      <div class="card"><div class="card-method"><code>request.fulfill()</code></div><div class="card-desc">Respond to an intercepted request with custom data</div></div>
+      <div class="card"><div class="card-method"><code>request.abort() / .continue()</code></div><div class="card-desc">Abort or pass through an intercepted request</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 10. Storage -->
+  <section class="section s9" id="storage">
+    <div class="section-header">
+      <div class="section-icon">🍪</div>
+      <span class="section-title">Cookies &amp; Storage</span>
+      <span class="section-count">5 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>context.cookies()</code></div><div class="card-desc">Retrieve all current cookies in the context</div></div>
+      <div class="card"><div class="card-method"><code>context.addCookies()</code></div><div class="card-desc">Set or inject cookies into the browser context</div></div>
+      <div class="card"><div class="card-method"><code>context.clearCookies()</code></div><div class="card-desc">Clear all cookies from the current context</div></div>
+      <div class="card"><div class="card-method"><code>context.storageState()</code></div><div class="card-desc">Save or restore full auth state (cookies + localStorage)</div></div>
+      <div class="card"><div class="card-method"><code>evaluate(() => localStorage...)</code></div><div class="card-desc">Read/write localStorage via JS evaluation</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 11. Device -->
+  <section class="section s10" id="device">
+    <div class="section-header">
+      <div class="section-icon">📱</div>
+      <span class="section-title">Device &amp; Viewport Actions</span>
+      <span class="section-count">5 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>setViewportSize()</code></div><div class="card-desc">Resize the browser viewport dimensions</div></div>
+      <div class="card"><div class="card-method"><code>emulate()</code></div><div class="card-desc">Emulate a device profile (mobile, tablet, etc.)</div></div>
+      <div class="card"><div class="card-method"><code>setGeolocation()</code></div><div class="card-desc">Mock the browser's GPS geolocation coordinates</div></div>
+      <div class="card"><div class="card-method"><code>grantPermissions()</code></div><div class="card-desc">Grant browser permissions like camera, microphone</div></div>
+      <div class="card"><div class="card-method"><code>context.setHTTPCredentials()</code></div><div class="card-desc">Set HTTP Basic Auth credentials for all requests</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 12. Introspection -->
+  <section class="section s11" id="introspection">
+    <div class="section-header">
+      <div class="section-icon">🔎</div>
+      <span class="section-title">Element Introspection</span>
+      <span class="section-count">9 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>textContent()</code></div><div class="card-desc">Get raw text content of an element including hidden</div></div>
+      <div class="card"><div class="card-method"><code>innerText()</code></div><div class="card-desc">Get only the visible rendered text of an element</div></div>
+      <div class="card"><div class="card-method"><code>innerHTML()</code></div><div class="card-desc">Get the inner HTML markup of an element</div></div>
+      <div class="card"><div class="card-method"><code>getAttribute()</code></div><div class="card-desc">Read the value of a specific HTML attribute</div></div>
+      <div class="card"><div class="card-method"><code>inputValue()</code></div><div class="card-desc">Get the current value of an input, select, or textarea</div></div>
+      <div class="card"><div class="card-method"><code>isVisible()</code></div><div class="card-desc">Check whether an element is currently visible</div></div>
+      <div class="card"><div class="card-method"><code>isHidden()</code></div><div class="card-desc">Check whether an element is hidden from view</div></div>
+      <div class="card"><div class="card-method"><code>isEnabled() / isChecked()</code></div><div class="card-desc">Check element enabled or checked state</div></div>
+      <div class="card"><div class="card-method"><code>boundingBox()</code></div><div class="card-desc">Get position, width, and height of an element</div></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- 13. Dialogs -->
+  <section class="section s0" id="dialogs">
+    <div class="section-header">
+      <div class="section-icon">📂</div>
+      <span class="section-title">Dialog &amp; Popup Handling</span>
+      <span class="section-count">4 actions</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-method"><code>page.on('dialog', ...)</code></div><div class="card-desc">Listen for alert, confirm, and prompt dialogs</div></div>
+      <div class="card"><div class="card-method"><code>dialog.accept()</code></div><div class="card-desc">Accept (confirm/OK) a dialog box</div></div>
+      <div class="card"><div class="card-method"><code>dialog.dismiss()</code></div><div class="card-desc">Dismiss (cancel) a dialog box</div></div>
+      <div class="card"><div class="card-method"><code>context.on('page', ...)</code></div><div class="card-desc">Catch and handle new popup windows or tabs</div></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Playwright Browser Actions Reference &nbsp;·&nbsp; All rights belong to the Playwright project &nbsp;·&nbsp; microsoft.github.io/playwright
+</footer>
+
+<script>
+  const searchInput = document.getElementById('search');
+  const noResults = document.getElementById('no-results');
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase().trim();
+    const sections = document.querySelectorAll('section.section');
+    const dividers = document.querySelectorAll('.divider');
+    let anyVisible = false;
+
+    sections.forEach(section => {
+      const cards = section.querySelectorAll('.card');
+      let sectionVisible = false;
+
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const match = !query || text.includes(query);
+        card.style.display = match ? '' : 'none';
+        if (match) sectionVisible = true;
+      });
+
+      section.style.display = sectionVisible ? '' : 'none';
+      if (sectionVisible) anyVisible = true;
+    });
+
+    dividers.forEach(d => d.style.display = query ? 'none' : '');
+    noResults.style.display = anyVisible ? 'none' : 'block';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Playwright C# — Complete API Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06070d;
+  --surface:#0d0f1a;
+  --card:#111420;
+  --card-hover:#161a28;
+  --border:#1e2235;
+  --border-bright:#2d3250;
+  --accent:#4f8ef7;
+  --accent2:#f74fa8;
+  --accent3:#4ff7b0;
+  --accent4:#f7c34f;
+  --accent5:#9b4ff7;
+  --text:#dde2f0;
+  --muted:#5a637a;
+  --code:#4ff7b0;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ── GRAIN ── */
+body::before{content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  background-size:200px;pointer-events:none;z-index:999;opacity:0.5}
+
+/* ── HEADER ── */
+header{position:relative;z-index:10;background:var(--surface);border-bottom:1px solid var(--border)}
+.header-top{max-width:1400px;margin:0 auto;padding:40px 28px 32px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:start}
+.header-left{}
+.pkg-badge{display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent3);background:rgba(79,247,176,0.08);border:1px solid rgba(79,247,176,0.2);padding:5px 12px;border-radius:3px;margin-bottom:20px;letter-spacing:0.04em}
+.pkg-dot{width:6px;height:6px;border-radius:50%;background:var(--accent3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,5vw,5.5rem);letter-spacing:0.06em;line-height:1;color:var(--text)}
+h1 .highlight{color:var(--accent)}
+.subtitle{margin-top:12px;font-size:14px;color:var(--muted);font-weight:300;letter-spacing:0.02em;max-width:520px;line-height:1.7}
+
+.stats-grid{display:flex;flex-direction:column;gap:12px;align-items:flex-end}
+.stat-pill{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);padding:10px 16px;border-radius:6px;min-width:160px}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:0.05em;line-height:1}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em}
+
+/* ── SEARCH ── */
+.search-wrap{background:var(--bg);border-bottom:1px solid var(--border);padding:14px 28px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.search-inner{max-width:1400px;margin:0 auto;display:flex;gap:12px;align-items:center}
+.search-box{position:relative;flex:1;max-width:480px}
+.search-box input{width:100%;background:var(--card);border:1px solid var(--border-bright);border-radius:6px;padding:9px 14px 9px 38px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12.5px;outline:none;transition:border-color .2s,box-shadow .2s}
+.search-box input::placeholder{color:var(--muted)}
+.search-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,.12)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+.filter-tags{display:flex;gap:8px;flex-wrap:wrap}
+.ftag{cursor:pointer;font-size:11px;font-family:'IBM Plex Mono',monospace;padding:5px 12px;border-radius:3px;border:1px solid var(--border-bright);color:var(--muted);background:transparent;transition:all .15s;user-select:none;text-transform:uppercase;letter-spacing:0.06em}
+.ftag:hover{border-color:var(--accent);color:var(--accent)}
+.ftag.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.result-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+
+/* ── MAIN ── */
+main{max-width:1400px;margin:0 auto;padding:36px 28px 80px;position:relative;z-index:10}
+
+/* ── SECTION ── */
+.section{margin-bottom:52px}
+.section[data-hidden]{display:none}
+.section-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.section-icon{font-size:18px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:0.08em;color:var(--text)}
+.section-class{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 9px;border-radius:3px;border:1px solid;opacity:.8;margin-left:4px}
+.section-count{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* ── CARDS ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;transition:background .15s,border-color .2s,transform .2s;cursor:default;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;pointer-events:none}
+.card:hover{background:var(--card-hover);transform:translateY(-1px)}
+.card[data-hidden]{display:none}
+
+.card-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.card-method{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;flex:1;line-height:1.4;word-break:break-all}
+.card-method code{display:inline-block}
+.card-return{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 7px;border-radius:3px;background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border-bright);flex-shrink:0;margin-top:2px;align-self:flex-start}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.65}
+.card-example{margin-top:10px;background:rgba(0,0,0,0.3);border-radius:5px;border-left:2px solid;padding:8px 10px;overflow-x:auto}
+.card-example pre{font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.6;white-space:pre;color:rgba(221,226,240,0.75)}
+.card-tag{display:inline-block;font-size:9px;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:0.1em;padding:2px 6px;border-radius:2px;margin-right:4px;margin-top:6px}
+
+/* ── COLOUR THEMES PER SECTION ── */
+/* Page */
+.s-page .section-icon{background:rgba(79,142,247,.12)}
+.s-page .section-class{color:var(--accent);border-color:rgba(79,142,247,.3)}
+.s-page .card:hover{border-color:rgba(79,142,247,.4)}
+.s-page .card-method code{color:var(--accent)}
+.s-page .card-example{border-color:var(--accent)}
+/* Locator */
+.s-locator .section-icon{background:rgba(247,79,168,.12)}
+.s-locator .section-class{color:var(--accent2);border-color:rgba(247,79,168,.3)}
+.s-locator .card:hover{border-color:rgba(247,79,168,.4)}
+.s-locator .card-method code{color:var(--accent2)}
+.s-locator .card-example{border-color:var(--accent2)}
+/* BrowserContext */
+.s-context .section-icon{background:rgba(79,247,176,.12)}
+.s-context .section-class{color:var(--accent3);border-color:rgba(79,247,176,.3)}
+.s-context .card:hover{border-color:rgba(79,247,176,.4)}
+.s-context .card-method code{color:var(--accent3)}
+.s-context .card-example{border-color:var(--accent3)}
+/* Browser */
+.s-browser .section-icon{background:rgba(247,195,79,.12)}
+.s-browser .section-class{color:var(--accent4);border-color:rgba(247,195,79,.3)}
+.s-browser .card:hover{border-color:rgba(247,195,79,.4)}
+.s-browser .card-method code{color:var(--accent4)}
+.s-browser .card-example{border-color:var(--accent4)}
+/* Keyboard/Mouse */
+.s-input .section-icon{background:rgba(155,79,247,.12)}
+.s-input .section-class{color:var(--accent5);border-color:rgba(155,79,247,.3)}
+.s-input .card:hover{border-color:rgba(155,79,247,.4)}
+.s-input .card-method code{color:var(--accent5)}
+.s-input .card-example{border-color:var(--accent5)}
+/* Assertions */
+.s-assert .section-icon{background:rgba(79,247,176,.12)}
+.s-assert .section-class{color:#4ff7b0;border-color:rgba(79,247,176,.3)}
+.s-assert .card:hover{border-color:rgba(79,247,176,.4)}
+.s-assert .card-method code{color:#4ff7b0}
+.s-assert .card-example{border-color:#4ff7b0}
+/* API */
+.s-api .section-icon{background:rgba(247,79,79,.12)}
+.s-api .section-class{color:#f74f4f;border-color:rgba(247,79,79,.3)}
+.s-api .card:hover{border-color:rgba(247,79,79,.4)}
+.s-api .card-method code{color:#f74f4f}
+.s-api .card-example{border-color:#f74f4f}
+/* Tracing/Clock */
+.s-devtools .section-icon{background:rgba(247,195,79,.12)}
+.s-devtools .section-class{color:#f0b429;border-color:rgba(247,195,79,.3)}
+.s-devtools .card:hover{border-color:rgba(247,195,79,.4)}
+.s-devtools .card-method code{color:#f0b429}
+.s-devtools .card-example{border-color:#f0b429}
+
+/* ── TAGS ── */
+.tag-new{background:rgba(79,247,176,.1);color:var(--accent3);border:1px solid rgba(79,247,176,.25)}
+.tag-deprecated{background:rgba(247,79,79,.1);color:#f74f4f;border:1px solid rgba(247,79,79,.25)}
+.tag-chromium{background:rgba(79,142,247,.1);color:var(--accent);border:1px solid rgba(79,142,247,.25)}
+.tag-async{background:rgba(155,79,247,.08);color:var(--accent5);border:1px solid rgba(155,79,247,.2)}
+
+/* ── NO RESULTS ── */
+.no-results{display:none;text-align:center;padding:80px 24px;color:var(--muted);font-size:14px}
+.no-results span{display:block;font-size:2rem;margin-bottom:12px}
+
+/* ── DIVIDER ── */
+.section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin-bottom:52px}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:24px;border-top:1px solid var(--border);color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;position:relative;z-index:10;letter-spacing:0.06em}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .header-top{grid-template-columns:1fr}
+  .stats-grid{flex-direction:row;flex-wrap:wrap;align-items:flex-start}
+  .cards{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">
+    <div class="header-left">
+      <div class="pkg-badge"><span class="pkg-dot"></span>Microsoft.Playwright &nbsp;·&nbsp; C# / .NET</div>
+      <h1>PLAYWRIGHT<br/><span class="highlight">C# API</span><br/>REFERENCE</h1>
+      <p class="subtitle">Complete reference for every class, method, assertion, and action available in Playwright for .NET — sourced from official documentation.</p>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-pill"><span class="stat-num" style="color:var(--accent)">9</span><span class="stat-label">Classes</span></div>
+      <div class="stat-pill"><span class="stat-num" style="color:var(--accent2)">120+</span><span class="stat-label">Methods</span></div>
+      <div class="stat-pill"><span class="stat-num" style="color:var(--accent3)">25</span><span class="stat-label">Assertions</span></div>
+      <div class="stat-pill"><span class="stat-num" style="color:var(--accent4)">v1.50+</span><span class="stat-label">Version</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- SEARCH + FILTERS -->
+<div class="search-wrap">
+  <div class="search-inner">
+    <div class="search-box">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Search methods, e.g. GotoAsync, RouteAsync..." autocomplete="off"/>
+    </div>
+    <div class="filter-tags" id="filter-tags">
+      <span class="ftag active" data-filter="all">All</span>
+      <span class="ftag" data-filter="s-page">Page</span>
+      <span class="ftag" data-filter="s-locator">Locator</span>
+      <span class="ftag" data-filter="s-context">Context</span>
+      <span class="ftag" data-filter="s-browser">Browser</span>
+      <span class="ftag" data-filter="s-input">Keyboard/Mouse</span>
+      <span class="ftag" data-filter="s-assert">Assertions</span>
+      <span class="ftag" data-filter="s-api">API Testing</span>
+      <span class="ftag" data-filter="s-devtools">Tracing/Clock</span>
+    </div>
+    <span class="result-count" id="result-count"></span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main id="main">
+<div class="no-results" id="no-results"><span>🔍</span>No methods matched your search.</div>
+
+<!-- ══════════════════════════════════════════
+     1. PAGE NAVIGATION
+═══════════════════════════════════════════ -->
+<section class="section s-page" data-section="s-page">
+  <div class="section-head">
+    <div class="section-icon">🌐</div>
+    <span class="section-title">Page — Navigation</span>
+    <span class="section-class">IPage</span>
+    <span class="section-count">5 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.GotoAsync(url)</code></span><span class="card-return">Task&lt;IResponse&gt;</span></div>
+      <div class="card-desc">Navigates to the given URL. Waits for load by default. Supports waitUntil options: <em>load, domcontentloaded, networkidle, commit</em>.</div>
+      <div class="card-example"><pre>await page.GotoAsync("https://example.com");
+await page.GotoAsync("https://example.com", new() {
+  WaitUntil = WaitUntilState.NetworkIdle
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.GoBackAsync()</code></span><span class="card-return">Task&lt;IResponse?&gt;</span></div>
+      <div class="card-desc">Navigate to the previous page in browser history.</div>
+      <div class="card-example"><pre>await page.GoBackAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.GoForwardAsync()</code></span><span class="card-return">Task&lt;IResponse?&gt;</span></div>
+      <div class="card-desc">Navigate to the next page in browser history.</div>
+      <div class="card-example"><pre>await page.GoForwardAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.ReloadAsync()</code></span><span class="card-return">Task&lt;IResponse?&gt;</span></div>
+      <div class="card-desc">Reloads the current page, as if the user triggered a browser reload.</div>
+      <div class="card-example"><pre>await page.ReloadAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.WaitForURLAsync(url)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Waits for the page URL to match a given string, glob pattern, or regex.</div>
+      <div class="card-example"><pre>await page.WaitForURLAsync("**/dashboard");
+await page.WaitForURLAsync(new Regex("/order/\\d+"));</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     2. PAGE CONTENT & STATE
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-page" data-section="s-page">
+  <div class="section-head">
+    <div class="section-icon">📄</div>
+    <span class="section-title">Page — Content &amp; State</span>
+    <span class="section-class">IPage</span>
+    <span class="section-count">10 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.ContentAsync()</code></span><span class="card-return">Task&lt;string&gt;</span></div>
+      <div class="card-desc">Returns the full HTML of the page including doctype.</div>
+      <div class="card-example"><pre>var html = await page.ContentAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.SetContentAsync(html)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Sets the HTML content of the page directly.</div>
+      <div class="card-example"><pre>await page.SetContentAsync("&lt;h1&gt;Hello&lt;/h1&gt;");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.TitleAsync()</code></span><span class="card-return">Task&lt;string&gt;</span></div>
+      <div class="card-desc">Returns the page title (document.title).</div>
+      <div class="card-example"><pre>var title = await page.TitleAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.Url</code></span><span class="card-return">string</span></div>
+      <div class="card-desc">Property returning the current page URL.</div>
+      <div class="card-example"><pre>Console.WriteLine(page.Url);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.ScreenshotAsync()</code></span><span class="card-return">Task&lt;byte[]&gt;</span></div>
+      <div class="card-desc">Takes a screenshot of the full page or viewport. Supports PNG and JPEG, full page, clip options.</div>
+      <div class="card-example"><pre>await page.ScreenshotAsync(new() { Path = "shot.png" });
+// Full page screenshot
+await page.ScreenshotAsync(new() {
+  FullPage = true, Path = "full.png"
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.PdfAsync()</code></span><span class="card-return">Task&lt;byte[]&gt;</span></div>
+      <div class="card-desc">Generates a PDF of the page. Chromium only.</div>
+      <div class="card-example"><pre>await page.PdfAsync(new() { Path = "page.pdf",
+  Format = "A4" });</pre></div>
+      <span class="card-tag tag-chromium">Chromium only</span>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.EvaluateAsync(script)</code></span><span class="card-return">Task&lt;T&gt;</span></div>
+      <div class="card-desc">Executes JavaScript in browser context and returns the result.</div>
+      <div class="card-example"><pre>var width = await page.EvaluateAsync&lt;int&gt;(
+  "() => window.innerWidth");
+// Pass args
+var result = await page.EvaluateAsync&lt;string&gt;(
+  "([a,b]) => a + b", new[] {"Hello ", "World"});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.EvaluateHandleAsync(script)</code></span><span class="card-return">Task&lt;IJSHandle&gt;</span></div>
+      <div class="card-desc">Like EvaluateAsync but returns a JSHandle to the result object.</div>
+      <div class="card-example"><pre>var handle = await page.EvaluateHandleAsync(
+  "() => document.body");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.AddScriptTagAsync()</code></span><span class="card-return">Task&lt;IElementHandle&gt;</span></div>
+      <div class="card-desc">Injects a &lt;script&gt; tag by URL, path, or raw content.</div>
+      <div class="card-example"><pre>await page.AddScriptTagAsync(new() {
+  Url = "https://cdn.example.com/lib.js"
+});
+await page.AddScriptTagAsync(new() {
+  Content = "window.foo = 42;"
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.AddStyleTagAsync()</code></span><span class="card-return">Task&lt;IElementHandle&gt;</span></div>
+      <div class="card-desc">Injects a &lt;link&gt; or &lt;style&gt; tag by URL, path, or raw CSS content.</div>
+      <div class="card-example"><pre>await page.AddStyleTagAsync(new() {
+  Content = "body { background: red; }"
+});</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     3. PAGE EVENTS & WAITING
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-page" data-section="s-page">
+  <div class="section-head">
+    <div class="section-icon">⏳</div>
+    <span class="section-title">Page — Waiting &amp; Events</span>
+    <span class="section-class">IPage</span>
+    <span class="section-count">10 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.WaitForLoadStateAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Waits for load, domcontentloaded, or networkidle state.</div>
+      <div class="card-example"><pre>await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+await page.WaitForLoadStateAsync(
+  LoadState.DOMContentLoaded);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.WaitForNavigationAsync()</code></span><span class="card-return">Task&lt;IResponse?&gt;</span></div>
+      <div class="card-desc">Waits for a navigation event to complete. Useful when wrapping actions that trigger navigation.</div>
+      <div class="card-example"><pre>await page.RunAndWaitForNavigationAsync(
+  async () => {
+    await page.ClickAsync("a");
+  }, new() { UrlString = "**/about" });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.WaitForSelectorAsync(selector)</code></span><span class="card-return">Task&lt;IElementHandle?&gt;</span></div>
+      <div class="card-desc">Waits for an element matching the selector to be visible or attached. Prefer Locator.WaitForAsync() for new code.</div>
+      <div class="card-example"><pre>await page.WaitForSelectorAsync(".loaded");
+await page.WaitForSelectorAsync("input",
+  new() { State = WaitForSelectorState.Visible });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.WaitForFunctionAsync(fn)</code></span><span class="card-return">Task&lt;IJSHandle&gt;</span></div>
+      <div class="card-desc">Polls until a JS function returns a truthy value.</div>
+      <div class="card-example"><pre>await page.WaitForFunctionAsync(
+  "() => window.loaded === true");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.WaitForRequestAsync(url)</code></span><span class="card-return">Task&lt;IRequest&gt;</span></div>
+      <div class="card-desc">Waits for a network request matching a URL/glob/regex.</div>
+      <div class="card-example"><pre>var req = await page.RunAndWaitForRequestAsync(
+  async () => await page.ClickAsync("#load"),
+  "**/api/users");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.WaitForResponseAsync(url)</code></span><span class="card-return">Task&lt;IResponse&gt;</span></div>
+      <div class="card-desc">Waits for a network response matching a URL/glob/regex/predicate.</div>
+      <div class="card-example"><pre>var resp = await page.RunAndWaitForResponseAsync(
+  async () => await page.ClickAsync("#fetch"),
+  r => r.Url.Contains("/api") &amp;&amp; r.Status == 200);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.WaitForTimeoutAsync(ms)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Waits for a fixed number of milliseconds. Use sparingly.</div>
+      <div class="card-example"><pre>await page.WaitForTimeoutAsync(500);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.SetDefaultTimeout(ms)</code></span><span class="card-return">void</span></div>
+      <div class="card-desc">Sets a default timeout for all page operations.</div>
+      <div class="card-example"><pre>page.SetDefaultTimeout(60000); // 60s</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.SetDefaultNavigationTimeout(ms)</code></span><span class="card-return">void</span></div>
+      <div class="card-desc">Sets a default timeout for navigation operations only.</div>
+      <div class="card-example"><pre>page.SetDefaultNavigationTimeout(30000);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.AddLocatorHandlerAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Registers a handler that runs when an overlay or dialog locator appears before any action. Ideal for handling cookie banners or pop-ups automatically.</div>
+      <div class="card-example"><pre>await page.AddLocatorHandlerAsync(
+  page.GetByText("Cookie consent"),
+  async () => {
+    await page.GetByRole(AriaRole.Button,
+      new() { Name = "Accept" }).ClickAsync();
+  });</pre></div>
+      <span class="card-tag tag-new">v1.42+</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     4. PAGE INTERACTIONS
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-page" data-section="s-page">
+  <div class="section-head">
+    <div class="section-icon">🖱️</div>
+    <span class="section-title">Page — Interactions (legacy selectors)</span>
+    <span class="section-class">IPage</span>
+    <span class="section-count">9 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.ClickAsync(selector)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Clicks an element matching the CSS/XPath selector. Prefer Locator.ClickAsync() for modern code.</div>
+      <div class="card-example"><pre>await page.ClickAsync("button#submit");
+await page.ClickAsync("text=Login",
+  new() { Button = MouseButton.Right });</pre></div>
+      <span class="card-tag tag-deprecated">Use Locator API</span>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.DblClickAsync(selector)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Double-clicks an element matching the selector.</div>
+      <div class="card-example"><pre>await page.DblClickAsync(".item");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.FillAsync(selector, value)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Fills an input element with the given text, clearing existing content first.</div>
+      <div class="card-example"><pre>await page.FillAsync("#email", "user@test.com");
+await page.FillAsync("input[name=dob]",
+  "2000-01-01");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.TypeAsync(selector, text)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Types text character by character (fires keydown/keypress/keyup events). Deprecated — use FillAsync or PressSequentiallyAsync.</div>
+      <div class="card-example"><pre>await page.TypeAsync("#search", "Playwright",
+  new() { Delay = 100 });</pre></div>
+      <span class="card-tag tag-deprecated">Deprecated</span>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.PressAsync(selector, key)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Focuses the element and presses a key or key combination.</div>
+      <div class="card-example"><pre>await page.PressAsync("input", "Enter");
+await page.PressAsync("#field", "Control+A");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.CheckAsync(selector)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Checks a checkbox or radio button.</div>
+      <div class="card-example"><pre>await page.CheckAsync("input[type=checkbox]");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.UncheckAsync(selector)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Unchecks a checkbox.</div>
+      <div class="card-example"><pre>await page.UncheckAsync("#remember-me");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.SelectOptionAsync(selector, value)</code></span><span class="card-return">Task&lt;IReadOnlyList&lt;string&gt;&gt;</span></div>
+      <div class="card-desc">Selects one or multiple options in a &lt;select&gt; element.</div>
+      <div class="card-example"><pre>await page.SelectOptionAsync("#country", "US");
+await page.SelectOptionAsync("#multi",
+  new[] { "opt1", "opt2" });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.DragAndDropAsync(src, tgt)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Drags source element and drops onto target element.</div>
+      <div class="card-example"><pre>await page.DragAndDropAsync("#from", "#to");</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     5. PAGE SMART LOCATORS
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-page" data-section="s-page">
+  <div class="section-head">
+    <div class="section-icon">🎯</div>
+    <span class="section-title">Page — Smart Locators</span>
+    <span class="section-class">IPage → ILocator</span>
+    <span class="section-count">9 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.GetByRole(role, opts)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Locates element by ARIA role and accessible name. Most recommended locator strategy.</div>
+      <div class="card-example"><pre>page.GetByRole(AriaRole.Button,
+  new() { Name = "Sign in" })
+page.GetByRole(AriaRole.Heading,
+  new() { Level = 1 })</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.GetByText(text)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Locates element by visible text content. Supports string and Regex.</div>
+      <div class="card-example"><pre>page.GetByText("Welcome back")
+page.GetByText(new Regex("Welcome.*"),
+  new() { Exact = false })</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.GetByLabel(text)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Locates an input by its associated &lt;label&gt; text or aria-label.</div>
+      <div class="card-example"><pre>page.GetByLabel("Username")
+page.GetByLabel("Password")</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.GetByPlaceholder(text)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Locates an input by its placeholder attribute.</div>
+      <div class="card-example"><pre>page.GetByPlaceholder("Search...")
+page.GetByPlaceholder("name@example.com")</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.GetByTestId(id)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Locates element by data-testid attribute (configurable).</div>
+      <div class="card-example"><pre>page.GetByTestId("submit-btn")
+page.GetByTestId("nav-menu")</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.GetByAltText(text)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Locates an element (e.g. image) by its alt attribute.</div>
+      <div class="card-example"><pre>page.GetByAltText("Company logo")</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.GetByTitle(text)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Locates element by title attribute.</div>
+      <div class="card-example"><pre>page.GetByTitle("Close dialog")</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.Locator(selector)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Creates a locator by CSS selector, XPath, or text.</div>
+      <div class="card-example"><pre>page.Locator("css=button.primary")
+page.Locator("xpath=//table/tr")
+page.Locator("text=Submit")</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.FrameLocator(selector)</code></span><span class="card-return">IFrameLocator</span></div>
+      <div class="card-desc">Creates a FrameLocator to interact with elements inside an iframe.</div>
+      <div class="card-example"><pre>var frame = page.FrameLocator("#my-iframe");
+await frame.GetByRole(AriaRole.Button,
+  new() { Name = "Submit" }).ClickAsync();</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     6. PAGE NETWORK
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-page" data-section="s-page">
+  <div class="section-head">
+    <div class="section-icon">🌍</div>
+    <span class="section-title">Page — Network Interception</span>
+    <span class="section-class">IPage</span>
+    <span class="section-count">5 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.RouteAsync(url, handler)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Intercepts network requests matching URL pattern. Handler receives IRoute to fulfill, abort, or continue.</div>
+      <div class="card-example"><pre>await page.RouteAsync("**/api/**", async route => {
+  await route.FulfillAsync(new() {
+    Json = new { id = 1, name = "Mock" }
+  });
+});
+// Abort images
+await page.RouteAsync("**/*.{png,jpg}", r =>
+  r.AbortAsync());</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.UnrouteAsync(url)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Removes previously registered route handler.</div>
+      <div class="card-example"><pre>await page.UnrouteAsync("**/api/**");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.RouteFromHARAsync(har)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Serve network requests from a recorded HAR file.</div>
+      <div class="card-example"><pre>await page.RouteFromHARAsync("./mocks.har",
+  new() { Update = false });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.SetExtraHTTPHeadersAsync(headers)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Adds custom HTTP headers to every request made by the page.</div>
+      <div class="card-example"><pre>await page.SetExtraHTTPHeadersAsync(
+  new Dictionary&lt;string, string&gt; {
+    ["Authorization"] = "Bearer token123"
+  });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.SetOfflineAsync(offline)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Simulates offline mode for all network requests from the page.</div>
+      <div class="card-example"><pre>await page.SetOfflineAsync(true);
+// Test offline behavior...
+await page.SetOfflineAsync(false);</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     7. PAGE MISC
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-page" data-section="s-page">
+  <div class="section-head">
+    <div class="section-icon">⚙️</div>
+    <span class="section-title">Page — Misc &amp; Advanced</span>
+    <span class="section-class">IPage</span>
+    <span class="section-count">8 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.BringToFrontAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Activates and focuses the page tab.</div>
+      <div class="card-example"><pre>await page.BringToFrontAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.CloseAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Closes the page. Optionally runs beforeunload handlers.</div>
+      <div class="card-example"><pre>await page.CloseAsync();
+await page.CloseAsync(new() {
+  RunBeforeUnload = true });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.AddInitScriptAsync(script)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Adds a JS script evaluated on every new page/frame navigation, before any scripts run.</div>
+      <div class="card-example"><pre>await page.AddInitScriptAsync(
+  "Math.random = () => 0.42;");
+// Or from file:
+await page.AddInitScriptAsync(
+  scriptPath: "./preload.js");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.ExposeBindingAsync(name, fn)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Exposes a .NET function to the page's JavaScript context.</div>
+      <div class="card-example"><pre>await page.ExposeBindingAsync("log",
+  (_, args) => Console.WriteLine(args[0]));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.ExposeFunctionAsync(name, fn)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Simplified version of ExposeBinding — exposes a .NET function without source binding info.</div>
+      <div class="card-example"><pre>await page.ExposeFunctionAsync("sha256",
+  (string text) => Hash(text));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.EmulateMediaAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Emulates CSS media type (print/screen) or color scheme.</div>
+      <div class="card-example"><pre>await page.EmulateMediaAsync(new() {
+  Media = Media.Print,
+  ColorScheme = ColorScheme.Dark
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.SetViewportSizeAsync(w, h)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Resizes the browser viewport.</div>
+      <div class="card-example"><pre>await page.SetViewportSizeAsync(1280, 720);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.Frames / page.MainFrame</code></span><span class="card-return">IReadOnlyList&lt;IFrame&gt;</span></div>
+      <div class="card-desc">Access all frames or the main frame attached to this page.</div>
+      <div class="card-example"><pre>var frames = page.Frames;
+var main = page.MainFrame;
+var f = page.Frame("frameName");</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     8. PAGE DIALOG
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-page" data-section="s-page">
+  <div class="section-head">
+    <div class="section-icon">💬</div>
+    <span class="section-title">Page — Dialogs &amp; Popups</span>
+    <span class="section-class">IPage + IDialog</span>
+    <span class="section-count">6 items</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.Dialog += handler</code></span><span class="card-return">Event</span></div>
+      <div class="card-desc">Event fired when an alert, confirm, or prompt dialog appears.</div>
+      <div class="card-example"><pre>page.Dialog += async (_, dialog) => {
+  Console.WriteLine(dialog.Message);
+  await dialog.AcceptAsync();
+};</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await dialog.AcceptAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Accepts the dialog. Optionally pass a prompt response.</div>
+      <div class="card-example"><pre>await dialog.AcceptAsync("My input");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await dialog.DismissAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Dismisses (cancels) the dialog.</div>
+      <div class="card-example"><pre>await dialog.DismissAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>page.Popup += handler</code></span><span class="card-return">Event</span></div>
+      <div class="card-desc">Event fired when a new popup window/tab is opened (window.open or target=_blank).</div>
+      <div class="card-example"><pre>var popup = await page.RunAndWaitForPopupAsync(
+  async () => await page.ClickAsync("#open"));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.RunAndWaitForFileChooserAsync()</code></span><span class="card-return">Task&lt;IFileChooser&gt;</span></div>
+      <div class="card-desc">Waits for a file chooser dialog to be opened.</div>
+      <div class="card-example"><pre>var chooser = await page
+  .RunAndWaitForFileChooserAsync(async () =>
+    await page.GetByLabel("Upload").ClickAsync());
+await chooser.SetFilesAsync("./file.pdf");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.RunAndWaitForDownloadAsync()</code></span><span class="card-return">Task&lt;IDownload&gt;</span></div>
+      <div class="card-desc">Waits for a download event and returns the Download object.</div>
+      <div class="card-example"><pre>var dl = await page.RunAndWaitForDownloadAsync(
+  async () => await page.ClickAsync("#download"));
+await dl.SaveAsAsync("./report.pdf");</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     9. LOCATOR — ACTIONS
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-locator" data-section="s-locator">
+  <div class="section-head">
+    <div class="section-icon">🎯</div>
+    <span class="section-title">Locator — Actions</span>
+    <span class="section-class">ILocator</span>
+    <span class="section-count">16 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.ClickAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Clicks the element. Auto-waits for actionability. Supports Button, Modifiers, Position, Force options.</div>
+      <div class="card-example"><pre>await page.GetByRole(AriaRole.Button,
+  new() { Name = "Submit" }).ClickAsync();
+// Shift+click
+await locator.ClickAsync(new() {
+  Modifiers = new[] { KeyboardModifier.Shift }
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.DblClickAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Double-clicks the element.</div>
+      <div class="card-example"><pre>await page.GetByText("item").DblClickAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.TapAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Taps the element (for touch/mobile emulation).</div>
+      <div class="card-example"><pre>await locator.TapAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.HoverAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Moves the mouse over the element to trigger hover effects.</div>
+      <div class="card-example"><pre>await page.GetByText("Menu").HoverAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.FillAsync(value)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Clears and fills an input/textarea with the given value. Recommended for most input scenarios.</div>
+      <div class="card-example"><pre>await page.GetByLabel("Email")
+  .FillAsync("user@test.com");
+// Date input
+await page.GetByLabel("Date")
+  .FillAsync("2025-12-01");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.ClearAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Clears the text in an input or textarea.</div>
+      <div class="card-example"><pre>await page.GetByRole(AriaRole.Textbox)
+  .ClearAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.PressAsync(key)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Focuses the element and presses the specified key or combo.</div>
+      <div class="card-example"><pre>await locator.PressAsync("Enter");
+await locator.PressAsync("Control+A");
+await locator.PressAsync("ControlOrMeta+S");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.PressSequentiallyAsync(text)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Types text character by character, firing real key events. Useful when special input handling is required.</div>
+      <div class="card-example"><pre>await locator.PressSequentiallyAsync("Hello");
+await locator.PressSequentiallyAsync("World",
+  new() { Delay = 80 }); // simulate slow typing</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.CheckAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Checks a checkbox or radio button. Works with input[type=checkbox], input[type=radio], [role=checkbox].</div>
+      <div class="card-example"><pre>await page.GetByLabel("I agree").CheckAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.UncheckAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Unchecks a checkbox.</div>
+      <div class="card-example"><pre>await page.GetByLabel("Newsletter").UncheckAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.SetCheckedAsync(checked)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Sets checkbox to checked or unchecked based on a boolean.</div>
+      <div class="card-example"><pre>await locator.SetCheckedAsync(true);
+await locator.SetCheckedAsync(false);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.SelectOptionAsync(value)</code></span><span class="card-return">Task&lt;IReadOnlyList&lt;string&gt;&gt;</span></div>
+      <div class="card-desc">Selects one or multiple &lt;option&gt; elements in a &lt;select&gt;. Accepts value, label, or index.</div>
+      <div class="card-example"><pre>await page.GetByLabel("Country")
+  .SelectOptionAsync("US");
+await locator.SelectOptionAsync(
+  new SelectOptionValue { Label = "France" });
+await locator.SelectOptionAsync(
+  new[] { "opt1", "opt2" }); // multi</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.SetInputFilesAsync(files)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Sets file(s) on a file input element. Accepts path strings or FilePayload.</div>
+      <div class="card-example"><pre>await page.GetByLabel("Upload")
+  .SetInputFilesAsync("./report.pdf");
+await locator.SetInputFilesAsync(
+  new[] { "file1.txt", "file2.txt" });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.FocusAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Focuses the element (calls element.focus()).</div>
+      <div class="card-example"><pre>await page.GetByRole(AriaRole.Textbox)
+  .FocusAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.DispatchEventAsync(event)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Dispatches a DOM event on the element. Bypasses actionability checks.</div>
+      <div class="card-example"><pre>await locator.DispatchEventAsync("click");
+await locator.DispatchEventAsync("change");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.DragToAsync(target)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Drag the element and drop it onto the target locator.</div>
+      <div class="card-example"><pre>await page.Locator("#draggable")
+  .DragToAsync(page.Locator("#droptarget"));</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     10. LOCATOR — READ & STATE
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-locator" data-section="s-locator">
+  <div class="section-head">
+    <div class="section-icon">🔎</div>
+    <span class="section-title">Locator — Read &amp; State</span>
+    <span class="section-class">ILocator</span>
+    <span class="section-count">14 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.TextContentAsync()</code></span><span class="card-return">Task&lt;string?&gt;</span></div>
+      <div class="card-desc">Returns node.textContent including hidden text.</div>
+      <div class="card-example"><pre>var text = await locator.TextContentAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.InnerTextAsync()</code></span><span class="card-return">Task&lt;string&gt;</span></div>
+      <div class="card-desc">Returns element.innerText — only visible rendered text.</div>
+      <div class="card-example"><pre>var visible = await locator.InnerTextAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.InnerHTMLAsync()</code></span><span class="card-return">Task&lt;string&gt;</span></div>
+      <div class="card-desc">Returns element.innerHTML.</div>
+      <div class="card-example"><pre>var html = await locator.InnerHTMLAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.GetAttributeAsync(name)</code></span><span class="card-return">Task&lt;string?&gt;</span></div>
+      <div class="card-desc">Returns the value of the specified HTML attribute.</div>
+      <div class="card-example"><pre>var href = await locator.GetAttributeAsync("href");
+var cls = await locator.GetAttributeAsync("class");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.InputValueAsync()</code></span><span class="card-return">Task&lt;string&gt;</span></div>
+      <div class="card-desc">Returns the current value of input, textarea, or select elements.</div>
+      <div class="card-example"><pre>var val = await page.GetByLabel("Email")
+  .InputValueAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.IsVisibleAsync()</code></span><span class="card-return">Task&lt;bool&gt;</span></div>
+      <div class="card-desc">Returns true if element is visible. Does not wait — prefer Expect(locator).ToBeVisibleAsync() for assertions.</div>
+      <div class="card-example"><pre>bool vis = await locator.IsVisibleAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.IsHiddenAsync()</code></span><span class="card-return">Task&lt;bool&gt;</span></div>
+      <div class="card-desc">Returns true if element is not visible or not present.</div>
+      <div class="card-example"><pre>bool hidden = await locator.IsHiddenAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.IsEnabledAsync()</code></span><span class="card-return">Task&lt;bool&gt;</span></div>
+      <div class="card-desc">Returns true if element is not disabled.</div>
+      <div class="card-example"><pre>bool enabled = await locator.IsEnabledAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.IsDisabledAsync()</code></span><span class="card-return">Task&lt;bool&gt;</span></div>
+      <div class="card-desc">Returns true if element is disabled.</div>
+      <div class="card-example"><pre>bool disabled = await locator.IsDisabledAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.IsCheckedAsync()</code></span><span class="card-return">Task&lt;bool&gt;</span></div>
+      <div class="card-desc">Returns true if checkbox/radio is checked.</div>
+      <div class="card-example"><pre>bool chk = await locator.IsCheckedAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.IsEditableAsync()</code></span><span class="card-return">Task&lt;bool&gt;</span></div>
+      <div class="card-desc">Returns true if input/select is editable (not readonly).</div>
+      <div class="card-example"><pre>bool editable = await locator.IsEditableAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.CountAsync()</code></span><span class="card-return">Task&lt;int&gt;</span></div>
+      <div class="card-desc">Returns the number of matching elements.</div>
+      <div class="card-example"><pre>int count = await page.GetByRole(AriaRole.ListItem)
+  .CountAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.BoundingBoxAsync()</code></span><span class="card-return">Task&lt;LocatorBoundingBoxResult?&gt;</span></div>
+      <div class="card-desc">Returns position (X, Y) and size (Width, Height) of the element.</div>
+      <div class="card-example"><pre>var box = await locator.BoundingBoxAsync();
+// box.X, box.Y, box.Width, box.Height</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.AllInnerTextsAsync()</code></span><span class="card-return">Task&lt;IReadOnlyList&lt;string&gt;&gt;</span></div>
+      <div class="card-desc">Returns innerText from all matched elements.</div>
+      <div class="card-example"><pre>var texts = await page.GetByRole(AriaRole.ListItem)
+  .AllInnerTextsAsync();</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     11. LOCATOR — FILTERING & CHAINING
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-locator" data-section="s-locator">
+  <div class="section-head">
+    <div class="section-icon">🔗</div>
+    <span class="section-title">Locator — Filtering &amp; Chaining</span>
+    <span class="section-class">ILocator</span>
+    <span class="section-count">9 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>locator.Filter()</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Narrows locator results to those matching HasText, HasNotText, Has, or HasNot options.</div>
+      <div class="card-example"><pre>await page.GetByRole(AriaRole.ListItem)
+  .Filter(new() { HasText = "Product 2" })
+  .GetByRole(AriaRole.Button,
+    new() { Name = "Add to cart" }).ClickAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>locator.Nth(index)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Returns the nth matching element (0-based index).</div>
+      <div class="card-example"><pre>var thirdItem = page.GetByRole(AriaRole.ListItem)
+  .Nth(2);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>locator.First / locator.Last</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Returns the first or last matching element from the locator set.</div>
+      <div class="card-example"><pre>var first = page.GetByRole(AriaRole.Button).First;
+var last = page.GetByRole(AriaRole.Button).Last;</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>locator.And(locator)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Matches elements that satisfy both this locator AND the argument locator.</div>
+      <div class="card-example"><pre>var btn = page.GetByRole(AriaRole.Button)
+  .And(page.GetByTitle("Subscribe"));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>locator.Or(locator)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Matches elements satisfying either this locator OR the argument locator.</div>
+      <div class="card-example"><pre>var signBtn = page.GetByRole(AriaRole.Button,
+    new() { Name = "Sign in" })
+  .Or(page.GetByRole(AriaRole.Button,
+    new() { Name = "Sign up" }));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>locator.Locator(selector)</code></span><span class="card-return">ILocator</span></div>
+      <div class="card-desc">Creates a new locator scoped within the current locator's results.</div>
+      <div class="card-example"><pre>var cellText = page.GetByRole(AriaRole.Row)
+  .Filter(new() { HasText = "John" })
+  .Locator("td.email");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.WaitForAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Waits for the locator to reach a specific state (visible, hidden, attached, detached).</div>
+      <div class="card-example"><pre>await locator.WaitForAsync();
+await locator.WaitForAsync(new() {
+  State = WaitForSelectorState.Hidden,
+  Timeout = 5000
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.HighlightAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Visually highlights the element for debugging — useful during test development.</div>
+      <div class="card-example"><pre>await locator.HighlightAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await locator.ScrollIntoViewIfNeededAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Scrolls the element into the viewport if it's not already visible.</div>
+      <div class="card-example"><pre>await locator.ScrollIntoViewIfNeededAsync();</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     12. KEYBOARD
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-input" data-section="s-input">
+  <div class="section-head">
+    <div class="section-icon">⌨️</div>
+    <span class="section-title">Keyboard</span>
+    <span class="section-class">IKeyboard (page.Keyboard)</span>
+    <span class="section-count">5 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Keyboard.PressAsync(key)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Simulates pressing a key. Fires keydown, keypress, and keyup. Supports special keys: Enter, Tab, Escape, ArrowDown, F1, etc.</div>
+      <div class="card-example"><pre>await page.Keyboard.PressAsync("Enter");
+await page.Keyboard.PressAsync("Control+A");
+await page.Keyboard.PressAsync("ControlOrMeta+S");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Keyboard.DownAsync(key)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Fires keydown for the specified key, holding it down.</div>
+      <div class="card-example"><pre>await page.Keyboard.DownAsync("Shift");
+await page.Keyboard.PressAsync("ArrowDown");
+await page.Keyboard.UpAsync("Shift");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Keyboard.UpAsync(key)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Fires keyup for the specified key, releasing it.</div>
+      <div class="card-example"><pre>await page.Keyboard.UpAsync("Shift");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Keyboard.TypeAsync(text)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Types text character by character using keydown/keypress/keyup. Deprecated — prefer FillAsync.</div>
+      <div class="card-example"><pre>await page.Keyboard.TypeAsync("Hello!");
+await page.Keyboard.TypeAsync("Slow",
+  new() { Delay = 100 });</pre></div>
+      <span class="card-tag tag-deprecated">Deprecated</span>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Keyboard.InsertTextAsync(text)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Inserts text directly without firing individual key events. Useful for special characters.</div>
+      <div class="card-example"><pre>await page.Keyboard.InsertTextAsync("彼女は…");</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     13. MOUSE
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-input" data-section="s-input">
+  <div class="section-head">
+    <div class="section-icon">🖱️</div>
+    <span class="section-title">Mouse</span>
+    <span class="section-class">IMouse (page.Mouse)</span>
+    <span class="section-count">6 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Mouse.ClickAsync(x, y)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Clicks at absolute coordinates on the page. Supports Button, ClickCount, Delay options.</div>
+      <div class="card-example"><pre>await page.Mouse.ClickAsync(100, 200);
+await page.Mouse.ClickAsync(100, 200, new() {
+  Button = MouseButton.Right
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Mouse.DblClickAsync(x, y)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Double-clicks at absolute coordinates.</div>
+      <div class="card-example"><pre>await page.Mouse.DblClickAsync(100, 200);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Mouse.MoveAsync(x, y)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Moves the mouse to absolute page coordinates. Steps option controls interpolation.</div>
+      <div class="card-example"><pre>await page.Mouse.MoveAsync(300, 400);
+await page.Mouse.MoveAsync(300, 400,
+  new() { Steps = 10 }); // smooth move</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Mouse.DownAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Fires a mousedown event at the current position.</div>
+      <div class="card-example"><pre>await page.Mouse.MoveAsync(x, y);
+await page.Mouse.DownAsync();
+await page.Mouse.MoveAsync(x2, y2);
+await page.Mouse.UpAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Mouse.UpAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Fires a mouseup event at the current position.</div>
+      <div class="card-example"><pre>await page.Mouse.UpAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Mouse.WheelAsync(dx, dy)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Dispatches a mouse wheel event. Use to scroll the page or scrollable containers.</div>
+      <div class="card-example"><pre>// Scroll down 500px
+await page.Mouse.WheelAsync(0, 500);
+// Scroll up
+await page.Mouse.WheelAsync(0, -200);</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     14. TOUCHSCREEN
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-input" data-section="s-input">
+  <div class="section-head">
+    <div class="section-icon">📱</div>
+    <span class="section-title">Touchscreen</span>
+    <span class="section-class">ITouchscreen (page.Touchscreen)</span>
+    <span class="section-count">1 method</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Touchscreen.TapAsync(x, y)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Sends a tap gesture at the given coordinates. Requires touch emulation to be enabled on the browser context.</div>
+      <div class="card-example"><pre>await page.Touchscreen.TapAsync(150, 250);</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     15. BROWSER CONTEXT
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-context" data-section="s-context">
+  <div class="section-head">
+    <div class="section-icon">🧩</div>
+    <span class="section-title">BrowserContext</span>
+    <span class="section-class">IBrowserContext</span>
+    <span class="section-count">17 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.NewPageAsync()</code></span><span class="card-return">Task&lt;IPage&gt;</span></div>
+      <div class="card-desc">Creates a new page in this context.</div>
+      <div class="card-example"><pre>var page = await context.NewPageAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.CloseAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Closes the browser context and all pages inside it.</div>
+      <div class="card-example"><pre>await context.CloseAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.AddCookiesAsync(cookies)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Injects cookies into the context. All pages in context receive them.</div>
+      <div class="card-example"><pre>await context.AddCookiesAsync(new[] {
+  new Cookie {
+    Name = "token", Value = "abc123",
+    Domain = "example.com", Path = "/"
+  }
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.CookiesAsync()</code></span><span class="card-return">Task&lt;IReadOnlyList&lt;BrowserContextCookiesResult&gt;&gt;</span></div>
+      <div class="card-desc">Returns all cookies for the context, optionally filtered by URLs.</div>
+      <div class="card-example"><pre>var cookies = await context.CookiesAsync();
+var siteOnly = await context.CookiesAsync(
+  new[] { "https://example.com" });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.ClearCookiesAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Clears all cookies from the context. Supports Name/Domain filters.</div>
+      <div class="card-example"><pre>await context.ClearCookiesAsync();
+// Filter by name:
+await context.ClearCookiesAsync(
+  new() { Name = "session_token" });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.GrantPermissionsAsync(perms)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Grants specified browser permissions (geolocation, notifications, camera, microphone, etc.).</div>
+      <div class="card-example"><pre>await context.GrantPermissionsAsync(
+  new[] { "geolocation", "notifications" });
+// Scope to origin:
+await context.GrantPermissionsAsync(
+  new[] { "camera" },
+  new() { Origin = "https://example.com" });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.ClearPermissionsAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Revokes all previously granted permissions.</div>
+      <div class="card-example"><pre>await context.ClearPermissionsAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.SetGeolocationAsync(geo)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Overrides the geolocation for all pages in context.</div>
+      <div class="card-example"><pre>await context.SetGeolocationAsync(new() {
+  Latitude = 28.6139, Longitude = 77.2090
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.StorageStateAsync()</code></span><span class="card-return">Task&lt;string&gt;</span></div>
+      <div class="card-desc">Returns or saves cookies + localStorage state. Essential for authentication reuse.</div>
+      <div class="card-example"><pre>// Save auth state to file
+await context.StorageStateAsync(new() {
+  Path = "auth.json"
+});
+// Restore:
+var ctx = await browser.NewContextAsync(new() {
+  StorageStatePath = "auth.json"
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.RouteAsync(url, handler)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Intercepts network requests for all pages in the context.</div>
+      <div class="card-example"><pre>await context.RouteAsync("**/api/**",
+  async route => await route.FulfillAsync(
+    new() { Json = new { status = "ok" } }));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.RouteFromHARAsync(har)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Serve all context requests from a HAR recording.</div>
+      <div class="card-example"><pre>await context.RouteFromHARAsync("./recording.har",
+  new() { Update = false });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.SetExtraHTTPHeadersAsync(hdrs)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Adds extra HTTP headers to all requests from all context pages.</div>
+      <div class="card-example"><pre>await context.SetExtraHTTPHeadersAsync(
+  new Dictionary&lt;string, string&gt; {
+    ["X-Tenant"] = "acme"
+  });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.SetOfflineAsync(offline)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Simulates offline mode for all pages in the context.</div>
+      <div class="card-example"><pre>await context.SetOfflineAsync(true);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.AddInitScriptAsync(script)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Registers an init script that runs in every page of this context.</div>
+      <div class="card-example"><pre>await context.AddInitScriptAsync(
+  "window.isTestEnv = true;");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.ExposeBindingAsync(name, fn)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Exposes a .NET function to the JS context of all pages in this context.</div>
+      <div class="card-example"><pre>await context.ExposeBindingAsync("getUser",
+  (source, _) => GetUser(source.Page.Url));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>context.Pages</code></span><span class="card-return">IReadOnlyList&lt;IPage&gt;</span></div>
+      <div class="card-desc">Returns all currently open pages in this context.</div>
+      <div class="card-example"><pre>var pages = context.Pages;
+Console.WriteLine($"{pages.Count} open tabs");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>context.SetDefaultTimeout(ms)</code></span><span class="card-return">void</span></div>
+      <div class="card-desc">Sets default timeout for all operations across all context pages.</div>
+      <div class="card-example"><pre>context.SetDefaultTimeout(30000);</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     16. BROWSER
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-browser" data-section="s-browser">
+  <div class="section-head">
+    <div class="section-icon">🌐</div>
+    <span class="section-title">Browser</span>
+    <span class="section-class">IBrowser</span>
+    <span class="section-count">7 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await playwright.Chromium.LaunchAsync()</code></span><span class="card-return">Task&lt;IBrowser&gt;</span></div>
+      <div class="card-desc">Launches a browser instance. Supports Headless, SlowMo, Channel (chrome/msedge), ExecutablePath, Args.</div>
+      <div class="card-example"><pre>var browser = await playwright.Chromium
+  .LaunchAsync(new() {
+    Headless = false,
+    SlowMo = 100,
+    Channel = "chrome"
+  });
+// Also: playwright.Firefox / playwright.Webkit</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await browser.NewContextAsync()</code></span><span class="card-return">Task&lt;IBrowserContext&gt;</span></div>
+      <div class="card-desc">Creates a new isolated browser context (like an incognito window).</div>
+      <div class="card-example"><pre>var ctx = await browser.NewContextAsync(new() {
+  ViewportSize = new() { Width = 1280, Height = 720 },
+  Locale = "en-US",
+  TimezoneId = "America/New_York",
+  HasTouch = true,
+  IgnoreHTTPSErrors = true
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await browser.NewPageAsync()</code></span><span class="card-return">Task&lt;IPage&gt;</span></div>
+      <div class="card-desc">Opens a new page in a default context.</div>
+      <div class="card-example"><pre>var page = await browser.NewPageAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await browser.CloseAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Closes the browser and all contexts/pages inside it.</div>
+      <div class="card-example"><pre>await browser.CloseAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>browser.Contexts</code></span><span class="card-return">IReadOnlyList&lt;IBrowserContext&gt;</span></div>
+      <div class="card-desc">Returns all open contexts belonging to this browser.</div>
+      <div class="card-example"><pre>Console.WriteLine(browser.Contexts.Count);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>browser.Version</code></span><span class="card-return">string</span></div>
+      <div class="card-desc">Returns the browser version string.</div>
+      <div class="card-example"><pre>Console.WriteLine(browser.Version);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await browserType.LaunchPersistentContextAsync()</code></span><span class="card-return">Task&lt;IBrowserContext&gt;</span></div>
+      <div class="card-desc">Launches with a persistent user data directory (real profile). Good for reusing sessions across runs.</div>
+      <div class="card-example"><pre>var ctx = await playwright.Chromium
+  .LaunchPersistentContextAsync("/path/profile",
+    new() { Headless = false });</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     17. ASSERTIONS — LOCATOR
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-assert" data-section="s-assert">
+  <div class="section-head">
+    <div class="section-icon">✅</div>
+    <span class="section-title">Assertions — LocatorAssertions</span>
+    <span class="section-class">Expect(locator).To…</span>
+    <span class="section-count">20 assertions</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeVisibleAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element is visible. Auto-retries until condition is met or timeout expires.</div>
+      <div class="card-example"><pre>await Expect(page.GetByText("Success"))
+  .ToBeVisibleAsync();
+// Negate:
+await Expect(locator).Not.ToBeVisibleAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeHiddenAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element is hidden or detached from DOM.</div>
+      <div class="card-example"><pre>await Expect(page.GetByTestId("spinner"))
+  .ToBeHiddenAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeEnabledAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element is enabled (not disabled).</div>
+      <div class="card-example"><pre>await Expect(page.GetByRole(AriaRole.Button,
+    new() { Name = "Submit" }))
+  .ToBeEnabledAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeDisabledAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element has the disabled attribute or aria-disabled.</div>
+      <div class="card-example"><pre>await Expect(page.GetByRole(AriaRole.Button))
+  .ToBeDisabledAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeCheckedAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts a checkbox or radio is checked.</div>
+      <div class="card-example"><pre>await Expect(page.GetByLabel("Terms"))
+  .ToBeCheckedAsync();
+// Assert unchecked:
+await Expect(locator).ToBeCheckedAsync(
+  new() { Checked = false });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeFocusedAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts that the element has focus.</div>
+      <div class="card-example"><pre>await Expect(page.GetByRole(AriaRole.Textbox))
+  .ToBeFocusedAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeEmptyAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the editable element has no value, or element has no text.</div>
+      <div class="card-example"><pre>await Expect(page.GetByRole(AriaRole.Textbox))
+  .ToBeEmptyAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeEditableAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts element is editable (not readonly, not disabled).</div>
+      <div class="card-example"><pre>await Expect(page.GetByLabel("Notes"))
+  .ToBeEditableAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeAttachedAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element exists in the DOM (even if not visible).</div>
+      <div class="card-example"><pre>await Expect(page.Locator("#modal"))
+  .ToBeAttachedAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToBeInViewportAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element intersects the viewport. Supports Ratio option (0–1).</div>
+      <div class="card-example"><pre>await Expect(locator).ToBeInViewportAsync();
+await Expect(locator).ToBeInViewportAsync(
+  new() { Ratio = 0.5 }); // at least 50% visible</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveTextAsync(text)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts element's text content. Normalizes whitespace. Supports string, Regex, and arrays.</div>
+      <div class="card-example"><pre>await Expect(page.Locator(".status"))
+  .ToHaveTextAsync("Submitted");
+await Expect(locator).ToHaveTextAsync(
+  new Regex("Welcome, .*"));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToContainTextAsync(text)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element's text contains the given substring or matches regex.</div>
+      <div class="card-example"><pre>await Expect(page.GetByRole(AriaRole.Alert))
+  .ToContainTextAsync("error");
+// Array form for list items:
+await Expect(page.GetByRole(AriaRole.ListItem))
+  .ToContainTextAsync(new[] {"Item 1","Item 2"});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveValueAsync(value)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the value of an input, textarea, or select element.</div>
+      <div class="card-example"><pre>await Expect(page.GetByLabel("Email"))
+  .ToHaveValueAsync("user@test.com");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveValuesAsync(values)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts selected options in a multi-select element.</div>
+      <div class="card-example"><pre>await Expect(page.GetByRole(AriaRole.Listbox))
+  .ToHaveValuesAsync(new[] { "opt1", "opt3" });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveAttributeAsync(name, val)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts an attribute value on the element.</div>
+      <div class="card-example"><pre>await Expect(page.Locator("a.main"))
+  .ToHaveAttributeAsync("href", "/home");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveClassAsync(cls)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element's CSS class list matches the given value or regex.</div>
+      <div class="card-example"><pre>await Expect(locator)
+  .ToHaveClassAsync("btn btn-primary");
+await Expect(locator)
+  .ToHaveClassAsync(new Regex("active"));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveCSSAsync(prop, val)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts a computed CSS property value.</div>
+      <div class="card-example"><pre>await Expect(locator)
+  .ToHaveCSSAsync("display", "flex");
+await Expect(locator)
+  .ToHaveCSSAsync("color", "rgb(0,0,0)");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveCountAsync(n)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the number of elements matching the locator.</div>
+      <div class="card-example"><pre>await Expect(page.GetByRole(AriaRole.ListItem))
+  .ToHaveCountAsync(5);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveIdAsync(id)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element's id attribute.</div>
+      <div class="card-example"><pre>await Expect(page.GetByRole(AriaRole.Textbox))
+  .ToHaveIdAsync("username-field");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(locator).ToHaveRoleAsync(role)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the element's ARIA role.</div>
+      <div class="card-example"><pre>await Expect(page.Locator(".spinner"))
+  .ToHaveRoleAsync(AriaRole.Progressbar);</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     18. ASSERTIONS — PAGE & RESPONSE
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-assert" data-section="s-assert">
+  <div class="section-head">
+    <div class="section-icon">📋</div>
+    <span class="section-title">Assertions — PageAssertions &amp; APIResponseAssertions</span>
+    <span class="section-class">Expect(page) / Expect(response)</span>
+    <span class="section-count">3 assertions</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(page).ToHaveTitleAsync(title)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the page document.title. Supports string and Regex.</div>
+      <div class="card-example"><pre>await Expect(page)
+  .ToHaveTitleAsync("My App - Dashboard");
+await Expect(page)
+  .ToHaveTitleAsync(new Regex("My App.*"));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(page).ToHaveURLAsync(url)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the current page URL. Supports string, glob, and Regex.</div>
+      <div class="card-example"><pre>await Expect(page)
+  .ToHaveURLAsync("https://example.com/dashboard");
+await Expect(page)
+  .ToHaveURLAsync(new Regex(".*/dashboard$"));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await Expect(response).ToBeOKAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Asserts the API response has a 2xx status code.</div>
+      <div class="card-example"><pre>var resp = await context.APIRequest
+  .GetAsync("/api/users");
+await Expect(resp).ToBeOKAsync();</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     19. API TESTING
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-api" data-section="s-api">
+  <div class="section-head">
+    <div class="section-icon">🔌</div>
+    <span class="section-title">API Testing — APIRequestContext</span>
+    <span class="section-class">IAPIRequestContext (context.APIRequest)</span>
+    <span class="section-count">8 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.APIRequest.GetAsync(url)</code></span><span class="card-return">Task&lt;IAPIResponse&gt;</span></div>
+      <div class="card-desc">Sends an HTTP GET request.</div>
+      <div class="card-example"><pre>var resp = await context.APIRequest
+  .GetAsync("/api/users");
+var json = await resp.JsonAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.APIRequest.PostAsync(url)</code></span><span class="card-return">Task&lt;IAPIResponse&gt;</span></div>
+      <div class="card-desc">Sends an HTTP POST request with a JSON body.</div>
+      <div class="card-example"><pre>var resp = await context.APIRequest
+  .PostAsync("/api/users", new() {
+    DataObject = new { name = "Alice" }
+  });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.APIRequest.PutAsync(url)</code></span><span class="card-return">Task&lt;IAPIResponse&gt;</span></div>
+      <div class="card-desc">Sends an HTTP PUT request.</div>
+      <div class="card-example"><pre>var resp = await context.APIRequest
+  .PutAsync("/api/users/1", new() {
+    DataObject = new { name = "Bob" }
+  });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.APIRequest.PatchAsync(url)</code></span><span class="card-return">Task&lt;IAPIResponse&gt;</span></div>
+      <div class="card-desc">Sends an HTTP PATCH request.</div>
+      <div class="card-example"><pre>var resp = await context.APIRequest
+  .PatchAsync("/api/users/1", new() {
+    DataObject = new { email = "new@test.com" }
+  });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.APIRequest.DeleteAsync(url)</code></span><span class="card-return">Task&lt;IAPIResponse&gt;</span></div>
+      <div class="card-desc">Sends an HTTP DELETE request.</div>
+      <div class="card-example"><pre>var resp = await context.APIRequest
+  .DeleteAsync("/api/users/1");
+Assert.AreEqual(204, resp.Status);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.APIRequest.HeadAsync(url)</code></span><span class="card-return">Task&lt;IAPIResponse&gt;</span></div>
+      <div class="card-desc">Sends an HTTP HEAD request (headers only, no body).</div>
+      <div class="card-example"><pre>var resp = await context.APIRequest
+  .HeadAsync("/api/healthcheck");</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.APIRequest.FetchAsync(url)</code></span><span class="card-return">Task&lt;IAPIResponse&gt;</span></div>
+      <div class="card-desc">Generic HTTP request with full control: method, headers, body, form data, multipart, etc.</div>
+      <div class="card-example"><pre>var resp = await context.APIRequest.FetchAsync(
+  "/api/upload", new() {
+    Method = "POST",
+    Multipart = form,
+    Headers = new() {
+      ["X-Custom"] = "value"
+    }
+  });</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.APIRequest.StorageStateAsync()</code></span><span class="card-return">Task&lt;string&gt;</span></div>
+      <div class="card-desc">Saves the storage state (cookies) after API interactions for browser reuse.</div>
+      <div class="card-example"><pre>var reqCtx = await playwright.APIRequest
+  .NewContextAsync(new() {
+    BaseURL = "https://api.example.com"
+  });
+await reqCtx.PostAsync("/login", ...);
+var state = await reqCtx.StorageStateAsync();</pre></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     20. TRACING
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-devtools" data-section="s-devtools">
+  <div class="section-head">
+    <div class="section-icon">🔬</div>
+    <span class="section-title">Tracing</span>
+    <span class="section-class">ITracing (context.Tracing)</span>
+    <span class="section-count">5 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.Tracing.StartAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Starts recording a trace. Captures screenshots, snapshots, and sources.</div>
+      <div class="card-example"><pre>await context.Tracing.StartAsync(new() {
+  Screenshots = true,
+  Snapshots = true,
+  Sources = true
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.Tracing.StopAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Stops recording and saves trace to a file.</div>
+      <div class="card-example"><pre>await context.Tracing.StopAsync(new() {
+  Path = "trace.zip"
+});
+// View with: playwright show-trace trace.zip</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.Tracing.StartChunkAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Starts a new chunk while tracing is already enabled (for per-test chunking).</div>
+      <div class="card-example"><pre>await context.Tracing.StartChunkAsync(new() {
+  Title = "Login test"
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.Tracing.StopChunkAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Saves the current chunk to file, without stopping the overall trace.</div>
+      <div class="card-example"><pre>await context.Tracing.StopChunkAsync(new() {
+  Path = "chunk1.zip"
+});</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await context.Tracing.GroupAsync(name)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Groups trace actions under a named label for better readability in the Trace Viewer.</div>
+      <div class="card-example"><pre>await context.Tracing.GroupAsync("Login flow");
+// ... actions ...
+await context.Tracing.GroupEndAsync();</pre></div>
+      <span class="card-tag tag-new">v1.49+</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     21. CLOCK
+═══════════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="section s-devtools" data-section="s-devtools">
+  <div class="section-head">
+    <div class="section-icon">🕐</div>
+    <span class="section-title">Clock — Time Manipulation</span>
+    <span class="section-class">IClock (page.Clock)</span>
+    <span class="section-count">7 methods</span>
+  </div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Clock.InstallAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Installs fake clock control. Optionally set the initial time.</div>
+      <div class="card-example"><pre>await page.Clock.InstallAsync(new() {
+  TimeDate = new DateTime(2025, 1, 1, 9, 0, 0)
+});
+await page.GotoAsync("http://localhost:3000");</pre></div>
+      <span class="card-tag tag-new">v1.45+</span>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Clock.FastForwardAsync(time)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Advances clock by the specified amount (ms integer or "HH:MM" string). Runs all pending timers.</div>
+      <div class="card-example"><pre>await page.Clock.FastForwardAsync(5000); // 5s
+await page.Clock.FastForwardAsync("01:30"); // 1hr 30min</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Clock.RunForAsync(time)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Runs the clock forward by the specified time, executing all timers that fire.</div>
+      <div class="card-example"><pre>await page.Clock.RunForAsync(2000);</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Clock.PauseAtAsync(time)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Pauses the clock at a specific date/time.</div>
+      <div class="card-example"><pre>await page.Clock.PauseAtAsync(
+  new DateTime(2025, 12, 31, 23, 59, 0));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Clock.ResumeAsync()</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Resumes the clock after it has been paused, allowing time to progress again.</div>
+      <div class="card-example"><pre>await page.Clock.ResumeAsync();</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Clock.SetFixedTimeAsync(time)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Freezes time at a specific value. Date.now() always returns this time.</div>
+      <div class="card-example"><pre>await page.Clock.SetFixedTimeAsync(
+  new DateTime(2025, 6, 15));</pre></div>
+    </div>
+    <div class="card">
+      <div class="card-top"><span class="card-method"><code>await page.Clock.SetSystemTimeAsync(time)</code></span><span class="card-return">Task</span></div>
+      <div class="card-desc">Sets the system time without affecting timer execution rate.</div>
+      <div class="card-example"><pre>await page.Clock.SetSystemTimeAsync(
+  new DateTime(2030, 1, 1));</pre></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Playwright for .NET — C# Complete API Reference &nbsp;·&nbsp;
+  Based on official docs at <strong>playwright.dev/dotnet</strong> &nbsp;·&nbsp;
+  Microsoft Playwright © Microsoft Corporation
+</footer>
+
+<script>
+// ── SEARCH + FILTER ──
+const searchInput = document.getElementById('search');
+const filterTags = document.querySelectorAll('.ftag');
+const noResults = document.getElementById('no-results');
+const resultCount = document.getElementById('result-count');
+
+let activeFilter = 'all';
+let searchQuery = '';
+
+function updateView() {
+  const sections = document.querySelectorAll('section.section');
+  const dividers = document.querySelectorAll('.section-divider');
+  let totalVisible = 0;
+
+  sections.forEach(section => {
+    const sectionClass = section.dataset.section;
+    const sectionMatch = activeFilter === 'all' || sectionClass === activeFilter;
+
+    if (!sectionMatch) {
+      section.setAttribute('data-hidden', '');
+      return;
+    }
+
+    const cards = section.querySelectorAll('.card');
+    let sectionHasVisible = false;
+
+    cards.forEach(card => {
+      const text = card.textContent.toLowerCase();
+      const matches = !searchQuery || text.includes(searchQuery);
+      if (matches) {
+        card.removeAttribute('data-hidden');
+        sectionHasVisible = true;
+        totalVisible++;
+      } else {
+        card.setAttribute('data-hidden', '');
+      }
+    });
+
+    if (sectionHasVisible) {
+      section.removeAttribute('data-hidden');
+    } else {
+      section.setAttribute('data-hidden', '');
+    }
+  });
+
+  // Hide dividers if filtering
+  dividers.forEach(d => {
+    d.style.display = (activeFilter !== 'all' || searchQuery) ? 'none' : '';
+  });
+
+  noResults.style.display = totalVisible === 0 ? 'block' : 'none';
+  resultCount.textContent = totalVisible > 0
+    ? `${totalVisible} method${totalVisible !== 1 ? 's' : ''}`
+    : '';
+}
+
+searchInput.addEventListener('input', () => {
+  searchQuery = searchInput.value.toLowerCase().trim();
+  updateView();
+});
+
+filterTags.forEach(tag => {
+  tag.addEventListener('click', () => {
+    filterTags.forEach(t => t.classList.remove('active'));
+    tag.classList.add('active');
+    activeFilter = tag.dataset.filter;
+    updateView();
+  });
+});
+</script>
+</body>
+</html>
