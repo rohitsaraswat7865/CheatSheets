@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL Inner Workings — Topics</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      padding: 2rem;
+      line-height: 1.6;
+      max-width: 960px;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      color: #111827;
+    }
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 2rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e5e7eb;
+      font-size: 0.95rem;
+    }
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #374151;
+      margin: 1.75rem 0 0.6rem 0;
+      padding: 0.35rem 0.75rem;
+      background: #f3f4f6;
+      border-left: 3px solid #6b7280;
+      border-radius: 0 6px 6px 0;
+    }
+    ol {
+      list-style: none;
+      counter-reset: topic-counter;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    ol > li {
+      counter-increment: topic-counter;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    ol > li::before {
+      content: counter(topic-counter);
+      min-width: 1.8rem;
+      height: 1.8rem;
+      background: #f3f4f6;
+      color: #6b7280;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .topic-title {
+      font-weight: 600;
+      color: #111827;
+      min-width: 240px;
+    }
+    .topic-desc {
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+    .topic-desc code {
+      background: #f3f4f6;
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      font-size: 0.82rem;
+      color: #374151;
+      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>SQL Inner Workings — Topics</h1>
+  <p class="subtitle">How databases parse, plan, execute, store, and optimise your queries under the hood</p>
+
+  <!-- ═══════════ A — SQL Language Fundamentals ═══════════ -->
+  <h2>A — SQL Language Fundamentals</h2>
+  <ol>
+    <li>
+      <span class="topic-title">SQL Logical Processing Order</span>
+      <span class="topic-desc"><code>FROM</code> → <code>WHERE</code> → <code>GROUP BY</code> → <code>HAVING</code> → <code>SELECT</code> → <code>DISTINCT</code> → <code>ORDER BY</code> → <code>LIMIT</code> — why column aliases don't work in <code>WHERE</code></span>
+    </li>
+    <li>
+      <span class="topic-title">NULL Semantics &amp; Three-Valued Logic</span>
+      <span class="topic-desc"><code>NULL</code> propagation, <code>IS NULL</code> / <code>IS NOT NULL</code>, <code>COALESCE</code>, <code>NULLIF</code>, NULLs in aggregates &amp; indexes, <code>NOT IN</code> trap</span>
+    </li>
+    <li>
+      <span class="topic-title">Data Types Internals</span>
+      <span class="topic-desc">fixed-length vs variable-length storage, alignment &amp; padding, <code>NULL</code> bitmap, type casting pipeline</span>
+    </li>
+    <li>
+      <span class="topic-title">Collation &amp; Character Encoding</span>
+      <span class="topic-desc">UTF-8 vs Latin1, collation impact on <code>ORDER BY</code> &amp; indexes, ICU collations, <code>COLLATE</code> clause, case-insensitive comparisons</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>CASE</code> Expressions &amp; Conditional Logic</span>
+      <span class="topic-desc">simple vs searched <code>CASE</code>, usage in <code>SELECT</code> / <code>WHERE</code> / <code>ORDER BY</code>, short-circuit evaluation, pivot via <code>CASE</code></span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ B — Schema Design & Constraints ═══════════ -->
+  <h2>B — Schema Design &amp; Constraints</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Normalization &amp; Denormalization</span>
+      <span class="topic-desc">1NF → 2NF → 3NF → BCNF, functional dependencies, transitive dependencies, when to denormalize for performance</span>
+    </li>
+    <li>
+      <span class="topic-title">Primary Keys &amp; Surrogate Keys</span>
+      <span class="topic-desc">natural vs surrogate keys, auto-increment vs UUID, composite keys, key selection impact on index clustering</span>
+    </li>
+    <li>
+      <span class="topic-title">Foreign Keys &amp; Referential Integrity</span>
+      <span class="topic-desc"><code>ON DELETE CASCADE / SET NULL / RESTRICT</code>, deferred constraints, FK lock behaviour, index requirements on FK columns</span>
+    </li>
+    <li>
+      <span class="topic-title">Constraint Enforcement</span>
+      <span class="topic-desc"><code>NOT NULL</code>, <code>UNIQUE</code>, <code>CHECK</code>, <code>FOREIGN KEY</code> — when &amp; how the engine validates (immediate vs deferred)</span>
+    </li>
+    <li>
+      <span class="topic-title">Sequences &amp; Identity Columns</span>
+      <span class="topic-desc"><code>SERIAL</code> vs <code>GENERATED ALWAYS AS IDENTITY</code>, sequence caching, gap behaviour, <code>nextval</code> / <code>currval</code></span>
+    </li>
+    <li>
+      <span class="topic-title">Generated &amp; Virtual Columns</span>
+      <span class="topic-desc">stored vs virtual generated columns, expression indexes as alternative, use cases, limitations</span>
+    </li>
+    <li>
+      <span class="topic-title">Schema Design Patterns</span>
+      <span class="topic-desc">star schema, snowflake schema, EAV, polymorphic associations, audit tables, soft deletes</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ C — Querying: SELECT, JOINs & Filtering ═══════════ -->
+  <h2>C — Querying: SELECT, JOINs &amp; Filtering</h2>
+  <ol>
+    <li>
+      <span class="topic-title">JOIN Types &amp; Semantics</span>
+      <span class="topic-desc"><code>INNER</code>, <code>LEFT</code>, <code>RIGHT</code>, <code>FULL OUTER</code>, <code>CROSS</code>, self-join, <code>NATURAL JOIN</code>, join conditions vs <code>WHERE</code> filters</span>
+    </li>
+    <li>
+      <span class="topic-title">LATERAL Joins</span>
+      <span class="topic-desc">correlated subquery in <code>FROM</code>, top-N-per-group pattern, <code>CROSS JOIN LATERAL</code> vs <code>LEFT JOIN LATERAL</code></span>
+    </li>
+    <li>
+      <span class="topic-title"><code>EXISTS</code> vs <code>IN</code> vs <code>JOIN</code></span>
+      <span class="topic-desc">semi-join transforms, <code>NOT IN</code> NULL pitfall, <code>NOT EXISTS</code> pattern, optimizer equivalences</span>
+    </li>
+    <li>
+      <span class="topic-title">Set Operations</span>
+      <span class="topic-desc"><code>UNION</code> / <code>UNION ALL</code>, <code>INTERSECT</code>, <code>EXCEPT</code>, duplicate elimination internals (hash vs sort), column matching rules</span>
+    </li>
+    <li>
+      <span class="topic-title">Subquery Execution</span>
+      <span class="topic-desc">correlated vs uncorrelated subqueries, subquery flattening / unnesting, semi-join &amp; anti-join transforms</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>DISTINCT</code> &amp; Deduplication</span>
+      <span class="topic-desc"><code>DISTINCT</code>, <code>DISTINCT ON</code>, hash-based vs sort-based dedup, <code>DISTINCT</code> in aggregates</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>LIMIT</code> / <code>OFFSET</code> &amp; Keyset Pagination</span>
+      <span class="topic-desc"><code>OFFSET</code> performance problem, cursor-based / keyset pagination, <code>FETCH FIRST … ROWS ONLY</code>, stable sort requirement</span>
+    </li>
+    <li>
+      <span class="topic-title">String Functions &amp; Pattern Matching</span>
+      <span class="topic-desc"><code>LIKE</code>, <code>ILIKE</code>, <code>SIMILAR TO</code>, POSIX regex (<code>~</code>), <code>regexp_matches</code>, collation impact</span>
+    </li>
+    <li>
+      <span class="topic-title">Date / Time &amp; Interval Arithmetic</span>
+      <span class="topic-desc"><code>timestamp</code> vs <code>timestamptz</code>, <code>INTERVAL</code>, <code>date_trunc</code>, <code>generate_series</code>, timezone-aware queries</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ D — Grouping, Aggregation & Window Functions ═══════════ -->
+  <h2>D — Grouping, Aggregation &amp; Window Functions</h2>
+  <ol>
+    <li>
+      <span class="topic-title"><code>GROUP BY</code>, <code>HAVING</code> &amp; Aggregates</span>
+      <span class="topic-desc">grouping rules, <code>HAVING</code> vs <code>WHERE</code>, <code>COUNT(*)</code> vs <code>COUNT(col)</code>, <code>FILTER</code> clause</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>GROUPING SETS</code>, <code>CUBE</code> &amp; <code>ROLLUP</code></span>
+      <span class="topic-desc">multi-level aggregation in one pass, <code>GROUPING()</code> function, subtotals &amp; grand totals</span>
+    </li>
+    <li>
+      <span class="topic-title">Aggregation Strategies (internals)</span>
+      <span class="topic-desc">hash aggregate vs sort aggregate, streaming aggregation, partial / parallel aggregation</span>
+    </li>
+    <li>
+      <span class="topic-title">Window Functions — Usage</span>
+      <span class="topic-desc"><code>ROW_NUMBER</code>, <code>RANK</code>, <code>DENSE_RANK</code>, <code>LAG</code>/<code>LEAD</code>, <code>NTILE</code>, <code>FIRST_VALUE</code>, <code>PARTITION BY</code> + <code>ORDER BY</code>, frame clauses</span>
+    </li>
+    <li>
+      <span class="topic-title">Window Function Execution (internals)</span>
+      <span class="topic-desc">window frame definition, partition sort, running vs cumulative aggregates, <code>ROWS</code> vs <code>RANGE</code> vs <code>GROUPS</code></span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ E — DML: INSERT, UPDATE, DELETE & MERGE ═══════════ -->
+  <h2>E — DML: INSERT, UPDATE, DELETE &amp; MERGE</h2>
+  <ol>
+    <li>
+      <span class="topic-title"><code>INSERT</code> Internals</span>
+      <span class="topic-desc">single &amp; multi-row insert, <code>INSERT … SELECT</code>, <code>RETURNING</code>, bulk loading (<code>COPY</code>), WAL generation on insert</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>UPDATE</code> Internals</span>
+      <span class="topic-desc">in-place vs delete-and-insert (MVCC), HOT updates (heap-only tuples), correlated <code>UPDATE … FROM</code>, index maintenance cost</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>DELETE</code> vs <code>TRUNCATE</code></span>
+      <span class="topic-desc">row-by-row delete + WAL vs file-truncation, FK checks, trigger firing, MVCC visibility, <code>TRUNCATE … CASCADE</code></span>
+    </li>
+    <li>
+      <span class="topic-title">UPSERT &amp; <code>MERGE</code></span>
+      <span class="topic-desc"><code>INSERT … ON CONFLICT</code>, SQL-standard <code>MERGE</code>, conflict detection via unique index, <code>DO NOTHING</code> vs <code>DO UPDATE</code></span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ F — CTEs & Recursive Queries ═══════════ -->
+  <h2>F — CTEs &amp; Recursive Queries</h2>
+  <ol>
+    <li>
+      <span class="topic-title">CTE Internals</span>
+      <span class="topic-desc">materialised vs inlined CTEs, optimisation fence (legacy), recursive CTE work-table iteration</span>
+    </li>
+    <li>
+      <span class="topic-title">CTEs vs Subqueries vs Temp Tables</span>
+      <span class="topic-desc">readability vs performance, materialisation guarantees per engine, temp table statistics, indexed temp tables</span>
+    </li>
+    <li>
+      <span class="topic-title">Recursive Queries</span>
+      <span class="topic-desc">tree traversal (adjacency list), graph walks, cycle detection (<code>CYCLE</code> clause), <code>SEARCH BREADTH/DEPTH FIRST</code></span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ G — Advanced Data Types ═══════════ -->
+  <h2>G — Advanced Data Types &amp; Operations</h2>
+  <ol>
+    <li>
+      <span class="topic-title">JSON / JSONB Operations</span>
+      <span class="topic-desc"><code>-&gt;</code>, <code>-&gt;&gt;</code>, <code>jsonb_path_query</code>, GIN indexing on JSONB, <code>jsonb_agg</code>, JSONB vs normalised tables</span>
+    </li>
+    <li>
+      <span class="topic-title">Array &amp; Composite Types</span>
+      <span class="topic-desc"><code>ARRAY[]</code>, <code>unnest</code>, <code>array_agg</code>, <code>ANY</code>/<code>ALL</code> with arrays, GIN indexing on arrays, row types</span>
+    </li>
+    <li>
+      <span class="topic-title">Full-Text Search Internals</span>
+      <span class="topic-desc"><code>tsvector</code> / <code>tsquery</code>, inverted index, stemming, stop words, ranking (<code>ts_rank</code>), GIN index for text</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ H — Procedural SQL & Server-Side Logic ═══════════ -->
+  <h2>H — Procedural SQL &amp; Server-Side Logic</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Stored Procedures &amp; Functions</span>
+      <span class="topic-desc">PL/pgSQL, T-SQL, PL/SQL — compilation &amp; caching, plan invalidation, <code>IMMUTABLE</code>/<code>STABLE</code>/<code>VOLATILE</code>, transaction control</span>
+    </li>
+    <li>
+      <span class="topic-title">Dynamic SQL</span>
+      <span class="topic-desc"><code>EXECUTE … USING</code>, parameterised queries, SQL injection prevention, plan caching for dynamic statements</span>
+    </li>
+    <li>
+      <span class="topic-title">Trigger Execution Internals</span>
+      <span class="topic-desc"><code>BEFORE</code> / <code>AFTER</code> / <code>INSTEAD OF</code>, row-level vs statement-level, trigger queue ordering, cascading effects</span>
+    </li>
+    <li>
+      <span class="topic-title">Cursor Internals</span>
+      <span class="topic-desc">server-side cursors, <code>DECLARE</code>/<code>FETCH</code>/<code>CLOSE</code>, holdable cursors, memory &amp; snapshot cost, scrollable cursors</span>
+    </li>
+    <li>
+      <span class="topic-title">View Expansion &amp; Materialised Views</span>
+      <span class="topic-desc">view inlining at plan time, updatable views, materialised view refresh, incremental refresh</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ I — Query Lifecycle & Execution Engine ═══════════ -->
+  <h2>I — Query Lifecycle &amp; Execution Engine</h2>
+  <ol>
+    <li>
+      <span class="topic-title">SQL Query Lifecycle</span>
+      <span class="topic-desc">parsing → binding → optimisation → execution → result — the full journey of a query from text to rows</span>
+    </li>
+    <li>
+      <span class="topic-title">Parsing &amp; Lexing</span>
+      <span class="topic-desc">tokeniser, abstract syntax tree (AST), syntax validation, parse tree vs logical plan</span>
+    </li>
+    <li>
+      <span class="topic-title">Logical Query Plan</span>
+      <span class="topic-desc">relational algebra translation, projection, selection, join, set operations, plan tree representation</span>
+    </li>
+    <li>
+      <span class="topic-title">Query Rewriting &amp; Transformation</span>
+      <span class="topic-desc">predicate pushdown, constant folding, <code>IN</code>-to-join, <code>EXISTS</code> rewrite, view merging, common sub-expression elimination</span>
+    </li>
+    <li>
+      <span class="topic-title">Query Optimiser</span>
+      <span class="topic-desc">cost-based vs rule-based optimisation, plan enumeration, cardinality estimation, selectivity, search space pruning</span>
+    </li>
+    <li>
+      <span class="topic-title">Physical Query Plan</span>
+      <span class="topic-desc">operator selection (hash join vs merge join vs nested loop), pipelining vs materialisation, iterator model (Volcano)</span>
+    </li>
+    <li>
+      <span class="topic-title">Execution Engine</span>
+      <span class="topic-desc">row-at-a-time vs vectorised execution, compiled vs interpreted plans, JIT compilation in modern engines</span>
+    </li>
+    <li>
+      <span class="topic-title">Statistics &amp; Histograms</span>
+      <span class="topic-desc"><code>ANALYZE</code>, column statistics, most-common values, histogram buckets, n_distinct, correlation, stale stats impact</span>
+    </li>
+    <li>
+      <span class="topic-title">Cost Model Parameters</span>
+      <span class="topic-desc"><code>seq_page_cost</code>, <code>random_page_cost</code>, <code>cpu_tuple_cost</code>, tuning cost constants to match hardware</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ J — EXPLAIN & Plan Analysis ═══════════ -->
+  <h2>J — EXPLAIN &amp; Plan Analysis</h2>
+  <ol>
+    <li>
+      <span class="topic-title"><code>EXPLAIN</code> / Execution Plans</span>
+      <span class="topic-desc">reading <code>EXPLAIN ANALYZE</code>, Seq Scan vs Index Scan, cost estimates, actual vs estimated rows, plan nodes</span>
+    </li>
+    <li>
+      <span class="topic-title">Bitmap Scan Internals</span>
+      <span class="topic-desc">Bitmap Index Scan → Bitmap Heap Scan, lossy vs exact pages, combining indexes via BitmapAnd / BitmapOr</span>
+    </li>
+    <li>
+      <span class="topic-title">Index Scan Directions &amp; Strategies</span>
+      <span class="topic-desc">forward vs backward scan, index-only scan, scan tipping point, skip scan, loose index scan</span>
+    </li>
+    <li>
+      <span class="topic-title">Query Hints &amp; Plan Forcing</span>
+      <span class="topic-desc"><code>pg_hint_plan</code>, SQL Server hints (<code>OPTION</code>), Oracle hints, <code>enable_*</code> GUCs, stored plan baselines</span>
+    </li>
+    <li>
+      <span class="topic-title">Parameter Sniffing</span>
+      <span class="topic-desc">first-execution plan lock-in, skewed data distributions, <code>OPTIMIZE FOR UNKNOWN</code>, plan recompilation, adaptive plans</span>
+    </li>
+    <li>
+      <span class="topic-title">Common Query Anti-Patterns</span>
+      <span class="topic-desc"><code>SELECT *</code>, functions on indexed columns (SARGability), implicit casts, N+1 queries, <code>OR</code> expansions</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ K — Join Algorithms Internals ═══════════ -->
+  <h2>K — Join Algorithm Internals</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Nested Loop Join</span>
+      <span class="topic-desc">inner/outer loop, index-assisted nested loop, block nested loop, cost model, best-case scenarios</span>
+    </li>
+    <li>
+      <span class="topic-title">Hash Join</span>
+      <span class="topic-desc">build phase / probe phase, in-memory vs grace hash join, hash partitioning, skew handling</span>
+    </li>
+    <li>
+      <span class="topic-title">Sort-Merge Join</span>
+      <span class="topic-desc">sort phase, merge phase, pre-sorted input advantages, external sort for large tables</span>
+    </li>
+    <li>
+      <span class="topic-title">Join Order Optimisation</span>
+      <span class="topic-desc">dynamic programming, greedy heuristics, bushy vs left-deep plans, join commutativity &amp; associativity</span>
+    </li>
+    <li>
+      <span class="topic-title">Sorting Internals</span>
+      <span class="topic-desc">in-memory quicksort, external merge sort, <code>work_mem</code>, top-N heap sort for <code>LIMIT</code></span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ L — Indexing Deep Dive ═══════════ -->
+  <h2>L — Indexing Deep Dive</h2>
+  <ol>
+    <li>
+      <span class="topic-title">B-Tree Index Internals</span>
+      <span class="topic-desc">balanced tree structure, leaf pages, page splits, key ordering, range scans, composite key ordering rules</span>
+    </li>
+    <li>
+      <span class="topic-title">Hash Index</span>
+      <span class="topic-desc">hash buckets, equality-only lookups, overflow pages, limitations vs B-Tree, when the engine picks hash</span>
+    </li>
+    <li>
+      <span class="topic-title">GIN, GiST &amp; Specialised Indexes</span>
+      <span class="topic-desc">inverted index (full-text / JSONB), generalised search tree (geometry / range), BRIN for sorted tables, bitmap index</span>
+    </li>
+    <li>
+      <span class="topic-title">Covering &amp; Included Indexes</span>
+      <span class="topic-desc">index-only scans, <code>INCLUDE</code> columns, eliminating heap lookups, trade-offs with write overhead</span>
+    </li>
+    <li>
+      <span class="topic-title">Partial &amp; Filtered Indexes</span>
+      <span class="topic-desc"><code>WHERE</code> clause on index, reducing index size, targeting hot subsets of data</span>
+    </li>
+    <li>
+      <span class="topic-title">Index Selection Strategy</span>
+      <span class="topic-desc">which columns to index, column order in composite indexes, selectivity, over-indexing cost, missing index detection</span>
+    </li>
+    <li>
+      <span class="topic-title">Index Maintenance &amp; Bloat</span>
+      <span class="topic-desc">page splits, fragmentation, <code>REINDEX</code>, fill factor, dead tuples in indexes, online rebuilds</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ M — Storage Engine & I/O ═══════════ -->
+  <h2>M — Storage Engine &amp; I/O</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Storage Engine Architecture</span>
+      <span class="topic-desc">heap files, pages / blocks, tuple layout, page header, row pointers (CTID), TOAST for large values</span>
+    </li>
+    <li>
+      <span class="topic-title">Row Store vs Column Store</span>
+      <span class="topic-desc">OLTP vs OLAP trade-offs, columnar compression, vectorised scans, hybrid (HTAP) approaches</span>
+    </li>
+    <li>
+      <span class="topic-title">LSM Tree vs B-Tree Storage</span>
+      <span class="topic-desc">write-optimised vs read-optimised, compaction strategies (leveled / tiered), bloom filters, RocksDB / LevelDB</span>
+    </li>
+    <li>
+      <span class="topic-title">Data Pages &amp; Buffer Pool</span>
+      <span class="topic-desc">page cache, buffer replacement policies (LRU / clock-sweep), dirty pages, checkpoint flushing, shared buffers</span>
+    </li>
+    <li>
+      <span class="topic-title">I/O Patterns &amp; Prefetching</span>
+      <span class="topic-desc">sequential vs random I/O cost, effective_io_concurrency, read-ahead, OS page cache, direct I/O (O_DIRECT)</span>
+    </li>
+    <li>
+      <span class="topic-title">Tablespaces &amp; Storage Management</span>
+      <span class="topic-desc">placing tables / indexes on different disks, default tablespace, temp tablespace, capacity planning</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ N — WAL, Durability & Recovery ═══════════ -->
+  <h2>N — WAL, Durability &amp; Recovery</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Write-Ahead Log (WAL)</span>
+      <span class="topic-desc">durability guarantee, LSN, redo records, WAL segments, <code>fsync</code>, group commit, WAL archiving</span>
+    </li>
+    <li>
+      <span class="topic-title">Checkpointing &amp; Recovery</span>
+      <span class="topic-desc">checkpoint process, redo phase, crash recovery, recovery point objective, WAL replay</span>
+    </li>
+    <li>
+      <span class="topic-title">Backup &amp; Point-in-Time Recovery</span>
+      <span class="topic-desc">logical backup (<code>pg_dump</code>) vs physical (<code>pg_basebackup</code>), WAL archiving, PITR, barman / pgBackRest</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ O — Transactions & Concurrency Control ═══════════ -->
+  <h2>O — Transactions &amp; Concurrency Control</h2>
+  <ol>
+    <li>
+      <span class="topic-title">ACID Properties</span>
+      <span class="topic-desc">Atomicity, Consistency, Isolation, Durability — how the engine guarantees each one internally</span>
+    </li>
+    <li>
+      <span class="topic-title">Transaction Isolation Levels</span>
+      <span class="topic-desc">Read Uncommitted, Read Committed, Repeatable Read, Serializable — dirty reads, phantom reads, write skew</span>
+    </li>
+    <li>
+      <span class="topic-title">MVCC (Multi-Version Concurrency Control)</span>
+      <span class="topic-desc">tuple versioning, <code>xmin</code>/<code>xmax</code>, snapshot isolation, visibility rules, read-without-locking</span>
+    </li>
+    <li>
+      <span class="topic-title">Undo Log vs Append-Only MVCC</span>
+      <span class="topic-desc">InnoDB rollback segments vs Postgres tuple versioning, undo tablespace, long-running transaction impact</span>
+    </li>
+    <li>
+      <span class="topic-title">Lock Manager &amp; Lock Types</span>
+      <span class="topic-desc">shared / exclusive locks, row-level vs table-level, intent locks, lock escalation, advisory locks</span>
+    </li>
+    <li>
+      <span class="topic-title">Deadlock Detection</span>
+      <span class="topic-desc">wait-for graph, timeout-based detection, deadlock victim selection, prevention strategies</span>
+    </li>
+    <li>
+      <span class="topic-title">Optimistic vs Pessimistic Concurrency</span>
+      <span class="topic-desc">OCC validation phase, conflict detection, retry logic, when each approach wins</span>
+    </li>
+    <li>
+      <span class="topic-title">Transaction Savepoints</span>
+      <span class="topic-desc"><code>SAVEPOINT</code>, <code>ROLLBACK TO</code>, <code>RELEASE</code>, partial rollback, subtransaction overhead, nesting limits</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ P — Memory, Caching & Temp Storage ═══════════ -->
+  <h2>P — Memory, Caching &amp; Temp Storage</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Memory Architecture</span>
+      <span class="topic-desc">shared memory (buffer pool, WAL buffers, lock table), per-session memory (<code>work_mem</code>, <code>temp_buffers</code>), OS page cache</span>
+    </li>
+    <li>
+      <span class="topic-title">Query Plan Caching</span>
+      <span class="topic-desc">prepared statements, plan cache invalidation, generic vs custom plans, soft/hard parse (Oracle), plan reuse</span>
+    </li>
+    <li>
+      <span class="topic-title">Temp Tables &amp; Spill to Disk</span>
+      <span class="topic-desc">when <code>work_mem</code> overflows, temp file creation, external sort / hash batch, monitoring temp usage</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ Q — Parallel & Distributed Execution ═══════════ -->
+  <h2>Q — Parallel &amp; Distributed Execution</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Parallel Query Execution</span>
+      <span class="topic-desc">parallel seq scan, parallel hash join, gather / gather merge nodes, worker processes, parallel safety</span>
+    </li>
+    <li>
+      <span class="topic-title">Partitioning Internals</span>
+      <span class="topic-desc">range / list / hash partitioning, partition pruning, partition-wise joins &amp; aggregation, global vs local indexes</span>
+    </li>
+    <li>
+      <span class="topic-title">Distributed SQL &amp; Sharding</span>
+      <span class="topic-desc">horizontal partitioning, two-phase commit (2PC), distributed transactions, query routing, data rebalancing</span>
+    </li>
+    <li>
+      <span class="topic-title">Replication Internals</span>
+      <span class="topic-desc">streaming replication, logical replication, WAL shipping, conflict resolution, synchronous vs async, quorum commit</span>
+    </li>
+    <li>
+      <span class="topic-title">Consensus Protocols (Raft / Paxos)</span>
+      <span class="topic-desc">leader election, log replication, quorum, split-brain prevention, CockroachDB / TiDB / Spanner usage</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ R — Maintenance & Metadata ═══════════ -->
+  <h2>R — Maintenance &amp; Metadata</h2>
+  <ol>
+    <li>
+      <span class="topic-title">VACUUM &amp; Autovacuum</span>
+      <span class="topic-desc">dead tuple reclamation, visibility map, freeze map, anti-wraparound vacuum, autovacuum tuning</span>
+    </li>
+    <li>
+      <span class="topic-title">Table &amp; Index Bloat</span>
+      <span class="topic-desc">causes (UPDATE / DELETE patterns), measuring bloat, <code>pg_repack</code> / <code>CLUSTER</code>, fillfactor tuning</span>
+    </li>
+    <li>
+      <span class="topic-title">System Catalogue</span>
+      <span class="topic-desc"><code>pg_class</code>, <code>pg_attribute</code>, <code>pg_index</code>, <code>information_schema</code>, how the engine reads metadata at plan time</span>
+    </li>
+    <li>
+      <span class="topic-title">Change Data Capture (CDC)</span>
+      <span class="topic-desc">logical decoding, WAL-based CDC, Debezium, outbox pattern, event sourcing vs CDC, downstream consumers</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ S — Security & Access Control ═══════════ -->
+  <h2>S — Security &amp; Access Control</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Row-Level Security &amp; Permissions</span>
+      <span class="topic-desc"><code>GRANT</code> / <code>REVOKE</code>, role hierarchy, RLS policies, security barrier views, privilege checks during planning</span>
+    </li>
+  </ol>
+
+  <!-- ═══════════ T — Monitoring & Operations ═══════════ -->
+  <h2>T — Monitoring &amp; Operations</h2>
+  <ol>
+    <li>
+      <span class="topic-title">Wait Events &amp; Monitoring</span>
+      <span class="topic-desc"><code>pg_stat_activity</code>, wait event types (I/O, lock, CPU), <code>pg_stat_statements</code>, slow query logging, query fingerprinting</span>
+    </li>
+    <li>
+      <span class="topic-title">Connection Pooling &amp; Process Model</span>
+      <span class="topic-desc">process-per-connection (Postgres) vs thread pool (MySQL), pgbouncer, connection overhead, session state</span>
+    </li>
+  </ol>
+
+</body>
+</html>

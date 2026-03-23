@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Internals — Topics</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      padding: 2rem;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+    h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.25rem; color: #111827; }
+    .subtitle {
+      color: #6b7280; margin-bottom: 1rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e5e7eb; font-size: 0.95rem;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem;
+      margin-bottom: 2rem; font-size: 0.82rem; color: #4b5563;
+    }
+    .legend span { display: flex; align-items: center; gap: 0.35rem; }
+    .legend .dot {
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+    }
+    /* ── Section color coding ── */
+    h2 {
+      font-size: 1.1rem; font-weight: 700; margin: 1.75rem 0 0.6rem 0;
+      padding: 0.4rem 0.85rem; border-radius: 0 6px 6px 0;
+    }
+    /* Engine & Compilation — indigo */
+    .cat-engine   { background: #eef2ff; border-left: 4px solid #6366f1; color: #3730a3; }
+    /* Parsing & Semantics — amber */
+    .cat-parsing  { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+    /* Execution Model — emerald */
+    .cat-exec     { background: #ecfdf5; border-left: 4px solid #10b981; color: #065f46; }
+    /* Event Loop & Concurrency — cyan */
+    .cat-async    { background: #ecfeff; border-left: 4px solid #06b6d4; color: #155e75; }
+    /* Memory & GC — rose */
+    .cat-memory   { background: #fff1f2; border-left: 4px solid #f43f5e; color: #9f1239; }
+    /* Data Structures & Layout — violet */
+    .cat-data     { background: #f5f3ff; border-left: 4px solid #8b5cf6; color: #5b21b6; }
+    /* Type System & Coercion — orange */
+    .cat-types    { background: #fff7ed; border-left: 4px solid #f97316; color: #9a3412; }
+    /* Runtime & Platform — slate */
+    .cat-runtime  { background: #f8fafc; border-left: 4px solid #64748b; color: #334155; }
+    /* Performance & Debugging — teal */
+    .cat-perf     { background: #f0fdfa; border-left: 4px solid #14b8a6; color: #134e4a; }
+    /* Security — red */
+    .cat-security { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+    /* Spec — blue */
+    .cat-spec     { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
+    /* Algorithms & Complexity — fuchsia */
+    .cat-algo     { background: #fdf4ff; border-left: 4px solid #d946ef; color: #86198f; }
+
+    ol {
+      list-style: none; counter-reset: topic-counter;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    ol > li {
+      counter-increment: topic-counter;
+      background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;
+      padding: 0.65rem 1rem; display: flex; align-items: baseline; gap: 0.75rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    ol > li::before {
+      content: counter(topic-counter);
+      min-width: 1.8rem; height: 1.8rem; background: #f3f4f6; color: #6b7280;
+      border-radius: 50%; font-size: 0.75rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .topic-title { font-weight: 600; color: #111827; min-width: 270px; }
+    .topic-desc  { color: #6b7280; font-size: 0.9rem; }
+    .topic-desc code {
+      background: #f3f4f6; border-radius: 4px; padding: 0.1rem 0.35rem;
+      font-size: 0.82rem; color: #374151;
+      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>JavaScript Internals — Topics</h1>
+  <p class="subtitle">How the engine parses, compiles, optimises, and executes your code under the hood</p>
+
+  <div class="legend">
+    <span><span class="dot" style="background:#6366f1"></span> Engine &amp; Compilation</span>
+    <span><span class="dot" style="background:#f59e0b"></span> Parsing &amp; Semantics</span>
+    <span><span class="dot" style="background:#10b981"></span> Execution Model</span>
+    <span><span class="dot" style="background:#06b6d4"></span> Event Loop &amp; Async</span>
+    <span><span class="dot" style="background:#f43f5e"></span> Memory &amp; GC</span>
+    <span><span class="dot" style="background:#8b5cf6"></span> Data Structures &amp; Layout</span>
+    <span><span class="dot" style="background:#f97316"></span> Type System &amp; Coercion</span>
+    <span><span class="dot" style="background:#64748b"></span> Runtime &amp; Platform</span>
+    <span><span class="dot" style="background:#14b8a6"></span> Performance &amp; Debugging</span>
+    <span><span class="dot" style="background:#ef4444"></span> Security</span>
+    <span><span class="dot" style="background:#3b82f6"></span> ECMAScript Spec</span>
+    <span><span class="dot" style="background:#d946ef"></span> Algorithms &amp; Complexity</span>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-engine">A — Engine Architecture &amp; Compilation Pipeline</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">JavaScript Engine Overview</span>
+      <span class="topic-desc">V8 (Chrome / Node), SpiderMonkey (Firefox), JavaScriptCore (Safari) — high-level pipeline from source to machine code</span>
+    </li>
+    <li>
+      <span class="topic-title">Bytecode Generation (Ignition)</span>
+      <span class="topic-desc">V8's Ignition interpreter, register-based bytecode, bytecode instructions walkthrough, bytecode caching and reuse</span>
+    </li>
+    <li>
+      <span class="topic-title">JIT Compilation &amp; Tiered Pipeline</span>
+      <span class="topic-desc">Sparkplug (baseline) → Maglev (mid-tier) → TurboFan (optimising), hot-path detection, OSR (on-stack replacement)</span>
+    </li>
+    <li>
+      <span class="topic-title">Deoptimisation &amp; Bailouts</span>
+      <span class="topic-desc">why optimised code gets thrown away, type feedback invalidation, hidden class changes, map migration, speculative optimisation failures</span>
+    </li>
+    <li>
+      <span class="topic-title">Inline Caches (ICs)</span>
+      <span class="topic-desc">monomorphic → polymorphic → megamorphic, property access fast paths, IC state transitions, feedback vectors</span>
+    </li>
+    <li>
+      <span class="topic-title">Lazy Compilation &amp; Code Caching</span>
+      <span class="topic-desc">lazy vs eager parsing, V8 code cache (<code>.jsc</code>), bytecode serialisation, browser cache integration, snapshot-based startup</span>
+    </li>
+    <li>
+      <span class="topic-title">Function Inlining</span>
+      <span class="topic-desc">TurboFan inlining, inlining budget, polymorphic call sites preventing inlining, speculative inlining, escape analysis</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-parsing">B — Parsing: Lexing, AST &amp; Syntax Analysis</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Tokenisation / Lexical Analysis</span>
+      <span class="topic-desc">scanner, token types (identifiers, literals, punctuators, keywords), Unicode handling, template literal scanning, regex vs division ambiguity</span>
+    </li>
+    <li>
+      <span class="topic-title">Abstract Syntax Tree (AST)</span>
+      <span class="topic-desc">AST node types (Program, FunctionDeclaration, BinaryExpression, etc.), ESTree spec, AST Explorer, AST as compiler IR</span>
+    </li>
+    <li>
+      <span class="topic-title">Eager vs Lazy Parsing</span>
+      <span class="topic-desc">V8 pre-parser skips function bodies, lazy compilation on first call, over-lazy pitfalls, PIFE hinting, parsing cost on page load</span>
+    </li>
+    <li>
+      <span class="topic-title">Streaming &amp; Background Parsing</span>
+      <span class="topic-desc">parsing on a background thread, streaming over the network, chunked parsing, parallel parse/compile in V8</span>
+    </li>
+    <li>
+      <span class="topic-title">Early Errors &amp; Static Semantics</span>
+      <span class="topic-desc">syntax errors at parse time, duplicate parameter names, <code>const</code> without initialiser, strict-mode restrictions, <code>super</code> usage rules</span>
+    </li>
+    <li>
+      <span class="topic-title">Automatic Semicolon Insertion (ASI)</span>
+      <span class="topic-desc">three ASI rules, restricted productions (<code>return</code>, <code>throw</code>, <code>yield</code>, <code>break</code>/<code>continue</code>), "no LineTerminator here" spec notation, common ASI pitfalls</span>
+    </li>
+    <li>
+      <span class="topic-title">Destructuring Parsing</span>
+      <span class="topic-desc">cover grammar (assignment pattern vs object/array literal), reinterpretation in binding position, nested destructuring AST</span>
+    </li>
+    <li>
+      <span class="topic-title">Template Literal Parsing</span>
+      <span class="topic-desc">tagged templates, cooked vs raw values, template literal revision (ES2018), template as quasi-literal, expression interpolation parsing</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-parsing">C — Semantics: Evaluation Rules &amp; Language Mechanics</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Expression vs Statement Evaluation</span>
+      <span class="topic-desc">expression statements, completion values, <code>eval</code> returning completion value, comma operator, void operator</span>
+    </li>
+    <li>
+      <span class="topic-title">Variable Declaration Semantics</span>
+      <span class="topic-desc"><code>var</code> → function-scoped + hoisted, <code>let</code>/<code>const</code> → block-scoped + TDZ, redeclaration rules, declaration in loops</span>
+    </li>
+    <li>
+      <span class="topic-title">Function Declaration vs Expression Semantics</span>
+      <span class="topic-desc">hoisting difference, block-scoped function declarations (Annex B), named function expression scope, <code>arguments.callee</code></span>
+    </li>
+    <li>
+      <span class="topic-title">Iteration Statement Semantics</span>
+      <span class="topic-desc"><code>for</code>: per-iteration binding, <code>for...in</code>: <code>[[Enumerate]]</code> / <code>EnumerateObjectProperties</code>, <code>for...of</code>: iterator protocol invocation, label semantics</span>
+    </li>
+    <li>
+      <span class="topic-title">Assignment &amp; Reference Semantics</span>
+      <span class="topic-desc">Reference Records, <code>GetValue</code>/<code>PutValue</code>, LHS resolution, compound assignment desugaring, optional chaining assignment (<code>?.=</code> proposal)</span>
+    </li>
+    <li>
+      <span class="topic-title">Short-Circuit &amp; Logical Assignment</span>
+      <span class="topic-desc"><code>&&=</code>, <code>||=</code>, <code>??=</code> evaluation, short-circuit semantics, no setter call when short-circuited</span>
+    </li>
+    <li>
+      <span class="topic-title">Property Access Semantics</span>
+      <span class="topic-desc">dot vs bracket, <code>[[Get]]</code> internal method, receiver propagation, optional chaining (<code>?.</code>) short-circuit, <code>in</code> operator, private field access (<code>#</code>)</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>delete</code> Operator Semantics</span>
+      <span class="topic-desc">Reference Record check, configurable property requirement, <code>delete</code> on variables (strict vs sloppy), return value, proxy deleteProperty trap</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>typeof</code> &amp; <code>instanceof</code> Internals</span>
+      <span class="topic-desc"><code>typeof null === "object"</code> legacy, TDZ-safe <code>typeof</code>, <code>instanceof</code> → <code>Symbol.hasInstance</code>, <code>OrdinaryHasInstance</code> algorithm</span>
+    </li>
+    <li>
+      <span class="topic-title">Error Propagation &amp; Completion Records</span>
+      <span class="topic-desc"><code>normal</code>, <code>throw</code>, <code>return</code>, <code>break</code>, <code>continue</code> completions, <code>try/catch/finally</code> completion override rules, iterator close on abrupt</span>
+    </li>
+    <li>
+      <span class="topic-title">Tail Position &amp; Proper Tail Calls</span>
+      <span class="topic-desc">tail position definition in spec, PTC in Safari, V8's non-implementation, STC proposal, recursive patterns that qualify</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-exec">D — Execution Model</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Execution Context Lifecycle</span>
+      <span class="topic-desc">global / function / eval / module context, creation phase (bindings) → execution phase, context stack, running execution context</span>
+    </li>
+    <li>
+      <span class="topic-title">Lexical Environment &amp; Variable Environment</span>
+      <span class="topic-desc">Environment Record types (declarative, object, function, module, global), outer environment reference, <code>with</code> statement creating object env</span>
+    </li>
+    <li>
+      <span class="topic-title">Call Stack &amp; Stack Frames</span>
+      <span class="topic-desc">stack frame layout, push / pop, saved registers, stack overflow, maximum call stack size, async stack traces</span>
+    </li>
+    <li>
+      <span class="topic-title">Scope Chain Resolution</span>
+      <span class="topic-desc">identifier lookup walk through environment chain, scope chain length perf impact, <code>eval</code> disabling scope analysis</span>
+    </li>
+    <li>
+      <span class="topic-title">Hoisting Mechanics (Deep)</span>
+      <span class="topic-desc"><code>var</code> initialised to <code>undefined</code>, function declarations hoisted with body, <code>let</code>/<code>const</code> TDZ window, class TDZ, hoisting order within a scope</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>this</code> Binding Algorithm</span>
+      <span class="topic-desc">default → implicit → explicit → <code>new</code> binding priority, <code>[[ThisMode]]</code> (lexical, strict, global), arrow function <code>[[ThisValue]]</code> capture</span>
+    </li>
+    <li>
+      <span class="topic-title">Strict Mode Effects on Execution</span>
+      <span class="topic-desc"><code>this</code> = <code>undefined</code> in functions, no <code>with</code>, <code>arguments</code> no aliasing, <code>eval</code> gets own scope, octal literals banned</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>new</code> Operator Internals</span>
+      <span class="topic-desc"><code>OrdinaryCreateFromConstructor</code>, prototype assignment, <code>[[Construct]]</code> internal method, return override rules, <code>new.target</code> propagation</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-exec">E — Closures &amp; Scope Internals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Closure Representation in V8</span>
+      <span class="topic-desc">Context objects on heap, variable capture by reference, shared context for sibling closures, [[Environment]] slot</span>
+    </li>
+    <li>
+      <span class="topic-title">Context Allocation (Stack → Heap)</span>
+      <span class="topic-desc">escaped variables promoted to heap context, context chain as linked list, <code>eval</code>/<code>with</code> forcing full context, scope analysis</span>
+    </li>
+    <li>
+      <span class="topic-title">Block Scope &amp; Loop Closures</span>
+      <span class="topic-desc">per-iteration environment for <code>let</code> in <code>for</code>, classic <code>var</code> loop closure bug, IIFE workaround vs <code>let</code></span>
+    </li>
+    <li>
+      <span class="topic-title">Closure Performance &amp; Memory</span>
+      <span class="topic-desc">unnecessary variable capture, oversized contexts, V8 context specialisation, impact on GC (retaining scope tree)</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-async">F — Event Loop &amp; Asynchronous Execution</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Event Loop Architecture</span>
+      <span class="topic-desc">single-threaded model, run-to-completion, event loop phases, task picking algorithm, rendering integration</span>
+    </li>
+    <li>
+      <span class="topic-title">Macrotask Queue</span>
+      <span class="topic-desc"><code>setTimeout</code>, <code>setInterval</code>, I/O callbacks, <code>setImmediate</code> (Node), UI rendering tasks, task scheduling order</span>
+    </li>
+    <li>
+      <span class="topic-title">Microtask Queue</span>
+      <span class="topic-desc"><code>Promise.then</code>, <code>queueMicrotask</code>, <code>MutationObserver</code>, microtask checkpoint timing, microtask starvation risk</span>
+    </li>
+    <li>
+      <span class="topic-title">Node.js Event Loop Phases</span>
+      <span class="topic-desc">timers → pending → idle/prepare → poll → check → close, <code>process.nextTick</code> vs <code>setImmediate</code> vs microtasks</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>requestAnimationFrame</code> &amp; Frame Pipeline</span>
+      <span class="topic-desc">rAF timing in the rendering steps, frame budget (16ms), style → layout → paint → composite, rAF vs setTimeout</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>requestIdleCallback</code> &amp; Scheduler API</span>
+      <span class="topic-desc">idle period detection, deadline API, <code>scheduler.postTask</code>, priority scheduling, React Fiber scheduling influence</span>
+    </li>
+    <li>
+      <span class="topic-title">Web Workers &amp; Thread Model</span>
+      <span class="topic-desc">dedicated / shared / service workers, <code>postMessage</code> structured clone, <code>SharedArrayBuffer</code>, <code>Atomics</code>, transferable objects</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-async">G — Promises &amp; Async Internals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Promise State Machine</span>
+      <span class="topic-desc">pending → fulfilled / rejected, <code>[[PromiseState]]</code>, <code>[[PromiseResult]]</code>, <code>[[PromiseFulfillReactions]]</code>, immutable settlement</span>
+    </li>
+    <li>
+      <span class="topic-title">Promise Resolution Procedure</span>
+      <span class="topic-desc"><code>[[Resolve]](promise, x)</code> algorithm, thenable assimilation, recursive unwrapping, promise adoption chain</span>
+    </li>
+    <li>
+      <span class="topic-title">Microtask Scheduling for Promises</span>
+      <span class="topic-desc"><code>PromiseReactionJob</code>, <code>PromiseResolveThenableJob</code>, enqueue order, then-chain vs <code>Promise.all</code> scheduling</span>
+    </li>
+    <li>
+      <span class="topic-title">Async/Await Desugaring</span>
+      <span class="topic-desc">transformation to promise + generator, implicit <code>Promise.resolve</code> wrapping, <code>await</code> as yield point, V8 zero-cost async stack traces</span>
+    </li>
+    <li>
+      <span class="topic-title">Unhandled Rejection Tracking</span>
+      <span class="topic-desc"><code>unhandledrejection</code> event, <code>rejectionhandled</code>, Node <code>process.on('unhandledRejection')</code>, GC-based detection</span>
+    </li>
+    <li>
+      <span class="topic-title">Async Iteration Protocol</span>
+      <span class="topic-desc"><code>Symbol.asyncIterator</code>, <code>for await...of</code>, async generator functions, queued yield, backpressure patterns</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-data">H — Data Structures: Object Layout &amp; Internal Representation</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Hidden Classes / Maps / Shapes</span>
+      <span class="topic-desc">shape transitions, transition trees, in-object properties, fast properties vs slow (dictionary mode), why property order matters</span>
+    </li>
+    <li>
+      <span class="topic-title">Object Property Storage</span>
+      <span class="topic-desc">named properties array, elements (indexed) backing store, named vs indexed split, property attributes storage</span>
+    </li>
+    <li>
+      <span class="topic-title">Fast Elements vs Dictionary Elements</span>
+      <span class="topic-desc">dense vs sparse arrays, element kind transitions, dictionary mode for sparse indexes, frozen/sealed elements</span>
+    </li>
+    <li>
+      <span class="topic-title">Hash Tables in JS Engines</span>
+      <span class="topic-desc"><code>Map</code>/<code>Set</code> use ordered hash tables, <code>WeakMap</code> ephemeron tables, object dictionary mode = hash table, collision handling</span>
+    </li>
+    <li>
+      <span class="topic-title">Array Element Kinds (V8)</span>
+      <span class="topic-desc">PACKED_SMI → PACKED_DOUBLE → PACKED_ELEMENTS → HOLEY variants, one-way lattice (never goes back), perf implications</span>
+    </li>
+    <li>
+      <span class="topic-title">String Internal Representations</span>
+      <span class="topic-desc">SeqString, ConsString (rope), SlicedString, ThinString, ExternalString, one-byte vs two-byte, string interning / internalisation</span>
+    </li>
+    <li>
+      <span class="topic-title">RegExp Internal Representation</span>
+      <span class="topic-desc">compiled bytecode / native code (Irregexp), source + flags, lastIndex mutability, regex result array shape</span>
+    </li>
+    <li>
+      <span class="topic-title">Map &amp; Set Implementation</span>
+      <span class="topic-desc">deterministic iteration order, bucket array + chains, hash function for objects, rehashing, capacity growth strategy</span>
+    </li>
+    <li>
+      <span class="topic-title">WeakMap / WeakSet &amp; Ephemerons</span>
+      <span class="topic-desc">weak references to keys, GC-driven cleanup, ephemeron constraint (strong value, weak key), no enumeration by design</span>
+    </li>
+    <li>
+      <span class="topic-title">TypedArray &amp; ArrayBuffer Layout</span>
+      <span class="topic-desc">raw memory <code>ArrayBuffer</code>, byte offset/length, <code>SharedArrayBuffer</code> for workers, <code>DataView</code> mixed types, endianness</span>
+    </li>
+    <li>
+      <span class="topic-title">Linked Structures (Scope/Context/Prototype Chains)</span>
+      <span class="topic-desc">scope chain as linked context list, prototype chain as linked maps, environment record chain, performance of chain walks</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-memory">I — Memory Management &amp; Garbage Collection</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">V8 Memory Spaces</span>
+      <span class="topic-desc">new space (young gen), old space (old gen), large object space, code space, map space, stack memory, heap limits</span>
+    </li>
+    <li>
+      <span class="topic-title">Value Representation &amp; Tagging</span>
+      <span class="topic-desc">tagged pointers, SMI (small integers), HeapNumber, pointer tagging, NaN-boxing (SpiderMonkey/JSC), V8 pointer compression (Oilpan)</span>
+    </li>
+    <li>
+      <span class="topic-title">GC Generational Hypothesis</span>
+      <span class="topic-desc">most objects die young, nursery vs tenured, generational boundary, promotion threshold</span>
+    </li>
+    <li>
+      <span class="topic-title">Scavenger (Minor GC)</span>
+      <span class="topic-desc">semi-space copying, from-space → to-space, promotion to old generation, allocation fast path, parallel scavenging</span>
+    </li>
+    <li>
+      <span class="topic-title">Mark-Sweep &amp; Mark-Compact (Major GC)</span>
+      <span class="topic-desc">tri-colour marking, mark stack, sweep + free list, compaction for fragmentation, incremental marking</span>
+    </li>
+    <li>
+      <span class="topic-title">Concurrent &amp; Incremental GC (Orinoco)</span>
+      <span class="topic-desc">concurrent marking on helper threads, incremental steps interleaved with JS, lazy sweeping, reducing stop-the-world pauses</span>
+    </li>
+    <li>
+      <span class="topic-title">Write Barriers</span>
+      <span class="topic-desc">remembered sets, card tables, tracking old→new pointers, store buffer flush, barrier overhead</span>
+    </li>
+    <li>
+      <span class="topic-title">WeakRef &amp; FinalizationRegistry</span>
+      <span class="topic-desc"><code>WeakRef</code> semantics, <code>FinalizationRegistry</code> cleanup callbacks, GC non-determinism, weak collection patterns</span>
+    </li>
+    <li>
+      <span class="topic-title">Common Memory Leak Patterns</span>
+      <span class="topic-desc">detached DOM trees, forgotten timers / event listeners, closures retaining scope, global accumulation, console references</span>
+    </li>
+    <li>
+      <span class="topic-title">Heap Snapshots &amp; Allocation Profiling</span>
+      <span class="topic-desc">DevTools heap snapshot, allocation timeline, retainer tree, shallow vs retained size, <code>--max-old-space-size</code></span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-types">J — Type System &amp; Coercion Internals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Primitive Types at Engine Level</span>
+      <span class="topic-desc">SMI, HeapNumber, BigInt heap representation, Boolean / Undefined / Null as oddball slots, Symbol unique identity</span>
+    </li>
+    <li>
+      <span class="topic-title">Type Feedback &amp; Speculative Typing</span>
+      <span class="topic-desc">feedback vectors per bytecode, type profiling at IC sites, speculative type guards in optimised code, deopt on mismatch</span>
+    </li>
+    <li>
+      <span class="topic-title">Abstract Operations (Spec)</span>
+      <span class="topic-desc"><code>ToPrimitive</code> (hint: number/string/default), <code>ToNumber</code>, <code>ToString</code>, <code>ToBoolean</code>, <code>ToObject</code>, <code>ToPropertyKey</code></span>
+    </li>
+    <li>
+      <span class="topic-title"><code>==</code> Abstract Equality Algorithm</span>
+      <span class="topic-desc">step-by-step spec walkthrough, type coercion cascade, <code>null == undefined</code>, object-to-primitive conversion, edge cases</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>+</code> Operator Overloading</span>
+      <span class="topic-desc"><code>ToPrimitive</code> dispatch, string concatenation vs numeric addition, <code>Symbol.toPrimitive</code>, <code>valueOf</code>/<code>toString</code> priority, template literal coercion</span>
+    </li>
+    <li>
+      <span class="topic-title">Number Representation &amp; IEEE 754</span>
+      <span class="topic-desc">64-bit double precision, <code>Number.MAX_SAFE_INTEGER</code>, floating-point rounding, <code>0.1 + 0.2</code>, <code>-0</code>, <code>NaN !== NaN</code>, <code>Number.EPSILON</code></span>
+    </li>
+    <li>
+      <span class="topic-title">BigInt Internals</span>
+      <span class="topic-desc">arbitrary-precision integer, heap allocation, no mixing with Number, performance characteristics, engine representation</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-data">K — Prototypes, Classes &amp; Object Model</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Prototype Chain Resolution (Deep)</span>
+      <span class="topic-desc"><code>[[Prototype]]</code> slot, lookup walk, property shadowing, <code>__proto__</code> legacy, chain termination at <code>null</code>, prototype pollution impact</span>
+    </li>
+    <li>
+      <span class="topic-title">Property Descriptors &amp; Meta-Object Protocol</span>
+      <span class="topic-desc"><code>[[Get]]</code>, <code>[[Set]]</code>, <code>[[DefineOwnProperty]]</code>, accessor vs data descriptors, <code>[[OwnPropertyKeys]]</code> ordering</span>
+    </li>
+    <li>
+      <span class="topic-title">Proxy Traps &amp; Reflect</span>
+      <span class="topic-desc">14 proxy traps, invariant enforcement by engine, revocable proxies, Reflect methods mirror internal methods, performance cost</span>
+    </li>
+    <li>
+      <span class="topic-title">Object Integrity Levels</span>
+      <span class="topic-desc"><code>Object.freeze</code> / <code>seal</code> / <code>preventExtensions</code>, map transitions for integrity, frozen object optimisations, deep freeze</span>
+    </li>
+    <li>
+      <span class="topic-title">Class Internals</span>
+      <span class="topic-desc">class as syntactic sugar over prototypes, <code>[[ConstructorKind]]</code>: base vs derived, <code>super</code> resolution via <code>[[HomeObject]]</code>, static initialisation blocks</span>
+    </li>
+    <li>
+      <span class="topic-title">Private Fields &amp; Methods</span>
+      <span class="topic-desc"><code>#</code>-prefixed names, <code>[[PrivateName]]</code> identity, WeakMap-like storage in V8, brand checking, private fields vs closures</span>
+    </li>
+    <li>
+      <span class="topic-title">Symbol Well-Known &amp; Custom Protocols</span>
+      <span class="topic-desc"><code>Symbol.iterator</code>, <code>Symbol.toPrimitive</code>, <code>Symbol.hasInstance</code>, <code>Symbol.species</code>, <code>Symbol.toStringTag</code>, hooking into language mechanics</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-exec">L — Functions, Generators &amp; Iterators</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Function Object Internals</span>
+      <span class="topic-desc"><code>[[Call]]</code> vs <code>[[Construct]]</code>, function kinds table, <code>new.target</code>, <code>[[ThisMode]]</code>, <code>[[Strict]]</code> flag</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>arguments</code> Object Internals</span>
+      <span class="topic-desc">sloppy mode aliasing to named params, strict mode copy semantics, <code>arguments</code> heap allocation, rest params as true Array</span>
+    </li>
+    <li>
+      <span class="topic-title">Iterator Protocol &amp; <code>for...of</code> Desugaring</span>
+      <span class="topic-desc"><code>Symbol.iterator</code>, <code>{ value, done }</code> contract, <code>return()</code> for cleanup, iteratorClose on break/throw, spread desugaring</span>
+    </li>
+    <li>
+      <span class="topic-title">Generator Execution Model</span>
+      <span class="topic-desc">suspended coroutine, <code>yield</code> save/restore of execution context, generator states, <code>throw()</code>/<code>return()</code> injection, <code>yield*</code> delegation</span>
+    </li>
+    <li>
+      <span class="topic-title">Generator Bytecode &amp; State Machine</span>
+      <span class="topic-desc">V8 compiles generators to state machines in bytecode, switch dispatch, resume points, coroutine frame allocation</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-data">M — Regular Expression Engine</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Irregexp: V8's Regex Engine</span>
+      <span class="topic-desc">bytecode interpreter path vs JIT-compiled native code, NFA-based backtracking, regex caching and compilation</span>
+    </li>
+    <li>
+      <span class="topic-title">Backtracking &amp; Catastrophic Backtracking (ReDoS)</span>
+      <span class="topic-desc">exponential blow-up patterns, V8 backtracking budget / interrupt, linear-time engines (RE2), practical ReDoS prevention</span>
+    </li>
+    <li>
+      <span class="topic-title">Regex Spec Features</span>
+      <span class="topic-desc"><code>d</code>, <code>v</code> (unicodeSets), named captures, lookbehind, <code>matchAll</code> iterator, <code>Symbol.match</code>/<code>Symbol.replace</code>/<code>Symbol.search</code></span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-runtime">N — Module System Internals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">ES Module Loading Pipeline</span>
+      <span class="topic-desc">construction (parse + resolve) → instantiation (live bindings) → evaluation, module map, host integration hooks</span>
+    </li>
+    <li>
+      <span class="topic-title">Live Bindings vs CJS Value Copies</span>
+      <span class="topic-desc">ESM exports as live read-only bindings, CJS <code>module.exports</code> snapshot, circular dependency handling difference</span>
+    </li>
+    <li>
+      <span class="topic-title">Module Resolution &amp; Import Maps</span>
+      <span class="topic-desc">bare specifiers, relative paths, import maps (<code>&lt;script type="importmap"&gt;</code>), Node resolution (<code>node_modules</code>), <code>package.json</code> exports field</span>
+    </li>
+    <li>
+      <span class="topic-title">Dynamic <code>import()</code> &amp; Code Splitting</span>
+      <span class="topic-desc">returns a promise, module namespace object, cache dedup, bundler integration (chunks), conditional/lazy loading</span>
+    </li>
+    <li>
+      <span class="topic-title">Top-Level <code>await</code> &amp; Async Modules</span>
+      <span class="topic-desc">module evaluation becomes async, blocking dependent siblings, evaluation order changes, error propagation</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-runtime">O — Browser Runtime Internals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Browser Process Architecture</span>
+      <span class="topic-desc">browser process vs renderer process, site isolation, V8 isolates per renderer, IPC between processes</span>
+    </li>
+    <li>
+      <span class="topic-title">DOM ↔ JS Engine Binding</span>
+      <span class="topic-desc">Blink C++ DOM ↔ V8 wrappers, binding generators (WebIDL), frequent/infrequent access optimisation, wrapper tracing for GC</span>
+    </li>
+    <li>
+      <span class="topic-title">Rendering Pipeline &amp; JS Interaction</span>
+      <span class="topic-desc">JS → style recalc → layout → paint → composite, forced synchronous layout (layout thrashing), <code>will-change</code> compositor hints</span>
+    </li>
+    <li>
+      <span class="topic-title">Script Loading Strategies</span>
+      <span class="topic-desc"><code>defer</code> vs <code>async</code> vs <code>type="module"</code>, parser-blocking, streaming parse, preload scanner, <code>&lt;link rel="modulepreload"&gt;</code></span>
+    </li>
+    <li>
+      <span class="topic-title">V8 Isolates, Contexts &amp; Realms</span>
+      <span class="topic-desc">isolate = independent V8 heap, context = global scope sandbox, security tokens, cross-origin isolation, iframe realms</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-runtime">P — Node.js Runtime Internals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Node Architecture (V8 + libuv)</span>
+      <span class="topic-desc">V8 for JS, libuv for async I/O, C++ bindings layer, N-API/Node-API ABI stability, Node.js APIs → libuv → kernel</span>
+    </li>
+    <li>
+      <span class="topic-title">libuv Thread Pool &amp; I/O</span>
+      <span class="topic-desc">default 4 threads, file I/O and DNS on pool, <code>UV_THREADPOOL_SIZE</code>, native async (epoll/kqueue/IOCP), pool exhaustion</span>
+    </li>
+    <li>
+      <span class="topic-title">Streams &amp; Backpressure</span>
+      <span class="topic-desc">Readable / Writable / Duplex / Transform, highWaterMark, <code>pipe()</code> backpressure, flowing vs paused, web streams interop</span>
+    </li>
+    <li>
+      <span class="topic-title">Buffer &amp; Binary Handling</span>
+      <span class="topic-desc"><code>Buffer</code> as <code>Uint8Array</code> subclass, pooled allocation, <code>allocUnsafe</code> vs <code>alloc</code>, encoding / decoding, <code>TextEncoder</code>/<code>TextDecoder</code></span>
+    </li>
+    <li>
+      <span class="topic-title">Worker Threads</span>
+      <span class="topic-desc"><code>worker_threads</code>, separate isolate per worker, <code>SharedArrayBuffer</code>, <code>MessageChannel</code>, transferable objects, <code>Atomics</code></span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-perf">Q — Optimisation Patterns &amp; Anti-Patterns</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Monomorphic vs Polymorphic Code</span>
+      <span class="topic-desc">keeping call sites monomorphic, cost of polymorphism, megamorphic fallback, shape consistency in hot loops</span>
+    </li>
+    <li>
+      <span class="topic-title">Hidden Class Stability</span>
+      <span class="topic-desc">consistent initialisation order, avoiding <code>delete</code>, initialise all properties in constructor, dictionary mode avoidance</span>
+    </li>
+    <li>
+      <span class="topic-title">Array Element Kind Optimisation</span>
+      <span class="topic-desc">avoid holes, pre-allocate, don't mix SMI/DOUBLE/ELEMENTS, avoid out-of-bounds, kind lattice awareness</span>
+    </li>
+    <li>
+      <span class="topic-title">Avoiding Deoptimisation Triggers</span>
+      <span class="topic-desc"><code>arguments</code> leaking, shape changes in hot code, <code>eval</code>/<code>with</code>, <code>try/catch</code> in hot functions (legacy), type instability</span>
+    </li>
+    <li>
+      <span class="topic-title">String Concatenation Strategies</span>
+      <span class="topic-desc"><code>+</code> operator cons-string allocation, <code>Array.join</code>, template literals, flatten on access, rope tree depth limits</span>
+    </li>
+    <li>
+      <span class="topic-title">Micro-benchmarking Pitfalls</span>
+      <span class="topic-desc">dead-code elimination, constant folding, warm-up runs, JIT noise, V8 flags (<code>--trace-opt</code>, <code>--trace-deopt</code>, <code>--print-bytecode</code>)</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-perf">R — Debugging &amp; Profiling Internals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">V8 Inspector &amp; CDP</span>
+      <span class="topic-desc">Chrome DevTools Protocol, <code>--inspect</code>, WebSocket debugging, breakpoints at bytecode level, conditional breakpoints</span>
+    </li>
+    <li>
+      <span class="topic-title">Stack Traces &amp; Error Capture</span>
+      <span class="topic-desc"><code>Error.captureStackTrace</code>, async stack traces, source map resolution, <code>Error.prepareStackTrace</code>, structured stack API</span>
+    </li>
+    <li>
+      <span class="topic-title">CPU Profiling</span>
+      <span class="topic-desc">sampling profiler, flame charts, DevTools Performance panel, <code>console.profile</code>, Node <code>--prof</code> + tick processor</span>
+    </li>
+    <li>
+      <span class="topic-title">Memory Profiling</span>
+      <span class="topic-desc">heap snapshots, allocation timeline, retainer chains, shallow vs retained size, comparison snapshots, <code>--max-old-space-size</code></span>
+    </li>
+    <li>
+      <span class="topic-title">Performance APIs</span>
+      <span class="topic-desc"><code>performance.mark/measure</code>, <code>PerformanceObserver</code>, User Timing, Long Tasks, Long Animation Frames, <code>chrome://tracing</code></span>
+    </li>
+    <li>
+      <span class="topic-title">V8 Diagnostic Flags</span>
+      <span class="topic-desc"><code>--trace-opt</code>, <code>--trace-deopt</code>, <code>--print-bytecode</code>, <code>--trace-ic</code>, <code>--trace-gc</code>, <code>--allow-natives-syntax</code> for <code>%DebugPrint</code></span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-security">S — Security Internals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Same-Origin Policy &amp; Sandboxing</span>
+      <span class="topic-desc">origin = scheme + host + port, cross-origin restrictions, <code>document.domain</code> deprecation, CORS preflight</span>
+    </li>
+    <li>
+      <span class="topic-title">Content Security Policy (CSP)</span>
+      <span class="topic-desc"><code>script-src</code>, nonces, hashes, <code>eval</code> restriction, <code>trusted-types</code>, reporting</span>
+    </li>
+    <li>
+      <span class="topic-title">Spectre Mitigations &amp; Cross-Origin Isolation</span>
+      <span class="topic-desc">site isolation, <code>COOP</code>/<code>COEP</code> headers, <code>SharedArrayBuffer</code> gating, timer precision reduction</span>
+    </li>
+    <li>
+      <span class="topic-title">Prototype Pollution</span>
+      <span class="topic-desc"><code>__proto__</code> / <code>constructor.prototype</code> attack, <code>Object.create(null)</code>, <code>Object.freeze(Object.prototype)</code>, library defences</span>
+    </li>
+    <li>
+      <span class="topic-title">Supply Chain &amp; <code>eval</code> Safety</span>
+      <span class="topic-desc"><code>eval</code> / <code>new Function</code> risks, Trusted Types, SRI (subresource integrity), lockfile pinning, import map integrity</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-spec">T — ECMAScript Spec Concepts</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Spec Types &amp; Internal Slots</span>
+      <span class="topic-desc"><code>[[Value]]</code>, <code>[[Writable]]</code>, <code>[[Prototype]]</code>, Completion Records (<code>normal</code>/<code>throw</code>/<code>return</code>/<code>break</code>/<code>continue</code>), Reference Records</span>
+    </li>
+    <li>
+      <span class="topic-title">Realms &amp; Intrinsics</span>
+      <span class="topic-desc">realm = global env + intrinsic objects, <code>iframe</code> realms, <code>ShadowRealm</code> proposal, cross-realm identity (<code>Array.isArray</code> vs <code>instanceof</code>)</span>
+    </li>
+    <li>
+      <span class="topic-title">Jobs &amp; Job Queues</span>
+      <span class="topic-desc"><code>ScriptJobs</code>, <code>PromiseJobs</code> (microtasks), host-defined queuing (HTML spec), execution order guarantees</span>
+    </li>
+    <li>
+      <span class="topic-title">Agents &amp; Agent Clusters</span>
+      <span class="topic-desc">agent = thread + event loop + execution contexts, agent cluster = shared memory group, memory model for <code>SharedArrayBuffer</code></span>
+    </li>
+    <li>
+      <span class="topic-title">ECMAScript Memory Model</span>
+      <span class="topic-desc">sequentially consistent operations, <code>Atomics</code> ordering guarantees, races on <code>SharedArrayBuffer</code>, happens-before relation</span>
+    </li>
+    <li>
+      <span class="topic-title">How to Read the Spec</span>
+      <span class="topic-desc">notation conventions, abstract operations, <code>?</code> and <code>!</code> shorthand, algorithm steps, <code>ReturnIfAbrupt</code>, spec types vs language types</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-data">U — Data Structures in JavaScript</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Array as Dynamic Array</span>
+      <span class="topic-desc"><code>push</code>/<code>pop</code> amortised O(1), <code>shift</code>/<code>unshift</code> O(n) copy, internal capacity doubling, V8 backing store growth, when arrays fall back to dictionary mode</span>
+    </li>
+    <li>
+      <span class="topic-title">Stack Implementation</span>
+      <span class="topic-desc">array-backed stack (<code>push</code>/<code>pop</code>), call stack as implicit stack, undo/redo, expression evaluation, balanced parentheses, monotonic stack pattern</span>
+    </li>
+    <li>
+      <span class="topic-title">Queue &amp; Deque</span>
+      <span class="topic-desc">array-backed queue (shift cost), circular buffer optimisation, doubly-ended queue, BFS queue, <code>MessageQueue</code> in event loop</span>
+    </li>
+    <li>
+      <span class="topic-title">Singly &amp; Doubly Linked Lists</span>
+      <span class="topic-desc">node-based O(1) insert/delete, pointer manipulation, sentinel nodes, reversing in-place, detecting cycles (Floyd's), LRU eviction chain</span>
+    </li>
+    <li>
+      <span class="topic-title">Hash Table Deep Dive</span>
+      <span class="topic-desc">hashing functions, collision resolution (chaining vs open addressing), load factor &amp; rehashing, <code>Map</code> vs plain object as hash map, O(1) average lookup</span>
+    </li>
+    <li>
+      <span class="topic-title">Binary Tree &amp; Binary Search Tree</span>
+      <span class="topic-desc">node structure, in-order / pre-order / post-order / level-order traversal, insert / search / delete O(log n), BST property, unbalanced worst-case O(n)</span>
+    </li>
+    <li>
+      <span class="topic-title">Balanced Trees (AVL / Red-Black Concepts)</span>
+      <span class="topic-desc">why balancing matters, rotation operations, height guarantee O(log n), JS doesn't include built-in balanced tree — when to reach for one</span>
+    </li>
+    <li>
+      <span class="topic-title">Heap &amp; Priority Queue</span>
+      <span class="topic-desc">binary heap in array, parent/child index math, <code>siftUp</code>/<code>siftDown</code>, O(log n) insert/extract, O(n) heapify, use in Dijkstra &amp; scheduling</span>
+    </li>
+    <li>
+      <span class="topic-title">Trie (Prefix Tree)</span>
+      <span class="topic-desc">character-per-node structure, O(m) lookup (m = key length), autocomplete, word dictionary, wildcard search, compressed trie / radix tree</span>
+    </li>
+    <li>
+      <span class="topic-title">Graph Representation</span>
+      <span class="topic-desc">adjacency list (<code>Map&lt;node, Set&lt;node&gt;&gt;</code>) vs adjacency matrix, directed / undirected / weighted, space trade-offs, building from edge list</span>
+    </li>
+    <li>
+      <span class="topic-title">LRU Cache (Map + Doubly Linked List)</span>
+      <span class="topic-desc">O(1) get &amp; put via hash map + DLL, eviction of least-recently-used, <code>Map</code> insertion-order trick, capacity management</span>
+    </li>
+    <li>
+      <span class="topic-title">Disjoint Set / Union-Find</span>
+      <span class="topic-desc">path compression, union by rank, near O(1) amortised, connected components, cycle detection in undirected graphs, Kruskal's MST</span>
+    </li>
+    <li>
+      <span class="topic-title">Bloom Filter &amp; Probabilistic Structures</span>
+      <span class="topic-desc">bit array + multiple hashes, false positives / no false negatives, membership testing at scale, HyperLogLog for cardinality</span>
+    </li>
+    <li>
+      <span class="topic-title">Immutable / Persistent Data Structures</span>
+      <span class="topic-desc">structural sharing, HAMT (hash array-mapped trie), persistent vectors, libraries (Immer, Immutable.js), React state immutability motivation</span>
+    </li>
+    <li>
+      <span class="topic-title">Circular Buffer &amp; Ring Buffer</span>
+      <span class="topic-desc">fixed-size array with head/tail pointers, O(1) enqueue/dequeue, streaming data, Node.js writable stream internal buffer</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-algo">V — Algorithms &amp; Complexity Analysis in JavaScript</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Big-O of Built-in Array Methods</span>
+      <span class="topic-desc"><code>push</code>/<code>pop</code> O(1), <code>shift</code>/<code>unshift</code> O(n), <code>splice</code> O(n), <code>indexOf</code>/<code>includes</code> O(n), <code>sort</code> O(n log n), <code>map</code>/<code>filter</code>/<code>reduce</code> O(n), <code>Set.has</code> O(1)</span>
+    </li>
+    <li>
+      <span class="topic-title">TimSort — <code>Array.prototype.sort</code></span>
+      <span class="topic-desc">V8 uses TimSort (merged insertion + merge sort), stable sort guarantee (ES2019), O(n log n) worst-case, run detection, galloping mode, comparator contract</span>
+    </li>
+    <li>
+      <span class="topic-title">Sorting Algorithms in JS Context</span>
+      <span class="topic-desc">bubble / selection / insertion (educational), merge sort (stable, O(n log n)), quicksort (not stable, average O(n log n)), counting / radix sort for integers</span>
+    </li>
+    <li>
+      <span class="topic-title">Binary Search Patterns</span>
+      <span class="topic-desc">iterative vs recursive, <code>left</code>/<code>right</code> boundary, lower-bound / upper-bound, search on answer (monotonic predicate), <code>TypedArray</code> sorted search</span>
+    </li>
+    <li>
+      <span class="topic-title">Recursion, Stack Depth &amp; Trampolining</span>
+      <span class="topic-desc">recursive vs iterative, maximum call stack size (~10k frames), tail-call optimisation (Safari only), trampoline pattern to avoid overflow, memoisation base case</span>
+    </li>
+    <li>
+      <span class="topic-title">Memoisation &amp; Dynamic Programming</span>
+      <span class="topic-desc">caching with <code>Map</code> / <code>WeakMap</code>, top-down (memo) vs bottom-up (tabulation), overlapping subproblems, optimal substructure, Fibonacci / knapsack / LCS examples</span>
+    </li>
+    <li>
+      <span class="topic-title">Two Pointers &amp; Sliding Window</span>
+      <span class="topic-desc">opposing pointers (sorted pair sum), fast/slow (linked list cycle), sliding window max/sum, variable-width window, O(n) from O(n²)</span>
+    </li>
+    <li>
+      <span class="topic-title">Divide &amp; Conquer</span>
+      <span class="topic-desc">split → solve → merge, merge sort as canonical example, quickselect (k-th element), closest pair, master theorem for recurrence analysis</span>
+    </li>
+    <li>
+      <span class="topic-title">Greedy Algorithms</span>
+      <span class="topic-desc">local-optimal choice → global optimal, interval scheduling, Huffman coding, activity selection, greedy correctness proof intuition</span>
+    </li>
+    <li>
+      <span class="topic-title">Backtracking &amp; Constraint Solving</span>
+      <span class="topic-desc">decision tree exploration, pruning, N-Queens, Sudoku solver, permutations / combinations / subsets generation, generator-based lazy backtracking</span>
+    </li>
+    <li>
+      <span class="topic-title">BFS &amp; DFS on Graphs</span>
+      <span class="topic-desc">queue-based BFS (shortest path unweighted), stack/recursion DFS, visited set, connected components, bipartite check, cycle detection (directed / undirected)</span>
+    </li>
+    <li>
+      <span class="topic-title">Shortest Path Algorithms</span>
+      <span class="topic-desc">Dijkstra (min-heap, non-negative weights), Bellman-Ford (negative edges), Floyd-Warshall (all-pairs), A* heuristic search, JS priority-queue implementation</span>
+    </li>
+    <li>
+      <span class="topic-title">Topological Sort</span>
+      <span class="topic-desc">DAG ordering via DFS finish-time or Kahn's (in-degree), dependency resolution (module bundlers, task schedulers), cycle detection</span>
+    </li>
+    <li>
+      <span class="topic-title">String Matching Algorithms</span>
+      <span class="topic-desc">brute force O(nm), KMP (prefix function), Rabin-Karp (rolling hash), Boyer-Moore, when <code>String.prototype.indexOf</code> suffices vs custom matching</span>
+    </li>
+    <li>
+      <span class="topic-title">Tree Algorithms</span>
+      <span class="topic-desc">DFS traversals (in/pre/post-order), BFS level-order, lowest common ancestor, tree diameter, serialise / deserialise, Morris traversal (O(1) space)</span>
+    </li>
+    <li>
+      <span class="topic-title">Bit Manipulation in JavaScript</span>
+      <span class="topic-desc">bitwise ops on 32-bit signed integers, <code>|0</code> truncation, bit masks, counting bits, XOR tricks, <code>Math.clz32</code>, BigInt bitwise for larger integers</span>
+    </li>
+    <li>
+      <span class="topic-title">Structured Clone Algorithm</span>
+      <span class="topic-desc"><code>structuredClone()</code> deep copy, supported types, circular reference handling, <code>postMessage</code> serialisation, transferable objects, limitations (functions, DOM)</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Parse &amp; Stringify Internals</span>
+      <span class="topic-desc">recursive descent parser, reviver / replacer functions, <code>toJSON()</code> protocol, stacking depth limit, performance: streaming JSON parsers, <code>JSON.parse</code> vs object literal</span>
+    </li>
+    <li>
+      <span class="topic-title">Amortised Analysis &amp; Algorithmic Thinking</span>
+      <span class="topic-desc">amortised O(1) for dynamic array growth, aggregate method, potential method, choosing the right data structure for the access pattern, space-time trade-offs in JS</span>
+    </li>
+  </ol>
+
+</body>
+</html>

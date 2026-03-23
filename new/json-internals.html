@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JSON Internals — Parsing JSON in JavaScript</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      padding: 2rem;
+      line-height: 1.6;
+      max-width: 980px;
+    }
+    h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.25rem; color: #111827; }
+    .subtitle {
+      color: #6b7280; margin-bottom: 1rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e5e7eb; font-size: 0.95rem;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem;
+      margin-bottom: 2rem; font-size: 0.82rem; color: #4b5563;
+    }
+    .legend span { display: flex; align-items: center; gap: 0.35rem; }
+    .legend .dot {
+      width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+    }
+    h2 {
+      font-size: 1.1rem; font-weight: 700; margin: 1.75rem 0 0.6rem 0;
+      padding: 0.4rem 0.85rem; border-radius: 0 6px 6px 0;
+    }
+    /* Fundamentals — indigo */
+    .cat-fund    { background: #eef2ff; border-left: 4px solid #6366f1; color: #3730a3; }
+    /* Parse — emerald */
+    .cat-parse   { background: #ecfdf5; border-left: 4px solid #10b981; color: #065f46; }
+    /* Stringify — amber */
+    .cat-str     { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+    /* Engine — cyan */
+    .cat-engine  { background: #ecfeff; border-left: 4px solid #06b6d4; color: #155e75; }
+    /* Streaming & Large — violet */
+    .cat-stream  { background: #f5f3ff; border-left: 4px solid #8b5cf6; color: #5b21b6; }
+    /* Schema & Validation — orange */
+    .cat-schema  { background: #fff7ed; border-left: 4px solid #f97316; color: #9a3412; }
+    /* Security — red */
+    .cat-sec     { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+    /* Performance — teal */
+    .cat-perf    { background: #f0fdfa; border-left: 4px solid #14b8a6; color: #134e4a; }
+    /* Serialisation — fuchsia */
+    .cat-serial  { background: #fdf4ff; border-left: 4px solid #d946ef; color: #86198f; }
+    /* Ecosystem — slate */
+    .cat-eco     { background: #f8fafc; border-left: 4px solid #64748b; color: #334155; }
+
+    ol {
+      list-style: none; counter-reset: topic-counter;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    ol > li {
+      counter-increment: topic-counter;
+      background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;
+      padding: 0.65rem 1rem; display: flex; align-items: baseline; gap: 0.75rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    ol > li::before {
+      content: counter(topic-counter);
+      min-width: 1.8rem; height: 1.8rem; background: #f3f4f6; color: #6b7280;
+      border-radius: 50%; font-size: 0.75rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .topic-title { font-weight: 600; color: #111827; min-width: 270px; }
+    .topic-desc  { color: #6b7280; font-size: 0.9rem; }
+    .topic-desc code {
+      background: #f3f4f6; border-radius: 4px; padding: 0.1rem 0.35rem;
+      font-size: 0.82rem; color: #374151;
+      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>JSON Internals — Parsing JSON in JavaScript</h1>
+  <p class="subtitle">How JSON is parsed, serialised, validated, and optimised under the hood in JavaScript engines</p>
+
+  <div class="legend">
+    <span><span class="dot" style="background:#6366f1"></span> Fundamentals</span>
+    <span><span class="dot" style="background:#10b981"></span> JSON.parse</span>
+    <span><span class="dot" style="background:#f59e0b"></span> JSON.stringify</span>
+    <span><span class="dot" style="background:#06b6d4"></span> Engine Internals</span>
+    <span><span class="dot" style="background:#8b5cf6"></span> Streaming &amp; Large Data</span>
+    <span><span class="dot" style="background:#f97316"></span> Schema &amp; Validation</span>
+    <span><span class="dot" style="background:#ef4444"></span> Security</span>
+    <span><span class="dot" style="background:#14b8a6"></span> Performance</span>
+    <span><span class="dot" style="background:#d946ef"></span> Serialisation Boundaries</span>
+    <span><span class="dot" style="background:#64748b"></span> Ecosystem &amp; Tooling</span>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-fund">A — JSON Format Fundamentals</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">JSON Grammar &amp; Data Types</span>
+      <span class="topic-desc">six value types: string, number, object, array, <code>true</code>/<code>false</code>, <code>null</code> — no <code>undefined</code>, no comments, no trailing commas, no single quotes</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON vs JavaScript Object Literal</span>
+      <span class="topic-desc">keys must be double-quoted strings, no computed keys, no methods, no <code>Symbol</code> keys, no <code>Infinity</code>/<code>NaN</code>/<code>undefined</code> values</span>
+    </li>
+    <li>
+      <span class="topic-title">RFC 8259 &amp; ECMA-404</span>
+      <span class="topic-desc">canonical JSON specification, UTF-8 encoding requirement, duplicate key behaviour (last-value-wins vs implementation-defined), interoperability rules</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Number Precision</span>
+      <span class="topic-desc">no distinction between integer/float, IEEE 754 double precision limits, <code>Number.MAX_SAFE_INTEGER</code>, large ID truncation, BigInt not serialisable</span>
+    </li>
+    <li>
+      <span class="topic-title">Unicode &amp; Escape Sequences in JSON</span>
+      <span class="topic-desc"><code>\uXXXX</code> escapes, surrogate pairs for characters above U+FFFF, <code>\n</code>/<code>\t</code>/<code>\\</code>/<code>\"</code>, well-formed JSON strings (ES2019 fix for lone surrogates)</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Superset Proposal (ES2019)</span>
+      <span class="topic-desc">U+2028 (Line Separator) and U+2029 (Paragraph Separator) now allowed in JS string literals, aligning JS with JSON grammar</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-parse">B — <code>JSON.parse</code> Deep Dive</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Recursive Descent Parser</span>
+      <span class="topic-desc">how <code>JSON.parse</code> implements a top-down recursive descent parser internally, character-by-character scanning, state transitions for each value type</span>
+    </li>
+    <li>
+      <span class="topic-title">Tokenisation / Lexing Stage</span>
+      <span class="topic-desc">scanner reads tokens (<code>{</code>, <code>[</code>, <code>:</code>, <code>,</code>, strings, numbers, literals), whitespace skipping, error position tracking</span>
+    </li>
+    <li>
+      <span class="topic-title">String Parsing &amp; Escape Handling</span>
+      <span class="topic-desc">unescaping <code>\"</code>, <code>\\</code>, <code>\/</code>, <code>\b</code>, <code>\f</code>, <code>\n</code>, <code>\r</code>, <code>\t</code>, <code>\uXXXX</code>, decoding surrogate pairs, invalid escape rejection</span>
+    </li>
+    <li>
+      <span class="topic-title">Number Parsing</span>
+      <span class="topic-desc">sign handling, integer vs fraction vs exponent parts, leading zero rules, conversion to IEEE 754 double, precision loss detection</span>
+    </li>
+    <li>
+      <span class="topic-title">The Reviver Function</span>
+      <span class="topic-desc"><code>JSON.parse(text, reviver)</code>, bottom-up traversal order, key/value transformation, returning <code>undefined</code> to delete, <code>this</code> context inside reviver</span>
+    </li>
+    <li>
+      <span class="topic-title">Reviver Use Cases</span>
+      <span class="topic-desc">date string → <code>Date</code> object, BigInt revival, <code>Map</code>/<code>Set</code> reconstruction, class instance hydration, custom type markers</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>JSON.parse</code> Error Handling</span>
+      <span class="topic-desc"><code>SyntaxError</code> on malformed input, error message quality varies by engine, position info, no partial parse — all or nothing</span>
+    </li>
+    <li>
+      <span class="topic-title">Source Text Access (Stage 3 Proposal)</span>
+      <span class="topic-desc"><code>JSON.parse</code> with source — reviver receives raw source text, enabling lossless BigInt / high-precision number parsing without truncation</span>
+    </li>
+    <li>
+      <span class="topic-title">Parsing Depth Limits</span>
+      <span class="topic-desc">deeply nested JSON can exceed stack, engine-specific recursion limits, stack overflow on crafted payloads, iterative parser alternatives</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-str">C — <code>JSON.stringify</code> Deep Dive</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Serialisation Algorithm</span>
+      <span class="topic-desc">recursive walk, <code>toJSON()</code> method called first if present, then replacer, then type-based serialisation rules, output assembly</span>
+    </li>
+    <li>
+      <span class="topic-title">The Replacer Function</span>
+      <span class="topic-desc"><code>JSON.stringify(value, replacer)</code>, top-down traversal, key filtering, value transformation, returning <code>undefined</code> omits the property</span>
+    </li>
+    <li>
+      <span class="topic-title">Replacer as Array (Allowlist)</span>
+      <span class="topic-desc">passing <code>string[]</code> as replacer to whitelist keys, only applies to objects (not arrays), ordering preserved from allowlist</span>
+    </li>
+    <li>
+      <span class="topic-title">The Space / Indentation Parameter</span>
+      <span class="topic-desc">third argument: number (indent spaces) or string (indent chars), max 10, pretty-printing, compact form when omitted</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>toJSON()</code> Protocol</span>
+      <span class="topic-desc">objects can define <code>toJSON(key)</code> to control their serialisation, <code>Date.prototype.toJSON</code> returns ISO string, custom class serialisation hooks</span>
+    </li>
+    <li>
+      <span class="topic-title">Values That Get Dropped or Transformed</span>
+      <span class="topic-desc"><code>undefined</code> → omitted (object) / <code>null</code> (array), <code>function</code> → omitted, <code>Symbol</code> → omitted, <code>NaN</code>/<code>Infinity</code> → <code>null</code>, <code>BigInt</code> → <code>TypeError</code></span>
+    </li>
+    <li>
+      <span class="topic-title">Circular Reference Detection</span>
+      <span class="topic-desc"><code>TypeError: Converting circular structure to JSON</code>, internal visited set, manual cycle breaking, replacer-based cycle handling</span>
+    </li>
+    <li>
+      <span class="topic-title">Well-Formed <code>JSON.stringify</code> (ES2019)</span>
+      <span class="topic-desc">lone surrogates output as <code>\uD800</code>-style escapes instead of malformed UTF-8, ensuring output is always valid Unicode</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-engine">D — Engine-Level JSON Processing</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">V8 JSON Parser Implementation</span>
+      <span class="topic-desc">dedicated C++ fast path (not generic JS parser), sequential scanner, direct object/array construction, avoids AST generation entirely</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>JSON.parse</code> Faster Than Object Literal</span>
+      <span class="topic-desc">parsing JSON string can be faster than parsing equivalent JS object literal — fewer grammar ambiguities, simpler token set, V8 optimisation</span>
+    </li>
+    <li>
+      <span class="topic-title">Hidden Class / Shape Assignment on Parse</span>
+      <span class="topic-desc">V8 creates transition chains for parsed objects, same-shaped JSON → same hidden class, property order matters for shape reuse</span>
+    </li>
+    <li>
+      <span class="topic-title">String Internalisation During Parse</span>
+      <span class="topic-desc">repeated keys get interned (same pointer), reduces memory for large arrays of similar objects, key interning cache</span>
+    </li>
+    <li>
+      <span class="topic-title">Object Boilerplate Cloning</span>
+      <span class="topic-desc">V8 recognises repeated identical object shapes and clones a boilerplate instead of rebuilding, major speedup for API response arrays</span>
+    </li>
+    <li>
+      <span class="topic-title">Memory Allocation During Parse</span>
+      <span class="topic-desc">heap allocation for every object/array/string, young generation pressure on large payloads, transient parse buffer, GC implications</span>
+    </li>
+    <li>
+      <span class="topic-title">UTF-8 → UTF-16 Transcoding</span>
+      <span class="topic-desc">network data arrives as UTF-8, V8 strings are UTF-16, transcoding cost during parse, one-byte string optimisation for ASCII-only content</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-stream">E — Streaming &amp; Large JSON Handling</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Why Streaming Matters</span>
+      <span class="topic-desc"><code>JSON.parse</code> needs the complete string in memory, O(n) memory, blocks main thread, problematic for multi-MB payloads</span>
+    </li>
+    <li>
+      <span class="topic-title">SAX-Style / Event-Based JSON Parsers</span>
+      <span class="topic-desc">emit events per token (startObject, key, value, endArray), constant memory, libraries: clarinet, jsonparse, oboe.js</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Streaming over HTTP (<code>fetch</code> + <code>ReadableStream</code>)</span>
+      <span class="topic-desc"><code>response.body.getReader()</code>, chunked decoding with <code>TextDecoder</code>, incremental parse, progressive UI rendering</span>
+    </li>
+    <li>
+      <span class="topic-title">NDJSON / JSON Lines</span>
+      <span class="topic-desc">newline-delimited JSON, one object per line, easy streaming parse with <code>split('\n')</code>, log ingestion, server-sent data</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Pointer &amp; Partial Extraction</span>
+      <span class="topic-desc">RFC 6901 JSON Pointer (<code>/foo/0/bar</code>), extract without full parse, JSONPath query expressions, selective field retrieval</span>
+    </li>
+    <li>
+      <span class="topic-title">Web Worker JSON Parsing</span>
+      <span class="topic-desc">offload <code>JSON.parse</code> to a worker thread, <code>postMessage</code> serialisation overhead, <code>Transferable</code> optimisation, when it's worth the transfer cost</span>
+    </li>
+    <li>
+      <span class="topic-title">Lazy / On-Demand Parsing</span>
+      <span class="topic-desc">parse only accessed fields, simdjson-inspired approaches, binary indexing over JSON text, trade-off: first-access latency vs full-parse cost</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-schema">F — Schema, Validation &amp; Type Safety</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">JSON Schema</span>
+      <span class="topic-desc">declarative validation (<code>type</code>, <code>properties</code>, <code>required</code>, <code>enum</code>, <code>pattern</code>), draft versions (Draft-07, 2020-12), <code>$ref</code> for composition</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Schema Validators in JS</span>
+      <span class="topic-desc">Ajv (compiled validation functions), json-schema, Zod schema → JSON Schema, validation speed: compiled vs interpreted</span>
+    </li>
+    <li>
+      <span class="topic-title">Runtime Type Validation After Parse</span>
+      <span class="topic-desc">Zod, Valibot, io-ts, Superstruct — parse then validate, infer TypeScript types from runtime schemas, fail-fast vs collect-all-errors</span>
+    </li>
+    <li>
+      <span class="topic-title">TypeScript &amp; <code>JSON.parse</code> Typing</span>
+      <span class="topic-desc"><code>JSON.parse</code> returns <code>any</code>, type assertions vs runtime guards, generic wrapper patterns, <code>unknown</code> + narrowing, type-safe reviver</span>
+    </li>
+    <li>
+      <span class="topic-title">API Response Contracts</span>
+      <span class="topic-desc">OpenAPI / Swagger JSON schema definitions, code-generated types, contract testing, response shape drift detection</span>
+    </li>
+    <li>
+      <span class="topic-title">Discriminated Union Parsing</span>
+      <span class="topic-desc">type field as discriminator, parsing polymorphic JSON into correct class/type, Zod discriminatedUnion, tagged union patterns</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-sec">G — Security Concerns</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title"><code>eval()</code>-Based Parsing (Legacy Danger)</span>
+      <span class="topic-desc">pre-<code>JSON.parse</code> era used <code>eval('(' + text + ')')</code>, arbitrary code execution risk, why <code>JSON.parse</code> is safe by design</span>
+    </li>
+    <li>
+      <span class="topic-title">Prototype Pollution via JSON</span>
+      <span class="topic-desc"><code>{"__proto__": {"admin": true}}</code>, merge/assign spreading parsed objects, defence: <code>Object.create(null)</code>, key filtering, libraries like lodash vulnerability history</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Injection &amp; XSS</span>
+      <span class="topic-desc">injecting <code>&lt;/script&gt;</code> inside JSON embedded in HTML, <code>&lt;script&gt;var data = {...}&lt;/script&gt;</code> escaping, Content-Type mismatch, XSSI prefix (<code>)]}'\n</code>)</span>
+    </li>
+    <li>
+      <span class="topic-title">Denial of Service: Deeply Nested JSON</span>
+      <span class="topic-desc">stack overflow via <code>[[[...]]]</code> nesting, billion-laughs-style expansion, payload size limits, depth guards in custom parsers</span>
+    </li>
+    <li>
+      <span class="topic-title">Denial of Service: Hash Flooding</span>
+      <span class="topic-desc">crafted keys causing hash collision O(n²), V8 mitigations (randomised hash seeds), payload key-count limits</span>
+    </li>
+    <li>
+      <span class="topic-title">Sensitive Data Leakage in <code>JSON.stringify</code></span>
+      <span class="topic-desc">accidentally serialising passwords, tokens, internal fields — replacer-based redaction, <code>toJSON()</code> exclusion, field stripping middleware</span>
+    </li>
+    <li>
+      <span class="topic-title">Server-Side Request Forgery via JSON Input</span>
+      <span class="topic-desc">user-supplied URLs in JSON payloads, validating URL fields after parse, allowlist domains, never fetch user-controlled URLs blindly</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-perf">H — Performance &amp; Optimisation</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title"><code>JSON.parse</code> Performance Characteristics</span>
+      <span class="topic-desc">O(n) time, linear scan, string-heavy payloads slower (escape processing), V8 fast path for ASCII, cold vs warm parse</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>JSON.stringify</code> Performance</span>
+      <span class="topic-desc">O(n) walk, deep objects slower, replacer adds overhead, <code>toJSON()</code> call overhead, pre-computed JSON caching</span>
+    </li>
+    <li>
+      <span class="topic-title">Fast JSON Libraries</span>
+      <span class="topic-desc">fast-json-stringify (schema-compiled serialiser), simdjson-js (SIMD-accelerated), fast-json-parse, JSON.parse vs hand-rolled parser benchmarks</span>
+    </li>
+    <li>
+      <span class="topic-title">Schema-Based Serialisation (fast-json-stringify)</span>
+      <span class="topic-desc">pre-compile a stringify function from JSON schema, avoids type checking at runtime, 2-5× faster than native <code>JSON.stringify</code></span>
+    </li>
+    <li>
+      <span class="topic-title">SIMD JSON Parsing (simdjson)</span>
+      <span class="topic-desc">hardware-parallel character classification, structural index building, branchless parsing, JS bindings via N-API, gigabytes/sec throughput</span>
+    </li>
+    <li>
+      <span class="topic-title">Avoiding Redundant Parse/Stringify Cycles</span>
+      <span class="topic-desc">caching parsed results, <code>structuredClone</code> vs parse/stringify for deep copy, pass-through JSON in middleware without re-serialise</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Size Reduction</span>
+      <span class="topic-desc">short key names, array-of-arrays vs array-of-objects, gzip/brotli compression, JSON column-store format, eliminating nulls</span>
+    </li>
+    <li>
+      <span class="topic-title">Benchmarking JSON Operations</span>
+      <span class="topic-desc"><code>performance.now()</code> around parse/stringify, realistic payload sizes, warm-up runs, V8 <code>--trace-opt</code> to check optimisation, profiling allocation</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-serial">I — Serialisation Boundaries &amp; Edge Cases</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">Date Serialisation</span>
+      <span class="topic-desc"><code>Date</code> → ISO 8601 string via <code>toJSON()</code>, no automatic revival, reviver pattern: <code>new Date(value)</code>, timezone pitfalls</span>
+    </li>
+    <li>
+      <span class="topic-title">BigInt Serialisation</span>
+      <span class="topic-desc"><code>JSON.stringify(1n)</code> throws <code>TypeError</code>, solutions: <code>toJSON()</code> override, replacer with <code>.toString()</code>, reviver for revival, string-wrapped IDs</span>
+    </li>
+    <li>
+      <span class="topic-title">Map, Set &amp; Custom Collections</span>
+      <span class="topic-desc"><code>Map</code>/<code>Set</code> serialise as <code>{}</code>, manual conversion: <code>[...map]</code> → entries array, replacer/reviver codec pattern, custom <code>toJSON</code></span>
+    </li>
+    <li>
+      <span class="topic-title">RegExp, Error &amp; Function Serialisation</span>
+      <span class="topic-desc">all serialise as <code>{}</code> or get dropped, manual source+flags for RegExp, error <code>toJSON</code> with message/stack, functions cannot round-trip</span>
+    </li>
+    <li>
+      <span class="topic-title">Circular References &amp; Object Identity</span>
+      <span class="topic-desc">JSON has no reference concept, cycles cause <code>TypeError</code>, <code>$ref</code> conventions (JSON Reference), flatted library for cycle-safe serialisation</span>
+    </li>
+    <li>
+      <span class="topic-title">Sparse Arrays &amp; Holes</span>
+      <span class="topic-desc"><code>[1,,3]</code> → <code>[1,null,3]</code> in stringify, holes become <code>null</code>, no way to represent array holes in JSON, dense array on parse</span>
+    </li>
+    <li>
+      <span class="topic-title"><code>undefined</code> vs <code>null</code> vs Missing Key</span>
+      <span class="topic-desc">JSON has <code>null</code> but no <code>undefined</code>, <code>undefined</code> values omitted, missing key vs <code>null</code> key semantics, API contract implications</span>
+    </li>
+    <li>
+      <span class="topic-title">Structured Clone vs JSON Round-Trip</span>
+      <span class="topic-desc"><code>structuredClone</code> handles Date, RegExp, Map, Set, ArrayBuffer, circular refs — <code>JSON.parse(JSON.stringify(x))</code> loses all of these</span>
+    </li>
+    <li>
+      <span class="topic-title">Property Enumeration Order</span>
+      <span class="topic-desc"><code>JSON.stringify</code> follows <code>[[OwnPropertyKeys]]</code> order (integer indexes → insertion-order strings), may differ from source JSON key order</span>
+    </li>
+  </ol>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <h2 class="cat-eco">J — Ecosystem, Formats &amp; Tooling</h2>
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <ol>
+    <li>
+      <span class="topic-title">JSON5</span>
+      <span class="topic-desc">superset: comments, trailing commas, unquoted keys, single-quoted strings, hex numbers, <code>Infinity</code>/<code>NaN</code> — config files (babel, vscode settings)</span>
+    </li>
+    <li>
+      <span class="topic-title">JSONC (JSON with Comments)</span>
+      <span class="topic-desc">VS Code's <code>tsconfig.json</code>, <code>// line</code> and <code>/* block */</code> comments, strip-json-comments, not a formal spec</span>
+    </li>
+    <li>
+      <span class="topic-title">NDJSON / JSON Lines</span>
+      <span class="topic-desc">one JSON value per line, streamable, log aggregation, database dumps, <code>ndjson</code> npm package</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Patch (RFC 6902)</span>
+      <span class="topic-desc">array of operations (<code>add</code>, <code>remove</code>, <code>replace</code>, <code>move</code>, <code>copy</code>, <code>test</code>), diff two JSON docs, apply patch, minimal update payloads</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Merge Patch (RFC 7396)</span>
+      <span class="topic-desc">simpler alternative to JSON Patch, merge object with null = delete, no array operations, PATCH HTTP method</span>
+    </li>
+    <li>
+      <span class="topic-title">MessagePack / CBOR / BSON</span>
+      <span class="topic-desc">binary JSON-like formats, smaller payloads, native binary/date types, JS libraries: msgpack-lite, cbor, bson — when to choose over JSON</span>
+    </li>
+    <li>
+      <span class="topic-title">Protocol Buffers &amp; JSON Comparison</span>
+      <span class="topic-desc">schema-first binary format, grpc-web, protobuf-to-JSON mapping, size/speed advantages, tradeoff: readability vs efficiency</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON in APIs: REST, GraphQL &amp; tRPC</span>
+      <span class="topic-desc">REST default <code>application/json</code>, GraphQL response shape, tRPC serialisation layer (superjson), content negotiation headers</span>
+    </li>
+    <li>
+      <span class="topic-title">superjson &amp; devalue</span>
+      <span class="topic-desc">serialise Date, Map, Set, RegExp, BigInt, undefined through JSON, metadata sidecar approach, Next.js / SvelteKit integration</span>
+    </li>
+    <li>
+      <span class="topic-title">JSON Diff &amp; Visualisation Tools</span>
+      <span class="topic-desc">deep-diff, jsondiffpatch, visual tree diff, structural comparison, conflict resolution, merge strategies</span>
+    </li>
+  </ol>
+
+</body>
+</html>
