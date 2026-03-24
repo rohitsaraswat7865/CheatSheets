@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postman API Testing — Complete Learning Path</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            line-height: 1.75;
+            padding: 40px 20px;
+        }
+        .container { max-width: 1020px; margin: 0 auto; }
+        h1 { text-align: center; font-size: 2.4rem; color: #ff6c37; margin-bottom: 6px; letter-spacing: 1px; }
+        .subtitle { text-align: center; color: #888; font-size: 1.05rem; margin-bottom: 14px; }
+
+        /* ── Roadmap ribbon ── */
+        .roadmap {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 4px;
+            margin-bottom: 44px; padding: 18px 12px;
+            background: linear-gradient(135deg,#161616,#1e1e1e);
+            border: 1px solid #2a2a2a; border-radius: 10px;
+        }
+        .roadmap .pill {
+            background: #222; color: #ccc; padding: 5px 16px; border-radius: 20px;
+            font-size: .82rem; white-space: nowrap; cursor: default;
+            border: 1px solid #333; transition: .2s;
+        }
+        .roadmap .pill:hover { border-color: #ff6c37; color: #fff; }
+        .roadmap .arr { color: #ff6c37; display: flex; align-items: center; font-size: 1rem; }
+
+        /* ── Phase banner ── */
+        .phase-banner {
+            display: flex; align-items: center; gap: 14px;
+            margin: 48px 0 22px; padding-bottom: 8px;
+            border-bottom: 2px solid #ff6c37;
+        }
+        .phase-banner:first-of-type { margin-top: 0; }
+        .phase-num {
+            background: #ff6c37; color: #000; font-weight: 800; font-size: 1rem;
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; flex-shrink: 0;
+        }
+        .phase-banner h2 { font-size: 1.45rem; color: #ff6c37; }
+        .phase-banner .phase-label { font-size: .8rem; color: #888; margin-left: auto; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* ── Section cards ── */
+        .section {
+            background: #1a1a1a; border-left: 4px solid #ff6c37;
+            border-radius: 8px; padding: 24px 28px; margin-bottom: 20px;
+            transition: transform .2s, box-shadow .2s;
+        }
+        .section:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,108,55,.12); }
+        .section h3 {
+            font-size: 1.15rem; color: #ff6c37; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section h3 .icon { font-size: 1.3rem; }
+        .section p.desc { color: #999; font-size: .9rem; margin-bottom: 14px; font-style: italic; }
+        .section ul { list-style: none; padding: 0; }
+        .section ul li { padding: 5px 0 5px 20px; position: relative; color: #ccc; }
+        .section ul li::before { content: '▸'; position: absolute; left: 0; color: #ff6c37; font-weight: bold; }
+        .section ul li strong { color: #fff; }
+        .section ul ul { margin-top: 4px; margin-left: 10px; }
+        .section ul ul li { font-size: .9rem; color: #aaa; padding: 3px 0 3px 18px; }
+        .section ul ul li::before { content: '–'; color: #666; }
+
+        .pointer {
+            background: #222; border: 1px solid #333; border-radius: 6px;
+            padding: 10px 16px; margin-top: 12px; font-size: .85rem; color: #aaa;
+        }
+        .pointer strong { color: #ff6c37; }
+
+        code {
+            background: #2a2a2a; color: #ff6c37; padding: 2px 7px; border-radius: 4px;
+            font-size: .88em; font-family: 'Cascadia Code','Fira Code',Consolas,monospace;
+        }
+
+        footer { text-align: center; margin-top: 50px; color: #555; font-size: .85rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>Postman API Testing</h1>
+    <p class="subtitle">A Structured Learning Path — From Zero to Mastery</p>
+
+    <!-- ── Roadmap ribbon ── -->
+    <div class="roadmap">
+        <span class="pill">Prerequisites</span><span class="arr">→</span>
+        <span class="pill">First Request</span><span class="arr">→</span>
+        <span class="pill">Auth</span><span class="arr">→</span>
+        <span class="pill">Variables</span><span class="arr">→</span>
+        <span class="pill">Scripting</span><span class="arr">→</span>
+        <span class="pill">Collections</span><span class="arr">→</span>
+        <span class="pill">Data-Driven</span><span class="arr">→</span>
+        <span class="pill">Newman &amp; CI/CD</span><span class="arr">→</span>
+        <span class="pill">Mocks</span><span class="arr">→</span>
+        <span class="pill">Monitors</span><span class="arr">→</span>
+        <span class="pill">Docs</span><span class="arr">→</span>
+        <span class="pill">Performance</span><span class="arr">→</span>
+        <span class="pill">Advanced</span><span class="arr">→</span>
+        <span class="pill">Collaboration</span>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PHASE 1 — FOUNDATION
+         ═══════════════════════════════════════════════ -->
+    <div class="phase-banner">
+        <span class="phase-num">1</span>
+        <h2>Foundation</h2>
+        <span class="phase-label">Beginner</span>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🌐</span> Prerequisites — HTTP &amp; API Basics</h3>
+        <p class="desc">Understand the protocol layer before touching any tool.</p>
+        <ul>
+            <li><strong>HTTP Request/Response Cycle</strong> — Client → DNS → Server → Response
+                <ul>
+                    <li>Request line: method + URI + HTTP version</li>
+                    <li>Headers (Content-Type, Accept, Authorization, Cache-Control)</li>
+                    <li>Message body — when it exists and when it doesn't</li>
+                </ul>
+            </li>
+            <li><strong>HTTP Methods Deep Dive</strong>
+                <ul>
+                    <li>GET (safe, idempotent) — query params, caching behavior</li>
+                    <li>POST (non-idempotent) — creating resources, form submissions</li>
+                    <li>PUT vs PATCH — full replacement vs partial update semantics</li>
+                    <li>DELETE — soft vs hard delete conventions</li>
+                    <li>OPTIONS &amp; HEAD — pre-flight CORS checks, metadata retrieval</li>
+                </ul>
+            </li>
+            <li><strong>Status Codes</strong>
+                <ul>
+                    <li>2xx — 200 OK, 201 Created, 204 No Content</li>
+                    <li>3xx — 301/302 Redirects, 304 Not Modified</li>
+                    <li>4xx — 400 Bad Request, 401 vs 403, 404, 409 Conflict, 422 Unprocessable, 429 Rate Limit</li>
+                    <li>5xx — 500 Internal, 502 Bad Gateway, 503 Service Unavailable, 504 Timeout</li>
+                </ul>
+            </li>
+            <li><strong>REST Principles</strong> — Resources, URIs, statelessness, HATEOAS</li>
+            <li><strong>Content Types</strong> — application/json, application/xml, multipart/form-data, application/x-www-form-urlencoded</li>
+            <li><strong>API Architecture Styles</strong> — REST vs SOAP vs GraphQL vs gRPC (when to use each)</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Practice reading raw HTTP in browser DevTools → Network tab before opening Postman.</div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🚀</span> Your First Request in Postman</h3>
+        <p class="desc">Get hands-on with the Postman UI and build muscle memory.</p>
+        <ul>
+            <li><strong>Postman Interface Tour</strong>
+                <ul>
+                    <li>Sidebar — Collections, APIs, Environments, History, Scratch Pad</li>
+                    <li>Request Builder — URL bar, method selector, tabs (Params, Auth, Headers, Body, Pre-request, Tests, Settings)</li>
+                    <li>Response Pane — Body (Pretty / Raw / Preview), Headers, Cookies, Test Results, response time &amp; size</li>
+                    <li>Console (⌘⌥C / Ctrl+Alt+C) — raw request/response logs, <code>console.log()</code> output</li>
+                </ul>
+            </li>
+            <li><strong>Sending Your First GET</strong> — Hit a public API (e.g., jsonplaceholder, reqres.in), read the response</li>
+            <li><strong>Sending POST with JSON Body</strong> — Set Content-Type, craft raw JSON, inspect 201 response</li>
+            <li><strong>Query Parameters vs Path Variables</strong> — <code>/users?page=2</code> vs <code>/users/:id</code></li>
+            <li><strong>Headers In Practice</strong> — Adding custom headers, inspecting response headers</li>
+            <li><strong>Body Types</strong>
+                <ul>
+                    <li>none — GET requests</li>
+                    <li>form-data — file uploads, multipart boundaries</li>
+                    <li>x-www-form-urlencoded — traditional HTML form submissions</li>
+                    <li>raw (JSON / XML / Text / JavaScript) — most common for APIs</li>
+                    <li>binary — uploading images, PDFs directly</li>
+                    <li>GraphQL — query + variables pane</li>
+                </ul>
+            </li>
+            <li><strong>Saving Requests</strong> — Organizing into collections from day one</li>
+            <li><strong>Response Inspection</strong> — Status code, time, size; searching within response body; copying to clipboard</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Use the Postman Console for every request. It shows the exact HTTP going over the wire — invaluable for debugging.</div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🔐</span> Authentication &amp; Authorization</h3>
+        <p class="desc">Most real-world APIs are protected. Master every auth pattern Postman supports.</p>
+        <ul>
+            <li><strong>No Auth &amp; API Key</strong> — Key in header vs query param, when each is appropriate</li>
+            <li><strong>Basic Auth</strong> — Base64-encoded username:password, why it needs HTTPS</li>
+            <li><strong>Bearer Token / JWT</strong>
+                <ul>
+                    <li>Structure: header.payload.signature</li>
+                    <li>Decoding tokens in Postman console with <code>atob()</code></li>
+                    <li>Token expiry handling — auto-refresh patterns</li>
+                </ul>
+            </li>
+            <li><strong>OAuth 2.0 (all grant types)</strong>
+                <ul>
+                    <li>Authorization Code — redirect-based, browser popup in Postman</li>
+                    <li>Authorization Code + PKCE — for public clients (SPAs, mobile)</li>
+                    <li>Client Credentials — machine-to-machine (M2M)</li>
+                    <li>Password Grant (legacy) — direct username/password exchange</li>
+                    <li>Implicit (deprecated) — why it was removed</li>
+                    <li>Managing access and refresh tokens in Postman</li>
+                </ul>
+            </li>
+            <li><strong>OAuth 1.0a</strong> — Consumer key/secret, token/secret, signature methods</li>
+            <li><strong>Digest Auth</strong> — Nonce-based challenge-response</li>
+            <li><strong>Hawk Authentication</strong> — HMAC-based, partial-content verification</li>
+            <li><strong>AWS Signature (v4)</strong> — Region, service, access/secret keys</li>
+            <li><strong>NTLM &amp; Akamai EdgeGrid</strong></li>
+            <li><strong>Auth Inheritance</strong> — Setting auth at collection/folder level, overriding at request level</li>
+            <li><strong>Certificate-Based Auth</strong> — Adding client certs (PFX/PEM), CA certificates in Settings → Certificates</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> OAuth 2.0 Authorization Code is the most important flow. Set up a token auto-refresh in the pre-request script to avoid manual re-auth.</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PHASE 2 — CORE SKILLS
+         ═══════════════════════════════════════════════ -->
+    <div class="phase-banner">
+        <span class="phase-num">2</span>
+        <h2>Core Skills</h2>
+        <span class="phase-label">Intermediate</span>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🔀</span> Variables &amp; Environments</h3>
+        <p class="desc">The backbone of maintainable, reusable Postman collections.</p>
+        <ul>
+            <li><strong>Variable Scopes (resolution order)</strong>
+                <ul>
+                    <li>Global — available everywhere, use sparingly</li>
+                    <li>Collection — scoped to a collection, great for base URLs</li>
+                    <li>Environment — dev / staging / production configs</li>
+                    <li>Data — injected via CSV/JSON during Collection Runner</li>
+                    <li>Local — set in scripts via <code>pm.variables.set()</code>, highest priority, request-scoped</li>
+                </ul>
+            </li>
+            <li><strong>Setting &amp; Getting Variables in Scripts</strong>
+                <ul>
+                    <li><code>pm.environment.set("key", "value")</code> / <code>pm.environment.get("key")</code></li>
+                    <li><code>pm.collectionVariables.set()</code> / <code>pm.globals.set()</code></li>
+                    <li><code>pm.variables.get()</code> — resolves using scope precedence</li>
+                </ul>
+            </li>
+            <li><strong>Dynamic Variables</strong> — <code>{{$randomInt}}</code>, <code>{{$randomEmail}}</code>, <code>{{$timestamp}}</code>, <code>{{$guid}}</code>, <code>{{$randomFirstName}}</code> (full list: ~60+ built-ins)</li>
+            <li><strong>Environment Management</strong>
+                <ul>
+                    <li>Creating, duplicating, exporting, importing environments</li>
+                    <li>Initial value (shared/synced) vs Current value (local/private) — security implications</li>
+                    <li>Switching environments via dropdown or Runner</li>
+                </ul>
+            </li>
+            <li><strong>Using Variables in URLs, Headers, Body, Tests</strong> — <code>{{baseUrl}}/users/{{userId}}</code></li>
+            <li><strong>Chaining Requests via Variables</strong> — Extract token from login response, store in env, use in subsequent requests</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Never put secrets in "Initial value" — that field is synced to Postman servers. Use "Current value" for sensitive data, or use Postman Vault.</div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">📝</span> Scripting — Pre-request &amp; Test Scripts</h3>
+        <p class="desc">JavaScript-powered automation that transforms Postman from a GUI client into a testing framework.</p>
+        <ul>
+            <li><strong>The Postman Sandbox</strong> — Node.js-like environment, available libraries (lodash, moment, crypto-js, cheerio, ajv, etc.)</li>
+            <li><strong>Pre-request Scripts — Execution Before the Request</strong>
+                <ul>
+                    <li>Generating timestamps, random data, HMAC signatures</li>
+                    <li>Computing dynamic headers (e.g., Content-MD5)</li>
+                    <li>Fetching prerequisite data via <code>pm.sendRequest()</code></li>
+                    <li>Token refresh logic — check expiry → refresh if needed → set header</li>
+                </ul>
+            </li>
+            <li><strong>Test Scripts — Post-Response Assertions</strong>
+                <ul>
+                    <li><code>pm.test("name", function() { ... })</code> — defining test cases</li>
+                    <li><code>pm.expect(value)</code> — Chai BDD assertions (to.equal, to.have.property, to.be.an, to.include)</li>
+                    <li><code>pm.response.to.have.status(200)</code></li>
+                    <li><code>pm.response.to.have.header("Content-Type")</code></li>
+                    <li><code>pm.response.json()</code> — parse response body as JSON</li>
+                </ul>
+            </li>
+            <li><strong>Common Assertions</strong>
+                <ul>
+                    <li>Status code checks — exact, ranges (<code>pm.expect(pm.response.code).to.be.oneOf([200,201])</code>)</li>
+                    <li>Response time — <code>pm.expect(pm.response.responseTime).to.be.below(500)</code></li>
+                    <li>JSON schema validation — using <code>tv4</code> or <code>ajv</code></li>
+                    <li>Array length, nested property existence, data types</li>
+                    <li>Response body contains string</li>
+                </ul>
+            </li>
+            <li><strong>pm.sendRequest()</strong> — Fire auxiliary requests within scripts (setup, teardown, data seeding)</li>
+            <li><strong>Extracting &amp; Chaining Data</strong>
+                <ul>
+                    <li>Grab <code>token</code> or <code>id</code> from response → store in env → use in next request</li>
+                    <li><code>let json = pm.response.json(); pm.environment.set("userId", json.data.id);</code></li>
+                </ul>
+            </li>
+            <li><strong>Collection-Level Scripts</strong> — Shared pre-request &amp; test logic inherited by all requests in a collection/folder</li>
+            <li><strong>Script Execution Order</strong> — Collection pre-request → Folder pre-request → Request pre-request → REQUEST → Request tests → Folder tests → Collection tests</li>
+            <li><strong>Debugging Scripts</strong> — <code>console.log()</code>, <code>console.info()</code>, <code>console.error()</code> → Postman Console</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Master the execution order. Collection-level scripts are perfect for shared auth logic; request-level scripts for specific assertions. Use <code>console.log(pm.request.headers)</code> to debug exactly what's being sent.</div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">📂</span> Collections &amp; Workflow Design</h3>
+        <p class="desc">Structure your API tests like a well-organized test suite.</p>
+        <ul>
+            <li><strong>Collection Architecture</strong>
+                <ul>
+                    <li>Naming conventions — verb-first or resource-first</li>
+                    <li>Folder hierarchy — by feature, by resource, or by user flow</li>
+                    <li>Adding descriptions (Markdown supported) for documentation</li>
+                </ul>
+            </li>
+            <li><strong>Request Ordering &amp; Dependencies</strong> — Why order matters in the Runner</li>
+            <li><strong>Collection Runner</strong>
+                <ul>
+                    <li>Running entire collections or specific folders</li>
+                    <li>Iteration count &amp; delay between requests</li>
+                    <li>Selecting environment &amp; data files</li>
+                    <li>Viewing pass/fail results per request</li>
+                </ul>
+            </li>
+            <li><strong>Workflow Control — <code>postman.setNextRequest()</code></strong>
+                <ul>
+                    <li>Branching — skip requests based on conditions</li>
+                    <li>Looping — call the same request multiple times</li>
+                    <li>Terminating — <code>postman.setNextRequest(null)</code> to stop</li>
+                </ul>
+            </li>
+            <li><strong>Collection Variables for Shared State</strong> — Base URLs, API versions, common IDs</li>
+            <li><strong>Forking &amp; Merging Collections</strong> — Collaborative development, pull request-like workflow</li>
+            <li><strong>Exporting / Importing</strong> — Collection v2.1 format (JSON), sharing as file or link</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Design collections as end-to-end user flows: Create User → Login → Perform Actions → Cleanup. This makes them reusable for both manual testing and CI/CD.</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PHASE 3 — AUTOMATION & CI/CD
+         ═══════════════════════════════════════════════ -->
+    <div class="phase-banner">
+        <span class="phase-num">3</span>
+        <h2>Automation &amp; CI/CD</h2>
+        <span class="phase-label">Intermediate–Advanced</span>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">📊</span> Data-Driven Testing</h3>
+        <p class="desc">Run the same collection against hundreds of test cases from external data files.</p>
+        <ul>
+            <li><strong>CSV Data Files</strong>
+                <ul>
+                    <li>Column headers become variable names accessible as <code>{{columnName}}</code></li>
+                    <li>Structuring CSV — one row per test case, columns for inputs + expected results</li>
+                    <li>Handling special characters, commas in values (quoting rules)</li>
+                </ul>
+            </li>
+            <li><strong>JSON Data Files</strong>
+                <ul>
+                    <li>Array of objects — each object is one iteration</li>
+                    <li>Supports nested data — access via <code>pm.iterationData.get("key")</code></li>
+                    <li>Better for complex test payloads (arrays, nested objects)</li>
+                </ul>
+            </li>
+            <li><strong>Accessing Data in Scripts</strong>
+                <ul>
+                    <li><code>pm.iterationData.get("email")</code></li>
+                    <li><code>pm.iterationData.toObject()</code> — get all data for current iteration</li>
+                    <li>Using data variables in assertions — expected status, expected response fields</li>
+                </ul>
+            </li>
+            <li><strong>Iteration Tracking</strong> — <code>pm.info.iteration</code>, <code>pm.info.iterationCount</code></li>
+            <li><strong>Combining with Workflow Control</strong> — Skip iterations, conditional branching per data row</li>
+            <li><strong>Negative Testing</strong> — Include invalid inputs in data files, assert 4xx responses</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Always include both positive and negative test cases in your data files. Add an "expectedStatus" column and assert against it: <code>pm.expect(pm.response.code).to.eql(+pm.iterationData.get("expectedStatus"))</code></div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">⚙️</span> Newman — CLI Runner &amp; CI/CD Integration</h3>
+        <p class="desc">The command-line companion that lets your Postman collections run anywhere.</p>
+        <ul>
+            <li><strong>Installation &amp; Basics</strong>
+                <ul>
+                    <li><code>npm install -g newman</code></li>
+                    <li><code>newman run collection.json -e env.json</code></li>
+                    <li>Key flags: <code>--iteration-count</code>, <code>--delay-request</code>, <code>--timeout</code>, <code>--bail</code></li>
+                </ul>
+            </li>
+            <li><strong>Data Files</strong> — <code>-d data.csv</code> or <code>-d data.json</code></li>
+            <li><strong>Reporters</strong>
+                <ul>
+                    <li>Built-in — CLI (default), JSON, JUnit (XML)</li>
+                    <li>Community — <code>newman-reporter-htmlextra</code> (rich HTML reports with charts)</li>
+                    <li>Multiple reporters simultaneously: <code>-r cli,htmlextra,junit</code></li>
+                </ul>
+            </li>
+            <li><strong>Environment &amp; Global Variable Files</strong> — Exporting from Postman, passing via CLI</li>
+            <li><strong>Exit Codes</strong> — 0 = all pass, 1 = failures → integrate with CI pass/fail</li>
+            <li><strong>CI/CD Integration Patterns</strong>
+                <ul>
+                    <li>Jenkins — pipeline step with Newman, publish JUnit results</li>
+                    <li>GitHub Actions — <code>newman-action</code> or custom Node.js step</li>
+                    <li>GitLab CI — Newman in Docker, artifact reports</li>
+                    <li>Azure DevOps — npm task → Newman, publish test results</li>
+                </ul>
+            </li>
+            <li><strong>Newman as a Library</strong> — Programmatic control via <code>newman.run({ ... })</code> in Node.js scripts</li>
+            <li><strong>Running from Postman API URL</strong> — <code>newman run "https://api.getpostman.com/collections/{{uid}}?apikey={{key}}"</code></li>
+            <li><strong>Docker</strong> — <code>postman/newman</code> official image for containerized runs</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Use <code>newman-reporter-htmlextra</code> for stakeholder-friendly reports. In CI, use JUnit reporter to integrate results natively with Jenkins / Azure DevOps test dashboards.</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PHASE 4 — API DESIGN & SIMULATION
+         ═══════════════════════════════════════════════ -->
+    <div class="phase-banner">
+        <span class="phase-num">4</span>
+        <h2>API Design &amp; Simulation</h2>
+        <span class="phase-label">Advanced</span>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🎭</span> Mock Servers</h3>
+        <p class="desc">Simulate APIs before they're built — unblock frontend and parallel development.</p>
+        <ul>
+            <li><strong>Why Mock?</strong> — Parallel frontend/backend dev, testing against unreliable or rate-limited APIs, offline development</li>
+            <li><strong>Creating Mocks</strong>
+                <ul>
+                    <li>From an existing collection — save example responses, generate mock</li>
+                    <li>From an API definition — import OpenAPI spec, auto-generate mock responses</li>
+                    <li>Private vs Public mocks — access control via API key</li>
+                </ul>
+            </li>
+            <li><strong>Saved Examples</strong>
+                <ul>
+                    <li>Each request can have multiple examples (200 success, 400 error, 404 not found)</li>
+                    <li>Mock returns the matching example based on method, URL, headers, body</li>
+                    <li><code>x-mock-response-name</code> header — force a specific example</li>
+                    <li><code>x-mock-response-code</code> header — force a specific status code</li>
+                </ul>
+            </li>
+            <li><strong>Matching Algorithm</strong> — URL path → method → headers → body → wildcards</li>
+            <li><strong>Dynamic Mock Responses</strong> — Using <code>{{$randomInt}}</code> and dynamic variables in example bodies</li>
+            <li><strong>Mock Server URL</strong> — Replace <code>{{baseUrl}}</code> with mock URL in your environment</li>
+            <li><strong>Debugging Mocks</strong> — Mock call log in Postman, common mismatch issues</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Create multiple examples per request (success + every error case). Use the <code>x-mock-response-name</code> header in tests to deterministically trigger specific scenarios.</div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">📄</span> API Documentation</h3>
+        <p class="desc">Auto-generate beautiful, interactive docs directly from your collections.</p>
+        <ul>
+            <li><strong>Collection-Based Docs</strong>
+                <ul>
+                    <li>Each request + saved examples = one API endpoint in docs</li>
+                    <li>Markdown descriptions on collections, folders, and requests</li>
+                    <li>Auto-generated code snippets in 15+ languages</li>
+                </ul>
+            </li>
+            <li><strong>Publishing</strong> — Public URL, custom domain, versioned docs</li>
+            <li><strong>Run in Postman Button</strong> — Embed in README / docs site; lets users fork your collection instantly</li>
+            <li><strong>API Definition Docs</strong> — Import OpenAPI 3.0/Swagger → rich, schema-driven documentation</li>
+            <li><strong>Best Practices</strong>
+                <ul>
+                    <li>Add descriptions to every param, header, and body field</li>
+                    <li>Include request + response examples for each status code</li>
+                    <li>Use folder organization that maps to your API resource hierarchy</li>
+                </ul>
+            </li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Treat your Postman collection as the single source of truth. Keep descriptions updated — they auto-flow into generated documentation.</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PHASE 5 — MONITORING & PERFORMANCE
+         ═══════════════════════════════════════════════ -->
+    <div class="phase-banner">
+        <span class="phase-num">5</span>
+        <h2>Monitoring &amp; Performance</h2>
+        <span class="phase-label">Advanced</span>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">📡</span> Monitors</h3>
+        <p class="desc">Scheduled, automated collection runs for uptime checks and regression testing.</p>
+        <ul>
+            <li><strong>Creating Monitors</strong> — From collection, set schedule (every 5 min to weekly), select environment, region</li>
+            <li><strong>Monitor Regions</strong> — Run from multiple geographic locations (US, EU, Asia) to detect regional issues</li>
+            <li><strong>Monitoring Scenarios</strong>
+                <ul>
+                    <li>Health checks — is the API up? Is response time acceptable?</li>
+                    <li>Regression testing — run full test suites on schedule</li>
+                    <li>Contract testing — does the API still match expected schema?</li>
+                    <li>SSL certificate expiry checks</li>
+                </ul>
+            </li>
+            <li><strong>Notifications</strong> — Email, Slack, PagerDuty, Microsoft Teams on failures</li>
+            <li><strong>Monitor Results Dashboard</strong> — Pass/fail history, response time trends, error details</li>
+            <li><strong>Retry on Failure</strong> — Configuring retries to reduce false positives</li>
+            <li><strong>Static IPs</strong> — Whitelisting Postman monitor IPs in firewalls</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Start with a simple health-check monitor (5-min interval). Integrate Slack notifications so your team gets instant alerts on API downtime.</div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">⚡</span> Performance &amp; Load Testing</h3>
+        <p class="desc">Measure how your API behaves under load — directly from Postman.</p>
+        <ul>
+            <li><strong>Postman Performance Testing (built-in)</strong>
+                <ul>
+                    <li>Virtual Users (VUs) — simulate concurrent users (up to 100 in free tier)</li>
+                    <li>Duration — run for a set time period</li>
+                    <li>Fixed vs Ramp-up load profiles</li>
+                </ul>
+            </li>
+            <li><strong>Metrics to Analyze</strong>
+                <ul>
+                    <li>Average / P50 / P95 / P99 response times</li>
+                    <li>Error rate under load</li>
+                    <li>Throughput (requests per second)</li>
+                    <li>Response time degradation curve</li>
+                </ul>
+            </li>
+            <li><strong>Identifying Bottlenecks</strong> — Correlating API response times with server metrics</li>
+            <li><strong>Newman + Loop for Basic Load</strong> — <code>--iteration-count 1000 --delay-request 0</code> for simple stress tests</li>
+            <li><strong>Integration with Dedicated Tools</strong> — Exporting collections for use with k6, Artillery, JMeter</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Performance testing in Postman is great for quick checks. For serious load testing (thousands of VUs), export your collection and use k6 or Artillery.</div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PHASE 6 — ADVANCED MASTERY
+         ═══════════════════════════════════════════════ -->
+    <div class="phase-banner">
+        <span class="phase-num">6</span>
+        <h2>Advanced Mastery</h2>
+        <span class="phase-label">Expert</span>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🧪</span> Advanced Test Patterns</h3>
+        <p class="desc">Production-grade testing strategies that go beyond basic assertions.</p>
+        <ul>
+            <li><strong>JSON Schema Validation</strong>
+                <ul>
+                    <li>Define expected schema (types, required fields, enums, patterns)</li>
+                    <li>Validate with <code>tv4</code> (built-in) or <code>ajv</code> (require in script)</li>
+                    <li>Contract testing — ensure API responses match agreed schema</li>
+                </ul>
+            </li>
+            <li><strong>Response Time Assertions</strong> — SLA enforcement in tests</li>
+            <li><strong>Negative Testing</strong> — Missing fields, wrong types, boundary values, SQL injection strings, XSS payloads</li>
+            <li><strong>Idempotency Testing</strong> — Send the same PUT/DELETE twice, verify consistent results</li>
+            <li><strong>Pagination Testing</strong> — Walk through pages, verify total count, check for duplicates</li>
+            <li><strong>Error Response Validation</strong> — Consistent error format (code, message, details), correct status codes</li>
+            <li><strong>Cleanup / Teardown</strong> — Delete test data after runs using <code>pm.sendRequest()</code> in test scripts</li>
+            <li><strong>Conditional Tests</strong> — <code>pm.test.skip()</code> or conditional logic based on environment</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> JSON Schema validation is the most underused Postman feature. Define schemas once, and every API change that breaks the contract is caught automatically.</div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🔧</span> Postman Flows</h3>
+        <p class="desc">Visual, no-code/low-code workflow builder for complex API orchestrations.</p>
+        <ul>
+            <li><strong>Flow Basics</strong> — Drag-and-drop blocks: Send Request, Evaluate, Output, Display</li>
+            <li><strong>Data Transformation</strong> — Select, filter, create — transform API responses between steps</li>
+            <li><strong>Conditional Logic</strong> — If/else branching based on response data</li>
+            <li><strong>Looping</strong> — Iterate over arrays from API responses</li>
+            <li><strong>Combining Multiple APIs</strong> — Chain output from one API as input to another visually</li>
+            <li><strong>Variables &amp; Data Types</strong> — String, number, boolean, object, array handling in Flows</li>
+            <li><strong>Output &amp; Visualization</strong> — Render results as tables, charts, formatted HTML</li>
+            <li><strong>Use Cases</strong> — API orchestration, data migration, automated onboarding workflows</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🌐</span> GraphQL, WebSocket &amp; gRPC</h3>
+        <p class="desc">Postman isn't just REST — master all supported protocols.</p>
+        <ul>
+            <li><strong>GraphQL</strong>
+                <ul>
+                    <li>Dedicated GraphQL body type with query + variables panes</li>
+                    <li>Schema fetching &amp; auto-complete — point to introspection endpoint</li>
+                    <li>Queries, mutations, subscriptions</li>
+                    <li>Testing GraphQL responses — <code>data</code> vs <code>errors</code> fields</li>
+                </ul>
+            </li>
+            <li><strong>WebSocket</strong>
+                <ul>
+                    <li>New WebSocket Request — connect, send messages, view event log</li>
+                    <li>ws:// and wss:// protocols</li>
+                    <li>Sending JSON / text / binary frames</li>
+                    <li>Listening for server-pushed messages</li>
+                </ul>
+            </li>
+            <li><strong>gRPC</strong>
+                <ul>
+                    <li>Importing .proto files or using server reflection</li>
+                    <li>Unary, server streaming, client streaming, bidirectional calls</li>
+                    <li>Message composition using Postman's proto UI</li>
+                    <li>Metadata (headers equivalent in gRPC)</li>
+                </ul>
+            </li>
+            <li><strong>SOAP / WSDL</strong> — Importing WSDL, sending XML envelopes as raw body</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🛡️</span> Security Testing with Postman</h3>
+        <p class="desc">Use Postman for basic API security validation.</p>
+        <ul>
+            <li><strong>Broken Authentication Tests</strong> — Expired tokens, invalid tokens, missing auth headers → verify 401/403</li>
+            <li><strong>Broken Access Control (BOLA/IDOR)</strong> — Access other users' resources by changing IDs → verify 403</li>
+            <li><strong>Input Validation / Injection</strong> — SQL injection strings, XSS payloads, command injection in params/body</li>
+            <li><strong>Rate Limiting Verification</strong> — Rapidly fire requests, verify 429 responses and Retry-After headers</li>
+            <li><strong>CORS Checks</strong> — Send requests with different Origin headers, verify Access-Control-* response headers</li>
+            <li><strong>Sensitive Data Exposure</strong> — Ensure passwords, tokens, PII are not leaked in responses</li>
+            <li><strong>SSL/TLS Verification</strong> — Postman Settings → toggle SSL certificate verification, test mixed content</li>
+            <li><strong>Security Headers</strong> — Check for X-Content-Type-Options, X-Frame-Options, Strict-Transport-Security in responses</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> Build a reusable "Security Checks" folder that you can fork into any collection. Include tests for auth bypass, IDOR, injection, and missing security headers.</div>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">📊</span> Visualizer</h3>
+        <p class="desc">Render custom HTML, tables, and charts inside the Postman response tab.</p>
+        <ul>
+            <li><strong>pm.visualizer.set(template, data)</strong> — Pass Handlebars HTML template + data object</li>
+            <li><strong>Table Views</strong> — Render array data as sortable HTML tables</li>
+            <li><strong>Charts</strong> — Embed Chart.js or D3.js via CDN links in templates</li>
+            <li><strong>Conditional Formatting</strong> — Highlight failed tests, out-of-range values with color</li>
+            <li><strong>Use Cases</strong> — Dashboard-like views for monitoring responses, aggregating paginated data, reporting</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🔌</span> Postman API &amp; Programmatic Access</h3>
+        <p class="desc">Manage Postman resources programmatically via Postman's own API.</p>
+        <ul>
+            <li><strong>Postman API Endpoints</strong>
+                <ul>
+                    <li>Collections — CRUD operations, forking, merging</li>
+                    <li>Environments — Create / update / delete environments programmatically</li>
+                    <li>Mocks &amp; Monitors — Create and manage via API</li>
+                    <li>Workspaces — List, create, manage workspace membership</li>
+                </ul>
+            </li>
+            <li><strong>API Key Authentication</strong> — Generate key in Postman Settings → API Keys</li>
+            <li><strong>Automation Scenarios</strong>
+                <ul>
+                    <li>Sync collections from version control</li>
+                    <li>Create environments dynamically in deployment pipelines</li>
+                    <li>Backup and restore collections programmatically</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🔍</span> Interceptor &amp; Proxy</h3>
+        <p class="desc">Capture real-world traffic and replay it in Postman.</p>
+        <ul>
+            <li><strong>Postman Interceptor (Browser Extension)</strong>
+                <ul>
+                    <li>Capture browser requests and cookies in real time</li>
+                    <li>Sync captured cookies to Postman for authenticated testing</li>
+                    <li>Filter by domain, method, or URL pattern</li>
+                </ul>
+            </li>
+            <li><strong>Postman Proxy</strong>
+                <ul>
+                    <li>Configure mobile device / desktop app to route through Postman's proxy</li>
+                    <li>Capture traffic from any HTTP client (mobile app, IoT device, CLI tool)</li>
+                    <li>Auto-save captured requests to a collection</li>
+                    <li>SSL proxy — capture HTTPS traffic (requires cert installation on device)</li>
+                </ul>
+            </li>
+            <li><strong>Use Cases</strong> — Reverse-engineering undocumented APIs, capturing mobile app traffic, building collections from real usage</li>
+        </ul>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PHASE 7 — TEAM & GOVERNANCE
+         ═══════════════════════════════════════════════ -->
+    <div class="phase-banner">
+        <span class="phase-num">7</span>
+        <h2>Team Collaboration &amp; Governance</h2>
+        <span class="phase-label">Professional</span>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">👥</span> Workspaces &amp; Collaboration</h3>
+        <p class="desc">Scale Postman across teams with proper access control and versioning.</p>
+        <ul>
+            <li><strong>Workspace Types</strong>
+                <ul>
+                    <li>Personal — private, individual use</li>
+                    <li>Team — shared within your organization</li>
+                    <li>Partner — shared with external collaborators (limited access)</li>
+                    <li>Public — open to the Postman community</li>
+                </ul>
+            </li>
+            <li><strong>Version Control</strong>
+                <ul>
+                    <li>Forking collections — create independent copies for experimentation</li>
+                    <li>Pull Requests — propose changes, review diffs, merge/reject</li>
+                    <li>Change Log — view history of who changed what, when</li>
+                </ul>
+            </li>
+            <li><strong>Roles &amp; Permissions</strong> — Admin, Editor, Viewer at workspace and collection levels</li>
+            <li><strong>Comments &amp; Discussions</strong> — Inline comments on requests, @mentions, activity feed</li>
+            <li><strong>Team Library</strong> — Shared environments, globals, and common request snippets</li>
+            <li><strong>Postman Vault</strong> — Securely store secrets locally, never synced to cloud</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🏛️</span> API Governance &amp; Design</h3>
+        <p class="desc">Enforce API standards and consistency across your organization.</p>
+        <ul>
+            <li><strong>API-First Design</strong>
+                <ul>
+                    <li>Create API definition (OpenAPI 3.x) in Postman</li>
+                    <li>Generate collections, mocks, and docs from the definition</li>
+                    <li>Design → Mock → Build → Test lifecycle</li>
+                </ul>
+            </li>
+            <li><strong>API Linting Rules</strong> — Enforce naming conventions, required headers, consistent error formats</li>
+            <li><strong>Schema Validation</strong> — Validate API responses against OpenAPI schemas automatically</li>
+            <li><strong>Style Guides</strong> — Organizational rules for URL patterns, versioning, pagination, error handling</li>
+            <li><strong>Changelog &amp; Deprecation</strong> — Track API versions, mark deprecated endpoints</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3><span class="icon">🔗</span> Integrations &amp; Ecosystem</h3>
+        <p class="desc">Connect Postman to your existing development toolchain.</p>
+        <ul>
+            <li><strong>Import / Export Formats</strong>
+                <ul>
+                    <li>OpenAPI 3.0 / Swagger 2.0 — bi-directional sync</li>
+                    <li>RAML, WSDL, GraphQL SDL</li>
+                    <li>cURL — paste a cURL command → instant Postman request</li>
+                    <li>HAR files — import browser-captured traffic</li>
+                </ul>
+            </li>
+            <li><strong>Postman API Network</strong> — Discover, fork, and test public APIs instantly</li>
+            <li><strong>Built-in Integrations</strong>
+                <ul>
+                    <li>Slack — monitor alerts, collection activity notifications</li>
+                    <li>GitHub / GitLab / Bitbucket — sync API definitions with repos</li>
+                    <li>PagerDuty / Opsgenie — incident alerting from monitor failures</li>
+                    <li>Datadog / New Relic — push monitor metrics to observability platforms</li>
+                    <li>Azure DevOps / Jenkins — CI/CD pipeline triggers</li>
+                </ul>
+            </li>
+            <li><strong>Webhooks</strong> — Trigger external services on collection changes or monitor events</li>
+            <li><strong>Postman CLI (<code>postman</code>)</strong> — Newer alternative to Newman with Postman Cloud integration, API governance checks in CI</li>
+        </ul>
+        <div class="pointer"><strong>Pointer:</strong> The Postman CLI (not Newman) is the future for CI/CD. It runs collections via Postman Cloud and includes governance checks. Start adopting it for new pipelines.</div>
+    </div>
+
+    <footer>Postman API Testing — Complete Learning Path &mdash; From Foundation to Expert</footer>
+</div>
+</body>
+</html>
