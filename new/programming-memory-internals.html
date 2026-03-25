@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C# Programming at the Memory Level — How .NET Code Really Works</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      padding: 2rem;
+      line-height: 1.6;
+      max-width: 1020px;
+    }
+    h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.25rem; color: #111827; }
+    .subtitle {
+      color: #6b7280; margin-bottom: 1rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e5e7eb; font-size: 0.95rem;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem;
+      margin-bottom: 2rem; font-size: 0.82rem; color: #4b5563;
+    }
+    .legend span { display: flex; align-items: center; gap: 0.35rem; }
+    .legend .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Section colour coding ── */
+    h2 {
+      font-size: 1.1rem; font-weight: 700; margin: 1.75rem 0 0.6rem 0;
+      padding: 0.4rem 0.85rem; border-radius: 0 6px 6px 0;
+    }
+    .cat-bits      { background: #eef2ff; border-left: 4px solid #6366f1; color: #3730a3; }
+    .cat-layout    { background: #ecfdf5; border-left: 4px solid #10b981; color: #065f46; }
+    .cat-stack     { background: #fffbeb; border-left: 4px solid #f59e0b; color: #92400e; }
+    .cat-heap      { background: #ecfeff; border-left: 4px solid #06b6d4; color: #155e75; }
+    .cat-pointers  { background: #fff1f2; border-left: 4px solid #f43f5e; color: #9f1239; }
+    .cat-types     { background: #f5f3ff; border-left: 4px solid #8b5cf6; color: #5b21b6; }
+    .cat-gc        { background: #fff7ed; border-left: 4px solid #f97316; color: #9a3412; }
+    .cat-cache     { background: #f0fdfa; border-left: 4px solid #14b8a6; color: #134e4a; }
+    .cat-virtual   { background: #f8fafc; border-left: 4px solid #64748b; color: #334155; }
+    .cat-safety    { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+    .cat-cpu       { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; }
+    .cat-lang      { background: #fdf4ff; border-left: 4px solid #d946ef; color: #86198f; }
+
+    ol {
+      list-style: none; counter-reset: topic-counter;
+      display: flex; flex-direction: column; gap: 0.4rem;
+    }
+    ol > li {
+      counter-increment: topic-counter;
+      background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px;
+      padding: 0.65rem 1rem; display: flex; align-items: baseline; gap: 0.75rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    ol > li::before {
+      content: counter(topic-counter);
+      min-width: 1.8rem; height: 1.8rem; background: #f3f4f6; color: #6b7280;
+      border-radius: 50%; font-size: 0.75rem; font-weight: 600;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .topic-title { font-weight: 600; color: #111827; min-width: 270px; }
+    .topic-desc  { color: #6b7280; font-size: 0.9rem; }
+    .topic-desc code {
+      background: #f3f4f6; border-radius: 4px; padding: 0.1rem 0.35rem;
+      font-size: 0.82rem; color: #374151;
+      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    }
+
+    /* ── Diagram blocks ── */
+    .diagram {
+      margin: 0.5rem 0 1.25rem 0;
+      background: #1e293b; color: #e2e8f0;
+      border-radius: 8px; padding: 1rem 1.25rem;
+      font-family: 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      font-size: 0.8rem; line-height: 1.7;
+      overflow-x: auto;
+      border-left: 4px solid #6366f1;
+    }
+    .diagram .addr   { color: #94a3b8; }
+    .diagram .val    { color: #34d399; font-weight: 600; }
+    .diagram .label  { color: #fbbf24; }
+    .diagram .arrow  { color: #f472b6; }
+    .diagram .fade   { color: #475569; }
+    .diagram .hi     { color: #818cf8; }
+    .diagram .note   { color: #7dd3fc; font-style: italic; }
+
+    .diagram-title {
+      font-size: 0.78rem; font-weight: 600; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 0.35rem;
+    }
+
+    .diagram-wrap {
+      padding: 0 0 0 2.6rem;
+    }
+
+    /* ── Concept cards ── */
+    .concept-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 0.9rem; margin: 0.5rem 0 1.25rem 0; padding-left: 2.6rem;
+    }
+    .concept-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+      padding: 0.8rem 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .concept-card h4 { font-size: 0.88rem; font-weight: 700; color: #111827; margin-bottom: 0.3rem; }
+    .concept-card p  { font-size: 0.82rem; color: #4b5563; line-height: 1.5; }
+    .concept-card code {
+      background: #f3f4f6; border-radius: 3px; padding: 0.05rem 0.3rem;
+      font-size: 0.78rem; color: #374151;
+      font-family: 'Fira Code', Consolas, monospace;
+    }
+
+    /* ── Table ── */
+    .mem-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1.25rem 0; font-size: 0.85rem; }
+    .mem-table th {
+      background: #1e293b; color: #e2e8f0; text-align: left;
+      padding: 0.5rem 0.75rem; font-weight: 600; letter-spacing: 0.02em;
+    }
+    .mem-table td { padding: 0.45rem 0.75rem; border-bottom: 1px solid #e5e7eb; color: #374151; }
+    .mem-table tr:nth-child(even) td { background: #f9fafb; }
+    .mem-table code {
+      background: #f3f4f6; border-radius: 3px; padding: 0.05rem 0.3rem;
+      font-size: 0.78rem; font-family: 'Fira Code', Consolas, monospace;
+    }
+    .badge {
+      display: inline-block; padding: 0.1rem 0.45rem; border-radius: 99px;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.03em;
+    }
+    .badge-green  { background: #dcfce7; color: #166534; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+    .badge-blue   { background: #dbeafe; color: #1e40af; }
+    .badge-amber  { background: #fef3c7; color: #92400e; }
+    .badge-violet { background: #ede9fe; color: #5b21b6; }
+  </style>
+</head>
+<body>
+
+<h1>C# Programming at the Memory Level</h1>
+<p class="subtitle">How variables, methods, objects, and programs are stored and managed in RAM — from bits to the .NET CLR</p>
+
+<div class="legend">
+  <span><span class="dot" style="background:#6366f1"></span> Bits, Bytes &amp; Addresses</span>
+  <span><span class="dot" style="background:#10b981"></span> CLR Process Layout</span>
+  <span><span class="dot" style="background:#f59e0b"></span> Stack</span>
+  <span><span class="dot" style="background:#06b6d4"></span> Managed Heap</span>
+  <span><span class="dot" style="background:#f43f5e"></span> References, ref &amp; Pointers</span>
+  <span><span class="dot" style="background:#8b5cf6"></span> Value vs Reference Types</span>
+  <span><span class="dot" style="background:#f97316"></span> .NET Garbage Collector</span>
+  <span><span class="dot" style="background:#14b8a6"></span> CPU Cache &amp; Locality</span>
+  <span><span class="dot" style="background:#64748b"></span> Virtual Memory</span>
+  <span><span class="dot" style="background:#ef4444"></span> Memory Safety in C#</span>
+  <span><span class="dot" style="background:#3b82f6"></span> CPU Registers &amp; ALU</span>
+  <span><span class="dot" style="background:#d946ef"></span> C# / .NET CLR Deep Dive</span>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-bits">A — Bits, Bytes, and Memory Addresses</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">What is Memory (RAM)?</span>
+    <span class="topic-desc">RAM is a giant flat array of bytes, each uniquely numbered (its address). A 64-bit CPU can address up to 2<sup>64</sup> bytes (~18 exabytes). Every C# variable, object, JIT-compiled method, and string ultimately lives at some address in this array.</span>
+  </li>
+  <li>
+    <span class="topic-title">Bits, Bytes, and Words</span>
+    <span class="topic-desc">1 bit = 0 or 1. 1 byte = 8 bits (256 values). 1 word = the CPU's natural unit (8 bytes on x64). In C#: <code>byte</code> = 1 byte, <code>char</code> = 2 bytes (UTF-16), <code>int</code> = 4, <code>long</code> = 8, <code>double</code> = 8. Use <code>sizeof(T)</code> or <code>Unsafe.SizeOf&lt;T&gt;()</code> to check at runtime.</span>
+  </li>
+  <li>
+    <span class="topic-title">Memory Addresses</span>
+    <span class="topic-desc">Each byte has a unique numeric address (e.g., <code>0x7ffe3a20</code>). When you write <code>int x = 42;</code> inside a method, the JIT reserves 4 consecutive bytes on the stack at that address. In C# you can see addresses via <code>unsafe { fixed (int* p = &amp;x) { … } }</code>.</span>
+  </li>
+  <li>
+    <span class="topic-title">Endianness</span>
+    <span class="topic-desc">Multi-byte values are stored with the least-significant byte first on x86/x64 (little-endian). The integer <code>0x0A0B0C0D</code> is stored as <code>0D 0C 0B 0A</code>. C# exposes <code>BitConverter.IsLittleEndian</code> and <code>BinaryPrimitives.ReverseEndianness()</code> for manual byte-order conversions when talking to network protocols.</span>
+  </li>
+  <li>
+    <span class="topic-title">Memory Alignment &amp; Padding</span>
+    <span class="topic-desc">CPUs read data fastest when its address is a multiple of its size. The CLR adds invisible padding bytes inside structs to satisfy alignment: <code>struct { byte a; int b; }</code> occupies 8 bytes, not 5. You can control layout with <code>[StructLayout(LayoutKind.Explicit)]</code> and <code>[FieldOffset(n)]</code>.</span>
+  </li>
+  <li>
+    <span class="topic-title">Hexadecimal Notation</span>
+    <span class="topic-desc">Addresses and byte values are written in hex (<code>0x…</code>) — each hex digit maps to 4 bits. One byte = two hex digits (<code>255</code> = <code>0xFF</code>). In C# use <code>0xFF</code> literals, <code>value.ToString("X8")</code> for hex strings, and the debugger's Memory window to inspect raw bytes.</span>
+  </li>
+</ol>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">Memory as a byte array — storing <code>int x = 305419896 (0x12345678)</code> in C#</p>
+  <div class="diagram">
+<span class="addr">Address    </span>  <span class="label">0x1000</span>  <span class="label">0x1001</span>  <span class="label">0x1002</span>  <span class="label">0x1003</span>
+<span class="addr">Value      </span>  <span class="val">  0x78   </span>  <span class="val">  0x56   </span>  <span class="val">  0x34   </span>  <span class="val">  0x12  </span>  <span class="note"> ← little-endian (x86/x64, BitConverter.IsLittleEndian == true)</span>
+  </div>
+</div>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">Struct padding — <code>struct MyStruct { byte a; int b; byte c; }</code></p>
+  <div class="diagram">
+<span class="addr">Offset 0  </span>  <span class="val">[a — 1 byte]</span>
+<span class="addr">Offset 1  </span>  <span class="fade">[pad pad pad — 3 bytes to align b to offset 4]</span>
+<span class="addr">Offset 4  </span>  <span class="val">[b — 4 bytes int]</span>
+<span class="addr">Offset 8  </span>  <span class="val">[c — 1 byte]</span>
+<span class="addr">Offset 9  </span>  <span class="fade">[pad pad pad — 3 bytes tail padding → Unsafe.SizeOf&lt;MyStruct&gt;() = 12]</span>
+<span class="note">Total: 12 bytes  (not 6)   Use [StructLayout(LayoutKind.Sequential, Pack = 1)] to eliminate padding</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-layout">B — CLR Process Memory Layout</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">How a .NET Process Starts</span>
+    <span class="topic-desc">The OS launches the native host (<code>dotnet.exe</code> or the self-contained EXE), which loads the CLR (CoreCLR). The CLR initialises its managed heap, JIT compiler, GC, thread pool, and type system — then calls your <code>Main()</code> method. All of this happens in the same OS process address space.</span>
+  </li>
+  <li>
+    <span class="topic-title">Native Code Region (JIT-Compiled)</span>
+    <span class="topic-desc">IL bytecode from your assemblies is JIT-compiled to native machine code on first call (or ahead-of-time with NativeAOT / ReadyToRun). This native code lives in executable memory pages. Tiered compilation compiles first to fast "Tier 0" code, then re-JITs hot methods as optimised "Tier 1" code.</span>
+  </li>
+  <li>
+    <span class="topic-title">Managed Heap</span>
+    <span class="topic-desc">All reference-type objects (<code>class</code>, <code>string</code>, arrays, delegates) are allocated on the CLR's managed heap. The GC owns this region — it allocates, compacts, and frees objects here. The managed heap is subdivided into <strong>Small Object Heap (SOH)</strong> with Gen 0/1/2, and <strong>Large Object Heap (LOH)</strong> for objects ≥ 85,000 bytes.</span>
+  </li>
+  <li>
+    <span class="topic-title">Thread Stacks</span>
+    <span class="topic-desc">Each thread gets its own stack (default 1 MB on Windows, 8 MB on Linux). Method locals that are value types (<code>int</code>, <code>struct</code>) live on the stack. The CLR's managed stack walker knows which stack slots hold GC references so the GC can update them during compaction.</span>
+  </li>
+  <li>
+    <span class="topic-title">Loader Heap (Type Metadata)</span>
+    <span class="topic-desc">The CLR's Loader Heap stores Method Tables, EEClass structures, and MethodDescs — the metadata that describes every loaded type and method. This data is never GC'd; it lives for the lifetime of the <code>AssemblyLoadContext</code>. You can inspect it via <code>!dumpmt</code> in WinDbg/LLDB with SOS.</span>
+  </li>
+  <li>
+    <span class="topic-title">Pinned Object Heap (POH)</span>
+    <span class="topic-desc">.NET 5+ introduced the POH for long-lived objects that must stay at a fixed address (pinned). Before POH, frequent pinning fragmented the SOH and hindered compaction. Allocate on POH via <code>GC.AllocateArray&lt;T&gt;(length, pinned: true)</code>.</span>
+  </li>
+</ol>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">Typical .NET 8 / x64 process memory layout</p>
+  <div class="diagram">
+<span class="addr">High address  0xFFFF…FFFF</span>  <span class="fade">────────────────────────</span>
+                              <span class="label">  Kernel space  </span>       <span class="note">(Windows/Linux kernel — not accessible)</span>
+<span class="addr">              0x7FFF…FFFF</span>  <span class="fade">────────────────────────</span>
+                              <span class="val">  Thread stacks  </span>  <span class="arrow">↓ grows downward (1 MB per thread)</span>
+                              <span class="fade">  …free space…</span>
+                              <span class="hi">  mmap / DLLs    </span>       <span class="note">(coreclr.dll, System.Private.CoreLib.dll, etc.)</span>
+                              <span class="fade">  …free space…</span>
+                              <span class="val">  Managed Heap   </span>  <span class="arrow">↑ grows upward</span>
+                              <span class="note">    ├── SOH: Gen 0 │ Gen 1 │ Gen 2</span>
+                              <span class="note">    ├── LOH (≥ 85 KB objects)</span>
+                              <span class="note">    └── POH (pinned objects)</span>
+                              <span class="hi">  Loader Heap     </span>       <span class="note">(MethodTables, EEClass, metadata)</span>
+                              <span class="hi">  JIT Code Heap   </span>       <span class="note">(native machine code from JIT)</span>
+                              <span class="val">  Native image    </span>       <span class="note">(dotnet host, R2R pre-compiled code)</span>
+<span class="addr">Low address   0x0000…0000</span>  <span class="fade">────────────────────────</span>
+                              <span class="fade">  NULL page (unmapped — catches NullReferenceException)</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-stack">C — The Stack in C#</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Stack Frames (Activation Records)</span>
+    <span class="topic-desc">Every C# method call pushes a new frame onto the thread's stack. A frame holds: local value-type variables, saved registers, the return address, and references to heap objects. On return the frame is popped — all locals are instantly freed with zero overhead.</span>
+  </li>
+  <li>
+    <span class="topic-title">What Lives on the Stack in C#</span>
+    <span class="topic-desc">Value-type locals (<code>int</code>, <code>double</code>, <code>bool</code>, <code>DateTime</code>, custom <code>struct</code>), method arguments (value-type copies or references to heap objects), <code>ref</code>/<code>in</code>/<code>out</code> parameters (managed pointers), and <code>Span&lt;T&gt;</code> / <code>ref struct</code> instances. The reference variable itself (8 bytes) also lives on the stack even when the object is on the heap.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>stackalloc</code> — Stack Allocation in C#</span>
+    <span class="topic-desc"><code>Span&lt;byte&gt; buf = stackalloc byte[256];</code> allocates 256 bytes directly on the current stack frame — no heap, no GC. The memory is freed automatically when the method returns. Use for small, short-lived buffers on hot paths. Guarded by a stack overflow check emitted by the JIT.</span>
+  </li>
+  <li>
+    <span class="topic-title">Stack Size &amp; StackOverflowException</span>
+    <span class="topic-desc">Each thread gets a fixed-size stack (default 1 MB on Windows, 8 MB on Linux). Unbounded recursion or very large <code>stackalloc</code> exhausts the stack, triggering an unrecoverable <code>StackOverflowException</code>. The CLR cannot catch this — the process terminates. Design recursive algorithms with depth limits or convert to iterative loops.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>ref</code>, <code>in</code>, and <code>out</code> Parameters</span>
+    <span class="topic-desc"><code>ref int x</code> passes a managed pointer (byref) to the caller's stack slot. <code>in</code> is a read-only byref (avoids copying large structs). <code>out</code> is a write-only byref. Under the hood all three are a pointer to a stack address — zero allocation, zero copy. The JIT emits a <code>lea</code> to take the address.</span>
+  </li>
+  <li>
+    <span class="topic-title">JIT Inlining &amp; Stack Elimination</span>
+    <span class="topic-desc">The RyuJIT compiler inlines small methods (≤ ~100 IL bytes): the callee's code is merged into the caller's frame with no <code>call</code>/<code>ret</code>. This eliminates the frame push/pop overhead, enables register allocation across the boundary, and can remove dead code. <code>[MethodImpl(MethodImplOptions.AggressiveInlining)]</code> hints larger methods for inlining.</span>
+  </li>
+</ol>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">Stack during <code>Main() → Calculate(3,4) → Helper()</code> in C#</p>
+  <div class="diagram">
+<span class="addr">  Higher addresses</span>
+<span class="fade">  ┌─────────────────────────────┐</span>
+<span class="label">  │  Main() frame               │</span>  <span class="note"> ← rbp of Main</span>
+<span class="val">  │  int result          (4B)   │</span>
+<span class="val">  │  string name (ref→heap)(8B) │</span>
+<span class="val">  │  return addr → CLR          │</span>
+<span class="fade">  ├─────────────────────────────┤</span>
+<span class="label">  │  Calculate(3,4) frame       │</span>  <span class="note"> ← rbp of Calculate</span>
+<span class="val">  │  int a=3, int b=4   (8B)   │</span>
+<span class="val">  │  return addr → Main         │</span>
+<span class="fade">  ├─────────────────────────────┤</span>
+<span class="label">  │  Helper() frame             │</span>  <span class="note"> ← rbp of Helper</span>
+<span class="val">  │  Span&lt;byte&gt; buf  (16B ref struct) │</span>
+<span class="val">  │  stackalloc [64]     (64B)  │</span>
+<span class="val">  │  return addr → Calculate    │</span>
+<span class="arrow">  ↑  rsp (stack pointer)        │</span>  <span class="note"> ← top of stack</span>
+<span class="fade">  └─────────────────────────────┘</span>
+<span class="addr">  Lower addresses</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-heap">D — The CLR Managed Heap</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Allocation with <code>new</code></span>
+    <span class="topic-desc"><code>var obj = new MyClass();</code> — the CLR bumps the Gen 0 allocation pointer by the object's size, writes the object header + method-table pointer, zeroes the fields, and returns the reference. This is essentially a pointer-bump — extremely fast (no free-list search). The GC handles deallocation later.</span>
+  </li>
+  <li>
+    <span class="topic-title">Object Layout on the Heap</span>
+    <span class="topic-desc">Every heap object begins with an 8-byte <strong>Object Header</strong> (sync block index for locking, hash code) and an 8-byte <strong>Method Table pointer</strong> (vtable, type info). Fields follow. So the minimum C# object (<code>new object()</code>) consumes 24 bytes on x64 (header + MT ptr + 8 bytes padding for alignment).</span>
+  </li>
+  <li>
+    <span class="topic-title">Small Object Heap (SOH): Gen 0 / 1 / 2</span>
+    <span class="topic-desc">Objects &lt; 85,000 bytes land on the SOH. New objects start in <strong>Gen 0</strong> (the nursery). Survivors of a Gen 0 collection are promoted to <strong>Gen 1</strong>, then to <strong>Gen 2</strong>. Gen 0 is small and collected frequently (microseconds); Gen 2 is large and collected rarely (can pause for milliseconds).</span>
+  </li>
+  <li>
+    <span class="topic-title">Large Object Heap (LOH)</span>
+    <span class="topic-desc">Objects ≥ 85,000 bytes go directly to the LOH (also collected as Gen 2). The LOH is <em>not compacted</em> by default — allocations use a free-list, causing external fragmentation over time. Since .NET Core 2.1 you can opt in to LOH compaction via <code>GCSettings.LargeObjectHeapCompactionMode</code>.</span>
+  </li>
+  <li>
+    <span class="topic-title">Pinned Object Heap (POH)</span>
+    <span class="topic-desc">Objects that must not be moved by the GC (for P/Invoke, I/O buffers) should use the POH: <code>GC.AllocateArray&lt;byte&gt;(size, pinned: true)</code>. POH avoids fragmentation caused by pinning objects on the SOH. Introduced in .NET 5.</span>
+  </li>
+  <li>
+    <span class="topic-title">Segments and GC Heap Budget</span>
+    <span class="topic-desc">The managed heap is made of variable-size <strong>segments</strong> (sometimes called regions in .NET 7+ DPAD GC). When Gen 0's allocation budget is exhausted, a Gen 0 collection triggers. The GC dynamically adjusts budgets based on survival rates and system memory pressure — you don't configure this directly.</span>
+  </li>
+</ol>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">CLR managed heap structure — SOH + LOH + POH</p>
+  <div class="diagram">
+<span class="label">    Small Object Heap (SOH)</span>
+<span class="val">    ┌─────────┬─────────┬──────────────────────────────┐</span>
+<span class="val">    │  Gen 0  │  Gen 1  │          Gen 2               │</span>
+<span class="val">    │ (newest)│         │       (long-lived)            │</span>
+<span class="val">    └─────────┴─────────┴──────────────────────────────┘</span>
+<span class="arrow">    ↑ allocation pointer (bump allocator — O(1))</span>
+
+<span class="label">    Large Object Heap (LOH)</span>                    <span class="note"> objects ≥ 85,000 bytes</span>
+<span class="hi">    ┌──────────────────────────────────────────────┐</span>
+<span class="hi">    │  [byte[100000]]  [string (huge)]  [free]     │</span>  <span class="note"> free-list based, may fragment</span>
+<span class="hi">    └──────────────────────────────────────────────┘</span>
+
+<span class="label">    Pinned Object Heap (POH)</span>                   <span class="note"> .NET 5+ only</span>
+<span class="hi">    ┌──────────────────────────────────────────────┐</span>
+<span class="hi">    │  [I/O buffer, pinned: true]  [P/Invoke buf]  │</span>  <span class="note"> never moved, no fragmentation of SOH</span>
+<span class="hi">    └──────────────────────────────────────────────┘</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-pointers">E — References, <code>ref</code>, and Pointers in C#</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Object References</span>
+    <span class="topic-desc">A variable of a <code>class</code> type (<code>string name = "hello";</code>) holds an 8-byte reference (on x64) — essentially a pointer to the object on the managed heap. The GC can relocate the object and transparently update the reference. You cannot do arithmetic on it (unlike C pointers).</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>ref</code> Locals and Returns</span>
+    <span class="topic-desc"><code>ref int r = ref array[0];</code> creates a <em>managed pointer</em> (byref) to the element — no copy. Modifying <code>r</code> modifies the array directly. <code>ref return</code> lets a method return a byref to a field or array slot. This avoids copying large structs while staying fully safe (the CLR tracks the reference for GC).</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>in</code> Parameters (Read-Only Ref)</span>
+    <span class="topic-desc"><code>void Render(in Matrix4x4 m)</code> passes a managed pointer to <code>m</code> without copying the 64-byte struct. The <code>in</code> modifier makes it read-only at the call site. Caution: if you pass a non-variable (e.g., a literal or expression), the compiler creates a hidden temporary copy — negating the benefit.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>null</code> Reference</span>
+    <span class="topic-desc"><code>null</code> means the reference points to nothing (address 0). Accessing a member on <code>null</code> throws <code>NullReferenceException</code> — the CPU's null-page trap (address 0 is unmapped). C# 8+ nullable reference types (<code>string?</code>) catch this at compile time with warnings. Value types cannot be <code>null</code> unless wrapped in <code>Nullable&lt;T&gt;</code>.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>Span&lt;T&gt;</code> — Fat Reference</span>
+    <span class="topic-desc"><code>Span&lt;T&gt;</code> is a <code>ref struct</code> holding a (managed pointer, length) pair — 16 bytes. It can point into arrays, <code>stackalloc</code> memory, or unmanaged buffers. Bounds-checked. Cannot escape to the heap (ref struct restriction). Used heavily in high-perf APIs (<code>string.AsSpan()</code>, <code>Utf8JsonReader</code>, <code>Pipe</code>).</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>unsafe</code> Pointers</span>
+    <span class="topic-desc">Inside an <code>unsafe</code> block, C# supports raw pointers: <code>int* p = &amp;x;</code>, pointer arithmetic (<code>p + 1</code>), and dereferencing (<code>*p</code>). Use <code>fixed (byte* ptr = array)</code> to pin a managed object so the GC won't move it. Required for P/Invoke and very low-level perf code. Bypasses all safety — use with extreme caution.</span>
+  </li>
+</ol>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">Reference vs <code>ref</code> vs <code>unsafe</code> pointer in C#</p>
+  <div class="diagram">
+<span class="note"> 1) Object reference</span>
+<span class="addr">stack  </span> <span class="label">name</span>  <span class="val">= ref → 0xABC0  </span>  <span class="note"> 8-byte managed reference</span>
+<span class="addr">heap 0xABC0 </span> <span class="val">[ hdr | MT ptr | 'h','e','l','l','o' ]</span>  <span class="note"> string object</span>
+
+<span class="note"> 2) ref local — managed pointer to a stack/heap location</span>
+<span class="addr">stack  </span> <span class="label">int x</span>  <span class="val">= 42              </span>  <span class="note"> 4-byte value</span>
+<span class="addr">stack  </span> <span class="label">ref int r</span>  <span class="val">= byref → x  </span>  <span class="note"> managed pointer; r = 99 changes x</span>
+
+<span class="note"> 3) unsafe pointer — raw address, no GC tracking</span>
+<span class="addr">stack  </span> <span class="label">int* p</span>  <span class="val">= 0x7ffe10      </span>  <span class="note"> raw 8-byte pointer</span>
+<span class="arrow">  *(p+1) walks 4 bytes forward — classic pointer arithmetic</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-types">F — Value Types vs Reference Types in C#</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Value Types (<code>struct</code>) — Stored Inline</span>
+    <span class="topic-desc"><code>int</code>, <code>double</code>, <code>bool</code>, <code>DateTime</code>, <code>Guid</code>, <code>enum</code>, and custom <code>struct</code>s store their data directly at the variable's location — on the stack if local, or inline inside a containing object/array. <code>Point p = new(3,7);</code> — the x and y fields sit right there in the stack frame, no heap involved.</span>
+  </li>
+  <li>
+    <span class="topic-title">Reference Types (<code>class</code>) — Pointer on Stack, Object on Heap</span>
+    <span class="topic-desc"><code>class</code>, <code>string</code>, arrays, delegates, and interfaces are reference types. The local variable is an 8-byte reference on the stack; the actual object lives on the managed heap. <code>var a = new Node(99); var b = a;</code> — both <code>a</code> and <code>b</code> point to the <em>same</em> heap object.</span>
+  </li>
+  <li>
+    <span class="topic-title">Boxing &amp; Unboxing</span>
+    <span class="topic-desc">When a value type is cast to <code>object</code> or an interface (<code>object o = 42;</code>), the CLR <em>boxes</em> it: allocates a heap object, copies the value inside, returns a reference. Unboxing (<code>int x = (int)o;</code>) copies back. Boxing creates GC pressure — avoid in loops. Generics (<code>List&lt;int&gt;</code> vs <code>ArrayList</code>) eliminate boxing entirely.</span>
+  </li>
+  <li>
+    <span class="topic-title">Array Layout</span>
+    <span class="topic-desc"><code>int[] arr = new int[4];</code> — the array is one contiguous heap object: header (16 bytes) + length field (8 bytes) + 4×4 = 16 bytes of data = 40 bytes total. Element <code>arr[i]</code> is at offset <code>header + i*4</code>. Value-type arrays are flat and cache-friendly. Reference-type arrays (<code>Node[]</code>) store references — each element is an 8-byte pointer to a separate heap object.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>string</code> in Memory</span>
+    <span class="topic-desc">C# <code>string</code> is a reference type, immutable, stored as a UTF-16 <code>char[]</code> inline in the object. Header (16B) + length (4B) + chars (2B each) + null terminator (2B for interop). <code>"hello"</code> = 16+4+10+2 = 32 bytes on heap. String interning (<code>string.Intern</code>) deduplicates identical literals to share one heap allocation.</span>
+  </li>
+  <li>
+    <span class="topic-title">Object Header &amp; Method Table</span>
+    <span class="topic-desc">Every C# heap object starts with: <strong>Object Header</strong> (8 bytes — sync block index for <code>lock</code>, hash code) then <strong>Method Table pointer</strong> (8 bytes — points to the type's vtable, used for virtual dispatch, casting, and GC type info). The reference variable actually points to the Method Table pointer, not the very start of the header.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>record struct</code> vs <code>record class</code></span>
+    <span class="topic-desc"><code>record struct</code> is a value type (inline, stack) with compiler-generated <code>Equals</code>/<code>GetHashCode</code>/<code>ToString</code>. <code>record class</code> is a reference type (heap-allocated) with the same generated members. Choose <code>record struct</code> for small immutable DTOs (< 32 bytes) to avoid heap allocation; choose <code>record class</code> for larger objects or when shared identity matters.</span>
+  </li>
+</ol>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">Value type vs reference type in C# memory</p>
+  <div class="diagram">
+<span class="note"> Value type — struct Point { public int X; public int Y; } on the stack:</span>
+<span class="addr">stack  </span> <span class="label">p1  </span> <span class="val">[ X=3 | Y=7 ]</span>         <span class="note"> 8 bytes inline, no heap</span>
+<span class="addr">stack  </span> <span class="label">p2  </span> <span class="val">[ X=3 | Y=7 ]</span>         <span class="note"> copied — independent (struct assignment)</span>
+
+<span class="note"> Reference type — class Node { public int Val; } on the heap:</span>
+<span class="addr">stack  </span> <span class="label">a   </span> <span class="val">[ ref → 0xABC0 ]</span>     <span class="note"> 8-byte reference</span>
+<span class="addr">stack  </span> <span class="label">b   </span> <span class="val">[ ref → 0xABC0 ]</span>     <span class="note"> same reference! b = a copies the pointer</span>
+<span class="addr">heap 0xABC0 </span> <span class="label">Node</span> <span class="val">[ ObjHdr(8B) | MT*(8B) | Val=99(4B) | pad(4B) ]</span>  <span class="note"> 24 bytes</span>
+
+<span class="note"> Boxing — object o = 42:</span>
+<span class="addr">stack  </span> <span class="label">o   </span> <span class="val">[ ref → 0xDE00 ]</span>     <span class="note"> 8-byte reference to boxed int</span>
+<span class="addr">heap 0xDE00 </span> <span class="label">Box&lt;int&gt;</span> <span class="val">[ ObjHdr | MT*(→Int32) | 42 ]</span>  <span class="note"> 24 bytes for a single int!</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-gc">G — The .NET Garbage Collector</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Reachability &amp; GC Roots</span>
+    <span class="topic-desc">The .NET GC starts from <em>roots</em>: stack variables, static fields, GC handles, CPU registers, and finalisation queue entries. Any object reachable via a chain of references from a root is <em>live</em>. All other objects are dead and will be collected.</span>
+  </li>
+  <li>
+    <span class="topic-title">Mark → Plan → Compact (SOH)</span>
+    <span class="topic-desc"><strong>Mark phase</strong>: walk from roots, mark each live object. <strong>Plan phase</strong>: decide which objects to promote and whether to compact or sweep. <strong>Compact phase</strong>: slide live objects together, eliminating gaps, then update all references. Compaction makes the SOH zero-fragmentation — subsequent allocation is a simple pointer bump.</span>
+  </li>
+  <li>
+    <span class="topic-title">Generational Collection (Gen 0 / 1 / 2)</span>
+    <span class="topic-desc">Most objects die young. Gen 0 (few KB–MB) is collected constantly — pauses < 1 ms. Gen 1 (intermediate buffer) catches objects that survive briefly. Gen 2 + LOH is collected on full GC and can pause for tens of ms. The GC auto-tunes generation budgets to minimize pause time.</span>
+  </li>
+  <li>
+    <span class="topic-title">Workstation vs Server GC</span>
+    <span class="topic-desc"><code>&lt;ServerGarbageCollection&gt;true&lt;/…&gt;</code> in the project file enables Server GC: one managed heap + GC thread per CPU core for maximum throughput. Workstation GC uses a single thread and is optimised for low-latency desktop apps. Web servers and APIs almost always use Server GC.</span>
+  </li>
+  <li>
+    <span class="topic-title">Background (Concurrent) GC</span>
+    <span class="topic-desc">Background GC runs Gen 2 collection concurrently with your application threads. It suspends threads only briefly for a marking phase, then sweeps/compacts without stopping the world. Enabled by default in both Workstation and Server modes since .NET Core 3.0.</span>
+  </li>
+  <li>
+    <span class="topic-title">Finalizers &amp; <code>IDisposable</code></span>
+    <span class="topic-desc">Objects with a finalizer (<code>~MyClass()</code>) are added to the finalisation queue. After they become unreachable, the GC queues them for finalisation by a dedicated thread — the object survives an extra GC cycle. This delays collection and hurts perf. Always prefer <code>IDisposable</code> + <code>using</code> for deterministic cleanup of unmanaged resources.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>GC.Collect()</code> and When to Force GC</span>
+    <span class="topic-desc">Calling <code>GC.Collect()</code> forces a full collection — almost always a mistake. The GC's heuristics are nearly always better than manual triggers. The one legitimate scenario: after a large one-time operation (e.g., loading a level in a game) to pay the GC cost once rather than mid-frame. Use <code>GC.TryStartNoGCRegion</code> to temporarily suppress GC in latency-critical sections.</span>
+  </li>
+  <li>
+    <span class="topic-title">GC Pinning &amp; <code>fixed</code></span>
+    <span class="topic-desc"><code>fixed (byte* ptr = array)</code> pins the array so the GC cannot move it — required for passing buffers to unmanaged code via P/Invoke. Pinned objects fragment the SOH because the compactor must work around them. Minimise pinning duration; prefer the POH for long-lived pins.</span>
+  </li>
+</ol>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">.NET Generational GC — Gen 0 minor collection</p>
+  <div class="diagram">
+<span class="label">Gen 0 (Nursery)</span>               <span class="label">Gen 1</span>            <span class="label">Gen 2</span>
+<span class="val">  [A][B][C][D][E]</span>             <span class="hi">  [P][Q]</span>          <span class="hi">  [X][Y][Z]</span>
+
+<span class="note"> Gen 0 collection: A,C,E are unreachable → dead. B,D survive → promoted to Gen 1.</span>
+<span class="fade">  [  empty nursery  ]</span>         <span class="hi">  [P][Q][B][D]</span>    <span class="hi">  [X][Y][Z]</span>
+<span class="arrow">  ↑ allocation pointer reset   </span>
+<span class="note"> Next new object just bumps the pointer — O(1) allocation.</span>
+<span class="note"> If Gen 1 fills up, a Gen 1 collection promotes long-lived objects to Gen 2.</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-cpu">H — CPU Registers and the Instruction Cycle</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Registers — Memory Inside the CPU</span>
+    <span class="topic-desc">Registers are tiny, ultra-fast memory cells inside the CPU die. A modern x86-64 CPU has 16 general-purpose 64-bit registers (<code>rax, rbx, rcx, rdx, rsi, rdi, rsp, rbp, r8–r15</code>) plus 16 SIMD registers and special-purpose ones. Access time is under 1 CPU cycle — vs. ~4 cycles for L1 cache, ~200+ for RAM.</span>
+  </li>
+  <li>
+    <span class="topic-title">The Fetch–Decode–Execute Cycle</span>
+    <span class="topic-desc">Every instruction goes through: <strong>Fetch</strong> — load next instruction from memory at address in Program Counter (PC/RIP); <strong>Decode</strong> — CPU figures out what operation and operands; <strong>Execute</strong> — ALU performs the work; <strong>Write-back</strong> — result stored in a register or memory. PC is incremented to the next instruction.</span>
+  </li>
+  <li>
+    <span class="topic-title">The Load/Store Model</span>
+    <span class="topic-desc">Most ISAs (x86, ARM) operate on registers only — you cannot add two memory addresses directly. You first <em>load</em> values from memory into registers, operate on the registers using ALU instructions, then <em>store</em> a result register back to memory. Memory ↔ register is the key bottleneck.</span>
+  </li>
+  <li>
+    <span class="topic-title">Stack Instructions: PUSH / POP / CALL / RET</span>
+    <span class="topic-desc"><code>PUSH rax</code>: <code>rsp -= 8</code> then writes <code>rax</code> to <code>[rsp]</code>. <code>POP</code> reverses it. <code>CALL addr</code>: pushes the next PC onto the stack (return address), then jumps to <code>addr</code>. <code>RET</code>: pops the return address from stack and jumps to it. The entire call stack is just these primitives.</span>
+  </li>
+  <li>
+    <span class="topic-title">Out-of-Order Execution &amp; Microarchitecture</span>
+    <span class="topic-desc">Modern CPUs don't execute instructions strictly in program order. The CPU looks ahead, finds independent instructions, and runs them in parallel (superscalar). Results are committed in order to preserve program semantics. This "out-of-order engine" is why branch mispredictions and data hazards are expensive — they flush the pipeline.</span>
+  </li>
+  <li>
+    <span class="topic-title">The Memory Bus and Latency</span>
+    <span class="topic-desc">When a CPU needs a value not in cache, it issues a memory request on the bus. The memory controller fetches an entire 64-byte cache line from RAM. At ~3 GHz, a cache miss costs ~200+ nanoseconds — roughly 600+ cycles of nothing. This is why memory access patterns dominate performance far more than raw instruction count.</span>
+  </li>
+</ol>
+
+<table class="mem-table" style="margin-left:2.6rem;width:calc(100% - 2.6rem)">
+  <thead><tr><th>Location</th><th>Typical Latency</th><th>Size</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Registers</td><td>&lt; 1 cycle</td><td>Bytes</td><td>On-die; per-core</td></tr>
+    <tr><td>L1 Data Cache</td><td>~4 cycles</td><td>32–64 KB</td><td>Per core; 64-byte lines</td></tr>
+    <tr><td>L2 Cache</td><td>~12 cycles</td><td>256 KB – 1 MB</td><td>Per core</td></tr>
+    <tr><td>L3 (LLC) Cache</td><td>~40 cycles</td><td>8–64 MB</td><td>Shared across cores</td></tr>
+    <tr><td>Main RAM (DRAM)</td><td>~200 cycles</td><td>GBs</td><td>"Cache miss" cost</td></tr>
+    <tr><td>NVMe SSD</td><td>~10 000 cycles</td><td>TBs</td><td>Fastest persistent storage</td></tr>
+  </tbody>
+</table>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-cache">I — CPU Caches and Memory Locality</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Cache Lines</span>
+    <span class="topic-desc">The CPU never fetches a single byte from RAM — it fetches a 64-byte <em>cache line</em> (the block of 64 contiguous bytes containing the requested address). If you iterate an array sequentially, subsequent elements are already in the cache line — effectively free. This is <em>spatial locality</em>.</span>
+  </li>
+  <li>
+    <span class="topic-title">Spatial Locality</span>
+    <span class="topic-desc">Accessing data near recently accessed data. Iterating <code>int[] arr</code> sequentially is cache-friendly: each 64-byte cache line holds 16 ints. Iterating a <code>LinkedList&lt;T&gt;</code> is not — each node is a separate heap object at a random address (pointer-chasing, one cache miss per node).</span>
+  </li>
+  <li>
+    <span class="topic-title">Temporal Locality</span>
+    <span class="topic-desc">Reusing the same data within a short time window. A tight loop repeatedly reading the same variable keeps it in L1 cache. Long loops that touch huge datasets thrash the cache — each line is evicted before reuse. Blocking/tiling matrix algorithms are designed to maximise temporal locality.</span>
+  </li>
+  <li>
+    <span class="topic-title">Cache-Associativity &amp; Eviction Policy</span>
+    <span class="topic-desc">Caches are <em>N-way set-associative</em>: a cache line can map to one of N slots ("ways") in a set determined by address bits. When all N ways are full, the cache evicts one — usually LRU (Least Recently Used). Cache thrashing occurs when N+1 addresses all compete for the same set.</span>
+  </li>
+  <li>
+    <span class="topic-title">False Sharing (Cache Line Contention)</span>
+    <span class="topic-desc">When two CPU cores write to different fields that share the same 64-byte cache line, the line bounces between cores' caches — the MESI coherence protocol forces invalidation on every write. In C# avoid this by padding with <code>[StructLayout(LayoutKind.Explicit)]</code> and explicit field offsets 64 bytes apart, or using separate arrays per thread.</span>
+  </li>
+  <li>
+    <span class="topic-title">Prefetching: Hardware and Software</span>
+    <span class="topic-desc">Hardware prefetchers detect sequential access patterns and proactively load the next cache line. In C# you have no direct prefetch intrinsic, but using <code>Span&lt;T&gt;</code> and sequential <code>for</code> loops over arrays naturally triggers the hardware prefetcher. <code>System.Runtime.Intrinsics.X86.Sse.Prefetch0()</code> is available for advanced scenarios in .NET 7+.</span>
+  </li>
+</ol>
+
+<div class="diagram-wrap">
+  <p class="diagram-title">Array vs LinkedList iteration — cache line utilisation in C#</p>
+  <div class="diagram">
+<span class="note"> int[] arr = new int[16]; — all 16 ints are 64 bytes = 1 cache line</span>
+<span class="val">  [ 0][ 1][ 2][ 3][ 4][ 5][ 6][ 7][ 8][ 9][10][11][12][13][14][15]</span>
+<span class="arrow">   ↑ first access loads ALL 16 ints from RAM into cache in one shot</span>
+<span class="note"> for (int i = 0; i &lt; arr.Length; i++) → cache hits after first miss (spatial locality)</span>
+
+<span class="note"> LinkedList&lt;int&gt; — each node is a separate heap object:</span>
+<span class="val">  node@0x1000 → node@0xABC8 → node@0x5510 → …</span>
+<span class="arrow">               ↑ each .Next = potential cache miss = ~200 cycle stall</span>
+<span class="note"> Prefer List&lt;T&gt; / T[] over LinkedList&lt;T&gt; for iteration performance</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-virtual">J — Virtual Memory and Paging</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Virtual vs Physical Addresses</span>
+    <span class="topic-desc">Programs use <em>virtual addresses</em> — every process thinks it owns the full address space (0 to 2<sup>64</sup>). The CPU's MMU (Memory Management Unit) translates virtual to <em>physical</em> addresses transparently on every memory access, using a per-process <em>page table</em> set by the OS.</span>
+  </li>
+  <li>
+    <span class="topic-title">Pages and Page Tables</span>
+    <span class="topic-desc">Memory is divided into 4 KB pages (or huge pages: 2 MB / 1 GB). The page table maps each virtual page to a physical page frame. A four-level x86-64 page table (PGD → PUD → PMD → PTE) is walked on each translation miss. TLB caches recent translations.</span>
+  </li>
+  <li>
+    <span class="topic-title">TLB — Translation Lookaside Buffer</span>
+    <span class="topic-desc">The TLB is a small hardware cache (~64–1024 entries) of recent virtual→physical translations. A TLB <em>hit</em> completes in 1 cycle; a TLB <em>miss</em> triggers a full 4-level page-table walk (~hundreds of cycles). Code that accesses thousands of memory pages thrashes the TLB severely.</span>
+  </li>
+  <li>
+    <span class="topic-title">Demand Paging &amp; Page Faults</span>
+    <span class="topic-desc">The OS does not load all program pages into RAM immediately. When a virtual address is accessed for the first time, the MMU finds no physical mapping and raises a <em>page fault</em>. The OS kernel handles it: allocates a physical frame, loads the data (from file or zeroes), updates the page table, and resumes the instruction. Transparent to the programmer.</span>
+  </li>
+  <li>
+    <span class="topic-title">Memory Protection &amp; Isolation</span>
+    <span class="topic-desc">Page table entries carry permission bits: read (R), write (W), execute (X). Attempting to write to a read-only page faults (SIGSEGV). The W^X policy (write XOR execute) enforced by modern OSes prevents code injection: data pages cannot be executed, code pages cannot be written — defeats many buffer-overflow exploits.</span>
+  </li>
+  <li>
+    <span class="topic-title">Swap / Paging to Disk</span>
+    <span class="topic-desc">When physical RAM is full, the OS evicts (swaps out) a page to disk and reuses its physical frame. Accessing a swapped-out page causes a major page fault — the OS reads it back from disk. This can cause severe slowdowns ("thrashing") when the working set exceeds available RAM by a large margin.</span>
+  </li>
+  <li>
+    <span class="topic-title">Copy-on-Write (COW)</span>
+    <span class="topic-desc">After <code>fork()</code>, parent and child share physical pages marked read-only. On the first write by either process, the MMU fires a write-protection fault; the OS copies that one page, gives the writer its own copy, and makes it writable. COW makes <code>fork()</code> nearly instant regardless of process size.</span>
+  </li>
+</ol>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-safety">K — Memory Safety in C#</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title">Safe by Default</span>
+    <span class="topic-desc">In safe C#, the CLR enforces bounds checking on arrays, prevents pointer arithmetic, and the GC eliminates use-after-free and double-free. You cannot corrupt the heap via normal code. All the classic C/C++ memory bugs (buffer overflows, dangling pointers, uninitialised reads) are structurally impossible in safe C#.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>NullReferenceException</code></span>
+    <span class="topic-desc">The most common memory-related exception in C#. Accessing a member on a <code>null</code> reference triggers a hardware trap (address 0 is unmapped) which the CLR converts to <code>NullReferenceException</code>. Enable nullable reference types (<code>#nullable enable</code>) to catch most null issues at compile time via warnings.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>IndexOutOfRangeException</code></span>
+    <span class="topic-desc">Every array and <code>Span&lt;T&gt;</code> access is bounds-checked by the JIT. Accessing <code>arr[i]</code> where <code>i &lt; 0 || i &gt;= arr.Length</code> throws <code>IndexOutOfRangeException</code>. The JIT eliminates the bounds check when it can prove the index is in-range (e.g., a standard <code>for (int i = 0; i &lt; arr.Length; i++)</code> loop).</span>
+  </li>
+  <li>
+    <span class="topic-title">Managed Memory Leaks</span>
+    <span class="topic-desc">GC prevents true leaks, but you can still have "managed leaks": objects that are technically reachable but no longer needed. Common culprits: static <code>List&lt;T&gt;</code> that grows forever, event handlers not unsubscribed (<code>publisher.Event += handler</code>), closures capturing variables, and <code>ConcurrentDictionary</code> entries never removed.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>IDisposable</code> and Unmanaged Resource Leaks</span>
+    <span class="topic-desc">The GC manages memory but not OS handles (files, sockets, DB connections). Objects holding unmanaged resources implement <code>IDisposable</code>. Failing to call <code>Dispose()</code> / <code>using</code> leaks handles. The finalizer is a safety net but runs non-deterministically and adds GC overhead. Always use <code>using var stream = new FileStream(…);</code>.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>StackOverflowException</code></span>
+    <span class="topic-desc">Unbounded recursion fills the 1 MB thread stack. The CLR detects this but <em>cannot</em> catch or recover from it — the process terminates. In ASP.NET this kills the worker process. Always guard recursive methods with a depth counter or convert to an iterative <code>Stack&lt;T&gt;</code>-based algorithm.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>unsafe</code> Code Risks</span>
+    <span class="topic-desc">Inside <code>unsafe</code> blocks all bets are off: buffer overflows, dangling pointers, heap corruption are all possible. <code>unsafe</code> requires explicit opt-in (<code>&lt;AllowUnsafeBlocks&gt;true&lt;/…&gt;</code>) and should be confined to a small, well-tested surface. Prefer <code>Span&lt;T&gt;</code>, <code>Memory&lt;T&gt;</code>, and <code>NativeMemory</code> APIs which provide similar perf without <code>unsafe</code>.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>OutOfMemoryException</code></span>
+    <span class="topic-desc">Thrown when the CLR cannot allocate a new object — either the process is out of virtual address space, or the OS is out of commit memory. Common triggers: huge arrays, LOH fragmentation, and runaway allocations in loops. Profile with <code>dotnet-counters</code> (<code>gc-heap-size</code>) and <code>dotnet-dump</code> to diagnose.</span>
+  </li>
+</ol>
+
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<h2 class="cat-lang">L — C# / .NET CLR Deep Dive</h2>
+<!-- ══════════════════════════════════════════════════════════════ -->
+<ol>
+  <li>
+    <span class="topic-title"><code>Span&lt;T&gt;</code> and <code>Memory&lt;T&gt;</code></span>
+    <span class="topic-desc"><code>Span&lt;T&gt;</code> is a <code>ref struct</code> (stack-only) — a (pointer, length) pair giving safe, bounds-checked access to contiguous memory (arrays, <code>stackalloc</code>, native buffers). <code>Memory&lt;T&gt;</code> is the heap-safe sibling that can be stored in fields and used in <code>async</code> methods. Both avoid allocating new arrays for slicing: <code>arr.AsSpan(2, 5)</code> is zero-copy.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>ArrayPool&lt;T&gt;</code> — Rent, Don't Allocate</span>
+    <span class="topic-desc"><code>ArrayPool&lt;T&gt;.Shared.Rent(size)</code> returns a reusable array from a pool, avoiding GC pressure. Call <code>.Return(array)</code> when done. Extensively used inside ASP.NET Core, <code>System.Text.Json</code>, and Kestrel. For hot paths, this eliminates thousands of Gen 0 allocations per second.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>stackalloc</code> and Stack-Based Buffers</span>
+    <span class="topic-desc"><code>Span&lt;char&gt; buf = stackalloc char[128];</code> — allocates on the stack frame, freed on method return, zero GC cost. Ideal for small temporary buffers (string formatting, crypto operations). Guard with a size check: fall back to <code>ArrayPool</code> if the size exceeds a threshold (~256 bytes).</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>ref struct</code> — Stack-Only Types</span>
+    <span class="topic-desc">A <code>ref struct</code> can never be boxed, stored in a field of a class, or captured by a closure/async state machine. This guarantees it lives only on the stack. <code>Span&lt;T&gt;</code>, <code>ReadOnlySpan&lt;T&gt;</code>, and custom <code>ref struct</code> types give struct-of-pointers semantics with zero heap allocation risk.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>NativeMemory</code> and <code>Marshal</code></span>
+    <span class="topic-desc"><code>NativeMemory.Alloc(byteCount)</code> allocates unmanaged memory (like C's <code>malloc</code>). The GC is unaware of it — you must free it with <code>NativeMemory.Free(ptr)</code>. Use for P/Invoke interop, custom allocators, or bypassing GC pressure. <code>Marshal.AllocHGlobal</code> / <code>Marshal.FreeHGlobal</code> serve the same purpose (older API).</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>Unsafe.SizeOf&lt;T&gt;()</code> and <code>StructLayout</code></span>
+    <span class="topic-desc"><code>Unsafe.SizeOf&lt;MyStruct&gt;()</code> returns the size including padding. <code>[StructLayout(LayoutKind.Sequential, Pack = 1)]</code> eliminates padding (useful for binary protocols). <code>[StructLayout(LayoutKind.Explicit)]</code> + <code>[FieldOffset]</code> gives C-union semantics — overlapping fields share the same memory.</span>
+  </li>
+  <li>
+    <span class="topic-title">Closures &amp; Async State Machines — Hidden Allocations</span>
+    <span class="topic-desc">A lambda that captures a local variable generates a hidden <code>class</code> (display class) storing the captured variable — a heap allocation on each invocation. <code>async</code> methods generate a state-machine struct that is boxed on the first <code>await</code> that doesn't complete synchronously. Use <code>ValueTask</code> and <code>static</code> lambdas to mitigate.</span>
+  </li>
+  <li>
+    <span class="topic-title"><code>string</code> Allocation Patterns</span>
+    <span class="topic-desc">Every <code>string</code> concatenation (<code>a + b</code>) allocates a new <code>string</code> object. <code>string.Concat</code> / <code>$"{x}"</code> in a loop creates N heap objects. Use <code>StringBuilder</code> for multi-step composition, <code>string.Create</code> for single-allocation formatting, and <code>ReadOnlySpan&lt;char&gt;</code> / <code>Utf8JsonWriter</code> to avoid strings entirely in serialisation paths.</span>
+  </li>
+  <li>
+    <span class="topic-title">Memory Profiling Tools for .NET</span>
+    <span class="topic-desc"><code>dotnet-counters</code> — live GC/heap metrics. <code>dotnet-dump</code> + <code>dotnet-gcdump</code> — heap snapshots. <code>dotnet-trace</code> — ETW/EventPipe tracing. <strong>JetBrains dotMemory</strong> — visual heap/allocation analysis. <strong>PerfView</strong> — GC event analysis, allocation stacks. <strong>Visual Studio Diagnostic Tools</strong> — integrated memory snapshots while debugging.</span>
+  </li>
+  <li>
+    <span class="topic-title">Memory-Mapped Files in C#</span>
+    <span class="topic-desc"><code>MemoryMappedFile.CreateFromFile("data.bin")</code> maps a file directly into the virtual address space. Access via <code>MemoryMappedViewAccessor</code> or get a <code>Span&lt;T&gt;</code> from <code>CreateViewAccessor().SafeMemoryMappedViewHandle</code>. The OS pages-in data on demand — ideal for large files (databases, logs) without loading everything into RAM.</span>
+  </li>
+</ol>
+
+<div class="concept-grid">
+  <div class="concept-card">
+    <h4>Key Insight: <code>struct</code> vs <code>class</code> Decision</h4>
+    <p>Use <code>struct</code> for small (≤ ~16 bytes), immutable, frequently allocated data — lives on the stack, zero GC cost. Use <code>class</code> for larger objects, objects with identity, or when shared references are needed. There is no single "right" answer — measure with <code>dotnet-counters</code>.</p>
+  </div>
+  <div class="concept-card">
+    <h4>Key Insight: Indirection Is Expensive</h4>
+    <p>Every reference dereference is a potential cache miss. Prefer flat data structures (<code>List&lt;T&gt;</code>, <code>T[]</code>, arrays of structs) over <code>LinkedList&lt;T&gt;</code> or graphs of heap-allocated class nodes when iteration performance matters.</p>
+  </div>
+  <div class="concept-card">
+    <h4>Key Insight: Hidden Allocations Kill Perf</h4>
+    <p>Lambdas capturing locals, <code>async</code> state machines, <code>params object[]</code>, boxing <code>int</code>→<code>object</code>, LINQ closures — all allocate invisibly. Use <code>[BenchmarkDotNet]</code> with <code>MemoryDiagnoser</code> to find them. Prefer <code>static</code> lambdas, <code>ValueTask</code>, and <code>Span&lt;T&gt;</code> on hot paths.</p>
+  </div>
+  <div class="concept-card">
+    <h4>Key Insight: GC Is Not Free</h4>
+    <p>Each Gen 0 collection suspends all threads (briefly). High allocation rates → frequent Gen 0 GC → cumulative pause time. In ASP.NET Core, aim for zero allocations per request on hot paths. Pool buffers with <code>ArrayPool&lt;T&gt;</code>, reuse objects with <code>ObjectPool&lt;T&gt;</code>.</p>
+  </div>
+  <div class="concept-card">
+    <h4>Key Insight: <code>Span&lt;T&gt;</code> Is Your Best Friend</h4>
+    <p><code>Span&lt;T&gt;</code> gives array-like access to any contiguous memory (managed, stack, native) with bounds checking and zero allocation for slicing. It replaces many <code>unsafe</code> usages with safe, high-performance code. Use <code>.AsSpan()</code> everywhere.</p>
+  </div>
+  <div class="concept-card">
+    <h4>Key Insight: <code>IDisposable</code> Is Manual Memory Management</h4>
+    <p>For unmanaged resources (files, sockets, DB connections, native memory), the GC does nothing. <code>using var conn = new SqlConnection(…);</code> is the C# equivalent of deterministic memory management. Forgetting <code>using</code> leaks OS handles — a managed memory leak in disguise.</p>
+  </div>
+</div>
+
+</body>
+</html>

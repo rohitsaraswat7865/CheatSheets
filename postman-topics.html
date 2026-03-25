@@ -121,6 +121,51 @@
         <ul>
             <li><strong>HTTP Request/Response Cycle</strong> — Client → DNS → Server → Response
                 <ul>
+                    <li><strong>① Client Initiation (Postman)</strong> — Enter URL (e.g., <code>https://api.example.com</code>), select method (GET/POST/etc.), click <em>Send</em>
+                        <ul>
+                            <li>Postman constructs the full HTTP request: method line, headers (Content-Type, Authorization), query params, and body</li>
+                            <li>Pre-request scripts execute first; dynamic variables (e.g., <code>{{token}}</code>) are resolved before the request goes out</li>
+                        </ul>
+                    </li>
+                    <li><strong>② DNS Resolution</strong> — Domain name (e.g., <code>api.example.com</code>) → IP address via OS DNS resolver
+                        <ul>
+                            <li>OS checks local DNS cache first; on miss, performs recursive lookup through DNS servers</li>
+                            <li>Cached results skip the lookup entirely — speeds up repeat requests to the same host</li>
+                        </ul>
+                    </li>
+                    <li><strong>③ TCP + TLS Handshake</strong> — Reliable connection established before any data is sent
+                        <ul>
+                            <li>TCP 3-way handshake: <code>SYN</code> → <code>SYN-ACK</code> → <code>ACK</code></li>
+                            <li>For HTTPS: TLS handshake follows — negotiates cipher suite, server presents SSL certificate, encrypted tunnel established</li>
+                            <li>Postman verifies SSL certificates by default; can be disabled in Settings → SSL certificate verification</li>
+                        </ul>
+                    </li>
+                    <li><strong>④ Server Processes the Request</strong> — Web server (Nginx / Apache / API Gateway) receives and routes the request
+                        <ul>
+                            <li>Backend logic runs: authentication &amp; authorization checks, business rules, database queries</li>
+                            <li>Response object is constructed — status code, response headers, and body</li>
+                        </ul>
+                    </li>
+                    <li><strong>⑤ HTTP Response Sent Back</strong> — Server returns: Status Line + Response Headers + Body
+                        <ul>
+                            <li><strong>Status Code</strong> — 200 OK, 201 Created, 400 Bad Request, 401/403 Auth errors, 404 Not Found, 500 Internal Error</li>
+                            <li><strong>Response Headers</strong> — Content-Type, Cache-Control, Set-Cookie, CORS headers (Access-Control-Allow-Origin)</li>
+                            <li><strong>Body</strong> — JSON, XML, HTML, or binary data depending on the API</li>
+                        </ul>
+                    </li>
+                    <li><strong>⑥ Postman Receives &amp; Displays the Response</strong>
+                        <ul>
+                            <li>Parses and pretty-prints JSON/XML in the response Body tab (Pretty / Raw / Preview modes)</li>
+                            <li>Displays status code, response time (ms), and response size in the status bar</li>
+                            <li>Shows Headers and Cookies tabs; <strong>Test scripts execute now</strong> against the received response data</li>
+                        </ul>
+                    </li>
+                    <li><strong>⑦ Connection Closure or Keep-Alive</strong>
+                        <ul>
+                            <li>TCP connection is closed after the response, OR kept open (<code>Connection: keep-alive</code>) for subsequent requests to the same host</li>
+                            <li>HTTP/2 supports multiplexing — multiple requests over a single connection simultaneously</li>
+                        </ul>
+                    </li>
                     <li>Request line: method + URI + HTTP version</li>
                     <li>Headers (Content-Type, Accept, Authorization, Cache-Control)</li>
                     <li>Message body — when it exists and when it doesn't</li>
