@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Playwright API Testing — C# Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,800;1,300&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink:        #1a1612;
+    --ink-soft:   #5c5248;
+    --paper:      #faf8f5;
+    --paper-2:    #f2ede6;
+    --paper-3:    #e8e0d4;
+    --accent:     #c94f2e;
+    --accent-2:   #2d6e4e;
+    --accent-3:   #2a4b8c;
+    --gold:       #b8860b;
+    --code-bg:    #f0ebe2;
+    --code-border:#d4cbbf;
+    --shadow:     rgba(26,22,18,0.08);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); line-height: 1.7; font-size: 16px; }
+
+  /* HEADER */
+  header { background: var(--ink); color: var(--paper); padding: 80px 40px 64px; position: relative; overflow: hidden; }
+  header::before { content:''; position:absolute; top:-60px; right:-60px; width:320px; height:320px; border-radius:50%; border:2px solid rgba(255,255,255,0.06); }
+  header::after  { content:''; position:absolute; bottom:-40px; left:120px; width:180px; height:180px; border-radius:50%; border:1px solid rgba(255,255,255,0.04); }
+  .header-inner  { max-width:900px; margin:0 auto; position:relative; z-index:1; }
+  .eyebrow { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--accent); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+  .eyebrow::before { content:''; display:inline-block; width:28px; height:1px; background:var(--accent); }
+  header h1 { font-family:'Fraunces',serif; font-weight:800; font-size:clamp(2.4rem,6vw,4rem); line-height:1.1; letter-spacing:-0.02em; color:#fff; margin-bottom:20px; }
+  header h1 em { font-style:italic; font-weight:300; color:var(--paper-3); }
+  .hdesc { font-size:1.05rem; color:rgba(255,255,255,0.55); max-width:520px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; margin-top:32px; }
+  .badge { font-family:'DM Mono',monospace; font-size:11px; padding:5px 12px; border-radius:2px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.7); letter-spacing:0.05em; }
+  .badge.r { background:rgba(201,79,46,0.25); color:#e8957a; }
+  .badge.g { background:rgba(45,110,78,0.3);  color:#7ecba1; }
+  .badge.b { background:rgba(42,75,140,0.3);  color:#8aabde; }
+  .badge.o { background:rgba(184,134,11,0.25);color:#d4aa4f; }
+
+  /* NAV */
+  nav { background:var(--paper-2); border-bottom:1px solid var(--paper-3); position:sticky; top:0; z-index:100; }
+  .nav-inner { max-width:900px; margin:0 auto; padding:0 40px; display:flex; overflow-x:auto; }
+  .nav-inner a { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); text-decoration:none; padding:14px 13px; white-space:nowrap; border-bottom:2px solid transparent; transition:color .2s,border-color .2s; }
+  .nav-inner a:hover { color:var(--accent); border-bottom-color:var(--accent); }
+
+  /* LAYOUT */
+  main { max-width:900px; margin:0 auto; padding:60px 40px; }
+  .section { margin-bottom:72px; animation:fadeUp .5s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .sh { display:flex; align-items:baseline; gap:16px; margin-bottom:28px; padding-bottom:16px; border-bottom:1px solid var(--paper-3); }
+  .sn { font-family:'Fraunces',serif; font-weight:800; font-size:2.8rem; color:var(--paper-3); line-height:1; min-width:48px; }
+  .section h2 { font-family:'Fraunces',serif; font-weight:600; font-size:1.7rem; letter-spacing:-0.02em; }
+  p { color:var(--ink-soft); margin-bottom:16px; }
+  p:last-child { margin-bottom:0; }
+  strong { color:var(--ink); font-weight:600; }
+
+  /* CODE */
+  .cb { background:var(--code-bg); border:1px solid var(--code-border); border-radius:6px; overflow:hidden; margin:24px 0; box-shadow:0 2px 8px var(--shadow); }
+  .cl { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:var(--paper-3); border-bottom:1px solid var(--code-border); }
+  .cl span { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); }
+  .dots { display:flex; gap:5px; }
+  .dot  { width:10px; height:10px; border-radius:50%; }
+  .dr { background:#e06c75; } .dy { background:#e5c07b; } .dg { background:#98c379; }
+  pre { overflow-x:auto; padding:20px; font-family:'DM Mono',monospace; font-size:13px; line-height:1.75; color:var(--ink); }
+  code { font-family:'DM Mono',monospace; }
+  .kw { color:#c94f2e; font-weight:500; }
+  .tp { color:#2a4b8c; }
+  .st { color:#2d6e4e; }
+  .cm { color:#9e968f; font-style:italic; }
+  .nm { color:var(--gold); }
+  .fn { color:#7a3d9e; }
+  code:not(pre code) { background:var(--code-bg); border:1px solid var(--code-border); border-radius:3px; padding:2px 6px; font-size:.88em; color:var(--accent); }
+
+  /* CALLOUT */
+  .callout { display:flex; gap:14px; padding:16px 18px; border-radius:6px; margin:20px 0; font-size:.93rem; }
+  .callout-icon { font-size:1.1rem; flex-shrink:0; margin-top:1px; }
+  .callout p { margin:0; }
+  .callout.tip  { background:#edf7f1; border-left:3px solid var(--accent-2); }
+  .callout.warn { background:#fef6ed; border-left:3px solid #e07b2a; }
+  .callout.info { background:#eef2fb; border-left:3px solid var(--accent-3); }
+
+  /* TABLE */
+  .tw { overflow-x:auto; margin:24px 0; }
+  table { width:100%; border-collapse:collapse; font-size:.92rem; }
+  thead tr { background:var(--ink); color:var(--paper); }
+  thead th { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:12px 16px; text-align:left; font-weight:500; }
+  tbody tr:nth-child(odd)  { background:var(--paper-2); }
+  tbody tr:nth-child(even) { background:var(--paper); }
+  tbody td { padding:11px 16px; color:var(--ink-soft); border-bottom:1px solid var(--paper-3); }
+  tbody td:first-child { color:var(--ink); font-weight:500; }
+  tbody td code { font-size:.85em; }
+
+  /* STEPS */
+  .steps { list-style:none; margin:20px 0; }
+  .steps li { display:flex; gap:16px; margin-bottom:14px; align-items:flex-start; }
+  .snum { flex-shrink:0; width:28px; height:28px; background:var(--ink); color:var(--paper); font-family:'Fraunces',serif; font-weight:800; font-size:13px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-top:2px; }
+  .steps li p { margin:0; }
+
+  /* GRID */
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:20px 0; }
+  .card  { background:var(--paper-2); border:1px solid var(--paper-3); border-radius:6px; padding:20px; }
+  .card h4 { font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; margin-bottom:8px; }
+  .card p  { font-size:.9rem; margin:0; }
+
+  /* FOOTER */
+  footer { background:var(--ink); color:rgba(255,255,255,.35); text-align:center; padding:40px; font-family:'DM Mono',monospace; font-size:12px; letter-spacing:.06em; }
+  footer strong { color:rgba(255,255,255,.6); }
+
+  @media(max-width:600px) {
+    header { padding:50px 24px 44px; }
+    main { padding:40px 24px; }
+    .nav-inner { padding:0 16px; }
+    .sn { font-size:2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="eyebrow">Complete Guide</div>
+    <h1>Playwright API Testing<br><em>with C#</em></h1>
+    <p class="hdesc">REST API testing using Playwright's HTTP client — with <strong>UriBuilder</strong> for all URL construction and <strong>Newtonsoft.Json</strong> for all serialization.</p>
+    <div class="badges">
+      <span class="badge r">Playwright 1.x</span>
+      <span class="badge g">C# / .NET 6+</span>
+      <span class="badge b">NUnit · xUnit · MSTest</span>
+      <span class="badge o">Newtonsoft.Json 13</span>
+      <span class="badge">System.UriBuilder</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#setup">Setup</a>
+    <a href="#context">API Context</a>
+    <a href="#get">GET</a>
+    <a href="#post">POST</a>
+    <a href="#put">PUT</a>
+    <a href="#delete">DELETE</a>
+    <a href="#auth">Auth</a>
+    <a href="#session">Session</a>
+    <a href="#uribuilder">UriBuilder</a>
+    <a href="#serialization">Serialization</a>
+    <a href="#reference">Reference</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- 01 SETUP -->
+<section class="section" id="setup">
+  <div class="sh"><span class="sn">01</span><h2>Project Setup</h2></div>
+  <p>Create a new .NET test project and add the required packages. <code>UriBuilder</code> is built into the BCL — no extra package needed.</p>
+  <ul class="steps">
+    <li><span class="snum">1</span><p>Create project: <code>dotnet new nunit -n PlaywrightApiTests</code></p></li>
+    <li><span class="snum">2</span><p>Add NuGet packages below.</p></li>
+    <li><span class="snum">3</span><p>Install browsers: <code>pwsh bin/Debug/net6.0/playwright.ps1 install</code></p></li>
+  </ul>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>.csproj — packages</span></div>
+    <pre><span class="kw">&lt;ItemGroup&gt;</span>
+  <span class="kw">&lt;PackageReference</span> <span class="nm">Include</span>=<span class="st">"Microsoft.Playwright.NUnit"</span> <span class="nm">Version</span>=<span class="st">"1.*"</span>  <span class="kw">/&gt;</span>
+  <span class="kw">&lt;PackageReference</span> <span class="nm">Include</span>=<span class="st">"Newtonsoft.Json"</span>           <span class="nm">Version</span>=<span class="st">"13.*"</span> <span class="kw">/&gt;</span>
+  <span class="kw">&lt;PackageReference</span> <span class="nm">Include</span>=<span class="st">"NUnit"</span>                      <span class="nm">Version</span>=<span class="st">"3.*"</span>  <span class="kw">/&gt;</span>
+  <span class="kw">&lt;PackageReference</span> <span class="nm">Include</span>=<span class="st">"NUnit3TestAdapter"</span>           <span class="nm">Version</span>=<span class="st">"4.*"</span>  <span class="kw">/&gt;</span>
+<span class="kw">&lt;/ItemGroup&gt;</span></pre>
+  </div>
+  <div class="callout info">
+    <span class="callout-icon">💡</span>
+    <p><code>UriBuilder</code> is in the <code>System</code> namespace — no NuGet needed. <code>Newtonsoft.Json</code> handles all serialization; <code>System.Text.Json</code> is not used in this tutorial.</p>
+  </div>
+</section>
+
+<!-- 02 API CONTEXT -->
+<section class="section" id="context">
+  <div class="sh"><span class="sn">02</span><h2>Creating an API Context</h2></div>
+  <p>Create <code>IAPIRequestContext</code> once in <code>[SetUp]</code>. Declare shared <code>JsonSerializerSettings</code> here too so every test reuses the same Newtonsoft config.</p>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Base test class</span></div>
+    <pre><span class="kw">using</span> Microsoft.Playwright;
+<span class="kw">using</span> Microsoft.Playwright.NUnit;
+<span class="kw">using</span> Newtonsoft.Json;
+<span class="kw">using</span> Newtonsoft.Json.Serialization;
+<span class="kw">using</span> NUnit.Framework;
+
+[<span class="tp">TestFixture</span>]
+<span class="kw">public class</span> <span class="tp">ApiTestBase</span> : <span class="tp">PlaywrightTest</span>
+{
+    <span class="kw">protected</span> <span class="tp">IAPIRequestContext</span> Request;
+
+    <span class="cm">// Shared Newtonsoft settings — declare once, reuse everywhere</span>
+    <span class="kw">protected static readonly</span> <span class="tp">JsonSerializerSettings</span> JsonSettings =
+        <span class="kw">new</span> <span class="tp">JsonSerializerSettings</span>
+        {
+            ContractResolver     = <span class="kw">new</span> <span class="tp">CamelCasePropertyNamesContractResolver</span>(),
+            NullValueHandling    = NullValueHandling.Ignore,
+            DateFormatHandling   = DateFormatHandling.IsoDateFormat
+        };
+
+    [<span class="tp">SetUp</span>]
+    <span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">SetUpContext</span>()
+    {
+        Request = <span class="kw">await</span> Playwright.APIRequest.<span class="fn">NewContextAsync</span>(<span class="kw">new</span>()
+        {
+            BaseURL = <span class="st">"https://jsonplaceholder.typicode.com"</span>,
+            ExtraHTTPHeaders = <span class="kw">new</span> <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;
+            {
+                { <span class="st">"Content-Type"</span>, <span class="st">"application/json"</span> },
+                { <span class="st">"Accept"</span>,       <span class="st">"application/json"</span> }
+            },
+            IgnoreHTTPSErrors = <span class="kw">true</span>
+        });
+    }
+
+    [<span class="tp">TearDown</span>]
+    <span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">TearDownContext</span>()
+        => <span class="kw">await</span> Request.<span class="fn">DisposeAsync</span>();
+}</pre>
+  </div>
+  <div class="grid2">
+    <div class="card"><h4>⚙️ BaseURL</h4><p>Set once on the context. UriBuilder-built URLs can still use the full absolute URL — Playwright resolves both.</p></div>
+    <div class="card"><h4>📦 JsonSettings</h4><p>Static field shared across all tests — CamelCase resolver, null-ignore, ISO dates.</p></div>
+    <div class="card"><h4>🔒 IgnoreHTTPSErrors</h4><p>Bypass SSL errors on staging or self-signed cert environments.</p></div>
+    <div class="card"><h4>⏱ Timeout</h4><p>Default 30 000 ms. Override with <code>Timeout = 60000</code> on the context.</p></div>
+  </div>
+</section>
+
+<!-- 03 GET -->
+<section class="section" id="get">
+  <div class="sh"><span class="sn">03</span><h2>GET Requests</h2></div>
+  <p>Construct the URL with <code>UriBuilder</code>, call <code>GetAsync()</code>, and deserialize the body with <code>JsonConvert.DeserializeObject</code>.</p>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Model</span></div>
+    <pre><span class="kw">public class</span> <span class="tp">Post</span>
+{
+    [<span class="tp">JsonProperty</span>(<span class="st">"id"</span>)]     <span class="kw">public int</span>    Id     { <span class="kw">get</span>; <span class="kw">set</span>; }
+    [<span class="tp">JsonProperty</span>(<span class="st">"title"</span>)]  <span class="kw">public string</span> Title  { <span class="kw">get</span>; <span class="kw">set</span>; }
+    [<span class="tp">JsonProperty</span>(<span class="st">"body"</span>)]   <span class="kw">public string</span> Body   { <span class="kw">get</span>; <span class="kw">set</span>; }
+    [<span class="tp">JsonProperty</span>(<span class="st">"userId"</span>)] <span class="kw">public int</span>    UserId { <span class="kw">get</span>; <span class="kw">set</span>; }
+}</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — GET single resource</span></div>
+    <pre>[<span class="tp">Test</span>]
+<span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">Get_SinglePost_ReturnsCorrectData</span>()
+{
+    <span class="cm">// UriBuilder — safe scheme + host + path composition</span>
+    <span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+    {
+        Scheme = <span class="st">"https"</span>,
+        Host   = <span class="st">"jsonplaceholder.typicode.com"</span>,
+        Path   = <span class="st">"/posts/1"</span>
+    };
+
+    <span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">GetAsync</span>(uri.ToString());
+
+    Assert.<span class="fn">That</span>(response.Status, Is.<span class="fn">EqualTo</span>(<span class="nm">200</span>));
+    Assert.<span class="fn">That</span>(response.Ok,     Is.<span class="fn">True</span>);
+
+    <span class="cm">// Deserialize with Newtonsoft</span>
+    <span class="kw">string</span> body = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+    <span class="tp">Post</span> post   = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">Post</span>&gt;(body, JsonSettings);
+
+    Assert.<span class="fn">Multiple</span>(() =>
+    {
+        Assert.<span class="fn">That</span>(post.Id,    Is.<span class="fn">EqualTo</span>(<span class="nm">1</span>));
+        Assert.<span class="fn">That</span>(post.Title, Is.Not.<span class="fn">Empty</span>());
+    });
+}</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — GET collection with query string</span></div>
+    <pre>[<span class="tp">Test</span>]
+<span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">Get_PostsByUser_ReturnsList</span>()
+{
+    <span class="cm">// UriBuilder.Query appends ?userId=1 without manual concatenation</span>
+    <span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+    {
+        Scheme = <span class="st">"https"</span>,
+        Host   = <span class="st">"jsonplaceholder.typicode.com"</span>,
+        Path   = <span class="st">"/posts"</span>,
+        Query  = <span class="st">"userId=1"</span>
+    };
+
+    <span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">GetAsync</span>(uri.ToString());
+    Assert.<span class="fn">That</span>(response.Status, Is.<span class="fn">EqualTo</span>(<span class="nm">200</span>));
+
+    <span class="kw">string</span> body      = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+    <span class="tp">List</span>&lt;<span class="tp">Post</span>&gt; posts = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Post</span>&gt;&gt;(body, JsonSettings);
+
+    Assert.<span class="fn">That</span>(posts.Count,               Is.<span class="fn">GreaterThan</span>(<span class="nm">0</span>));
+    Assert.<span class="fn">That</span>(posts.All(p => p.UserId == <span class="nm">1</span>), Is.<span class="fn">True</span>());
+}</pre>
+  </div>
+
+  <div class="callout tip">
+    <span class="callout-icon">✅</span>
+    <p>Always check <code>response.Ok</code> before calling <code>TextAsync()</code> — avoids misleading null-reference errors when the API returns an error body.</p>
+  </div>
+</section>
+
+<!-- 04 POST -->
+<section class="section" id="post">
+  <div class="sh"><span class="sn">04</span><h2>POST Requests</h2></div>
+  <p>Serialize the payload with <code>JsonConvert.SerializeObject</code> and pass it as the <code>Data</code> string. Build the endpoint URL with <code>UriBuilder</code>.</p>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — POST create resource</span></div>
+    <pre>[<span class="tp">Test</span>]
+<span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">Post_CreatePost_Returns201</span>()
+{
+    <span class="cm">// UriBuilder — endpoint URL</span>
+    <span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+    {
+        Scheme = <span class="st">"https"</span>,
+        Host   = <span class="st">"jsonplaceholder.typicode.com"</span>,
+        Path   = <span class="st">"/posts"</span>
+    };
+
+    <span class="cm">// Newtonsoft — serialize request body</span>
+    <span class="kw">var</span> newPost = <span class="kw">new</span> <span class="tp">Post</span>
+    {
+        Title  = <span class="st">"My New Post"</span>,
+        Body   = <span class="st">"This is the body content"</span>,
+        UserId = <span class="nm">1</span>
+    };
+    <span class="kw">string</span> requestJson = JsonConvert.<span class="fn">SerializeObject</span>(newPost, JsonSettings);
+
+    <span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">PostAsync</span>(uri.ToString(), <span class="kw">new</span> <span class="tp">APIRequestContextOptions</span>
+    {
+        Headers = <span class="kw">new</span> <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;
+        {
+            { <span class="st">"Content-Type"</span>, <span class="st">"application/json"</span> }
+        },
+        Data = requestJson   <span class="cm">// use Data, not DataObject, with Newtonsoft</span>
+    });
+
+    Assert.<span class="fn">That</span>(response.Status, Is.<span class="fn">EqualTo</span>(<span class="nm">201</span>));
+
+    <span class="cm">// Newtonsoft — deserialize response</span>
+    <span class="kw">string</span> body  = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+    <span class="tp">Post</span> created = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">Post</span>&gt;(body, JsonSettings);
+
+    Assert.<span class="fn">That</span>(created.Title, Is.<span class="fn">EqualTo</span>(<span class="st">"My New Post"</span>));
+    Assert.<span class="fn">That</span>(created.Id,    Is.<span class="fn">GreaterThan</span>(<span class="nm">0</span>));
+}</pre>
+  </div>
+</section>
+
+<!-- 05 PUT -->
+<section class="section" id="put">
+  <div class="sh"><span class="sn">05</span><h2>PUT Requests</h2></div>
+  <p>PUT replaces the entire resource. Inject the resource ID into the path via <code>UriBuilder</code>, and serialize the full object with Newtonsoft.</p>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — PUT update resource</span></div>
+    <pre>[<span class="tp">Test</span>]
+<span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">Put_UpdatePost_ReturnsUpdatedData</span>()
+{
+    <span class="kw">int</span> postId = <span class="nm">1</span>;
+
+    <span class="cm">// UriBuilder — inject ID cleanly into path via string interpolation</span>
+    <span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+    {
+        Scheme = <span class="st">"https"</span>,
+        Host   = <span class="st">"jsonplaceholder.typicode.com"</span>,
+        Path   = <span class="st">$"/posts/{postId}"</span>
+    };
+
+    <span class="cm">// Newtonsoft — serialize full updated object</span>
+    <span class="kw">var</span> updated = <span class="kw">new</span> <span class="tp">Post</span>
+    {
+        Id     = postId,
+        Title  = <span class="st">"Updated Title"</span>,
+        Body   = <span class="st">"Updated body content"</span>,
+        UserId = <span class="nm">1</span>
+    };
+    <span class="kw">string</span> requestJson = JsonConvert.<span class="fn">SerializeObject</span>(updated, JsonSettings);
+
+    <span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">PutAsync</span>(uri.ToString(), <span class="kw">new</span> <span class="tp">APIRequestContextOptions</span>
+    {
+        Headers = <span class="kw">new</span> <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;
+        {
+            { <span class="st">"Content-Type"</span>, <span class="st">"application/json"</span> }
+        },
+        Data = requestJson
+    });
+
+    Assert.<span class="fn">That</span>(response.Status, Is.<span class="fn">EqualTo</span>(<span class="nm">200</span>));
+
+    <span class="cm">// Newtonsoft — deserialize response</span>
+    <span class="kw">string</span> body = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+    <span class="tp">Post</span> result = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">Post</span>&gt;(body, JsonSettings);
+
+    Assert.<span class="fn">Multiple</span>(() =>
+    {
+        Assert.<span class="fn">That</span>(result.Id,    Is.<span class="fn">EqualTo</span>(postId));
+        Assert.<span class="fn">That</span>(result.Title, Is.<span class="fn">EqualTo</span>(<span class="st">"Updated Title"</span>));
+    });
+}</pre>
+  </div>
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <p>Never use <code>DataObject</code> alongside Newtonsoft — Playwright serializes <code>DataObject</code> internally with <code>System.Text.Json</code>. Always use <code>Data</code> with a Newtonsoft-serialized string.</p>
+  </div>
+</section>
+
+<!-- 06 DELETE -->
+<section class="section" id="delete">
+  <div class="sh"><span class="sn">06</span><h2>DELETE Requests</h2></div>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — DELETE resource</span></div>
+    <pre>[<span class="tp">Test</span>]
+<span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">Delete_Post_ReturnsSuccess</span>()
+{
+    <span class="kw">int</span> postId = <span class="nm">1</span>;
+
+    <span class="cm">// UriBuilder — interpolate ID directly into the path</span>
+    <span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+    {
+        Scheme = <span class="st">"https"</span>,
+        Host   = <span class="st">"jsonplaceholder.typicode.com"</span>,
+        Path   = <span class="st">$"/posts/{postId}"</span>
+    };
+
+    <span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">DeleteAsync</span>(uri.ToString());
+
+    <span class="cm">// 200 or 204 depending on the API's design</span>
+    Assert.<span class="fn">That</span>(response.Status, Is.<span class="fn">AnyOf</span>(<span class="nm">200</span>, <span class="nm">204</span>));
+    Assert.<span class="fn">That</span>(response.Ok,     Is.<span class="fn">True</span>);
+}</pre>
+  </div>
+</section>
+
+<!-- 07 AUTH -->
+<section class="section" id="auth">
+  <div class="sh"><span class="sn">07</span><h2>Authentication</h2></div>
+  <p>Three common patterns — set headers on the context so they apply to every request.</p>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Bearer Token + UriBuilder</span></div>
+    <pre>Request = <span class="kw">await</span> Playwright.APIRequest.<span class="fn">NewContextAsync</span>(<span class="kw">new</span>()
+{
+    BaseURL = <span class="st">"https://api.example.com"</span>,
+    ExtraHTTPHeaders = <span class="kw">new</span> <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;
+    {
+        { <span class="st">"Authorization"</span>, <span class="st">$"Bearer {token}"</span> },
+        { <span class="st">"Content-Type"</span>,  <span class="st">"application/json"</span> }
+    }
+});
+
+<span class="cm">// Compose the URL — auth header is sent automatically</span>
+<span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+{
+    Scheme = <span class="st">"https"</span>,
+    Host   = <span class="st">"api.example.com"</span>,
+    Path   = <span class="st">"/api/profile"</span>
+};
+<span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">GetAsync</span>(uri.ToString());</pre>
+  </div>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Basic Auth</span></div>
+    <pre><span class="kw">string</span> credentials = Convert.<span class="fn">ToBase64String</span>(
+    Encoding.UTF8.<span class="fn">GetBytes</span>(<span class="st">"username:password"</span>)
+);
+
+ExtraHTTPHeaders = <span class="kw">new</span> <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;
+{
+    { <span class="st">"Authorization"</span>, <span class="st">$"Basic {credentials}"</span> }
+};</pre>
+  </div>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — API Key</span></div>
+    <pre>ExtraHTTPHeaders = <span class="kw">new</span> <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;
+{
+    { <span class="st">"x-api-key"</span>, <span class="st">"your-api-key-here"</span> }
+};</pre>
+  </div>
+</section>
+
+<!-- 08 SESSION -->
+<section class="section" id="session">
+  <div class="sh"><span class="sn">08</span><h2>Using Playwright Session</h2></div>
+  <p>Load <code>session.json</code> into the API context for automatic cookie injection. Combine with UriBuilder for URL construction and Newtonsoft for parsing.</p>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — session.json + UriBuilder + Newtonsoft</span></div>
+    <pre>Request = <span class="kw">await</span> Playwright.APIRequest.<span class="fn">NewContextAsync</span>(<span class="kw">new</span>()
+{
+    BaseURL          = <span class="st">"https://app.example.com"</span>,
+    StorageStatePath = <span class="st">"session.json"</span>  <span class="cm">// cookies injected automatically</span>
+});
+
+<span class="cm">// UriBuilder — construct the authenticated endpoint</span>
+<span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+{
+    Scheme = <span class="st">"https"</span>,
+    Host   = <span class="st">"app.example.com"</span>,
+    Path   = <span class="st">"/api/me"</span>
+};
+
+<span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">GetAsync</span>(uri.ToString());
+Assert.<span class="fn">That</span>(response.Status, Is.<span class="fn">EqualTo</span>(<span class="nm">200</span>));
+
+<span class="cm">// Newtonsoft — deserialize response</span>
+<span class="kw">string</span> body    = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+<span class="tp">UserProfile</span> me = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">UserProfile</span>&gt;(body, JsonSettings);
+Assert.<span class="fn">That</span>(me.Email, Is.Not.<span class="fn">Empty</span>());</pre>
+  </div>
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Save a session from browser login</span></div>
+    <pre><span class="cm">// After logging in via browser automation:</span>
+<span class="kw">await</span> context.<span class="fn">StorageStateAsync</span>(<span class="kw">new</span>()
+{
+    Path = <span class="st">"session.json"</span>
+});</pre>
+  </div>
+</section>
+
+<!-- 09 URIBUILDER -->
+<section class="section" id="uribuilder">
+  <div class="sh"><span class="sn">09</span><h2>UriBuilder — URL Construction</h2></div>
+  <p><code>UriBuilder</code> is in the <code>System</code> namespace (built into .NET). It composes URLs property-by-property — no string concatenation, no manual encoding, no risk of malformed URLs.</p>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — All UriBuilder properties</span></div>
+    <pre><span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+{
+    Scheme = <span class="st">"https"</span>,                      <span class="cm">// https://</span>
+    Host   = <span class="st">"api.example.com"</span>,            <span class="cm">// api.example.com</span>
+    Port   = <span class="nm">8443</span>,                           <span class="cm">// :8443  (omit for default 443)</span>
+    Path   = <span class="st">"/v2/users/42/posts"</span>,          <span class="cm">// /v2/users/42/posts</span>
+    Query  = <span class="st">"status=active&amp;page=1"</span>        <span class="cm">// ?status=active&amp;page=1</span>
+};
+
+Console.WriteLine(uri.ToString());
+<span class="cm">// → https://api.example.com:8443/v2/users/42/posts?status=active&amp;page=1</span></pre>
+  </div>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Dynamic path with resource ID</span></div>
+    <pre><span class="kw">int</span> userId = <span class="nm">42</span>;
+<span class="kw">int</span> postId  = <span class="nm">7</span>;
+
+<span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+{
+    Scheme = <span class="st">"https"</span>,
+    Host   = <span class="st">"api.example.com"</span>,
+    Path   = <span class="st">$"/users/{userId}/posts/{postId}"</span>
+};
+<span class="cm">// → https://api.example.com/users/42/posts/7</span>
+
+<span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">GetAsync</span>(uri.ToString());
+<span class="kw">string</span> body  = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+<span class="tp">Post</span>   post  = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">Post</span>&gt;(body, JsonSettings);</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Multiple query params via NameValueCollection</span></div>
+    <pre><span class="kw">using</span> System.Web;   <span class="cm">// HttpUtility.ParseQueryString</span>
+
+<span class="kw">var</span> qs = HttpUtility.<span class="fn">ParseQueryString</span>(<span class="tp">string</span>.Empty);
+qs[<span class="st">"status"</span>] = <span class="st">"active"</span>;
+qs[<span class="st">"page"</span>]   = <span class="st">"2"</span>;
+qs[<span class="st">"limit"</span>]  = <span class="st">"20"</span>;
+
+<span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+{
+    Scheme = <span class="st">"https"</span>,
+    Host   = <span class="st">"api.example.com"</span>,
+    Path   = <span class="st">"/users"</span>,
+    Query  = qs.ToString()  <span class="cm">// special chars are encoded automatically</span>
+};
+<span class="cm">// → https://api.example.com/users?status=active&amp;page=2&amp;limit=20</span>
+
+<span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">GetAsync</span>(uri.ToString());
+<span class="kw">string</span> body      = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+<span class="tp">List</span>&lt;<span class="tp">User</span>&gt; users = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">List</span>&lt;<span class="tp">User</span>&gt;&gt;(body, JsonSettings);</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Reusable helper: BuildUrl()</span></div>
+    <pre><span class="cm">/// Compose a full URL from host, path, and optional query params.</span>
+<span class="kw">private static string</span> <span class="fn">BuildUrl</span>(<span class="kw">string</span> host, <span class="kw">string</span> path,
+    <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt; queryParams = <span class="kw">null</span>)
+{
+    <span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span> { Scheme = <span class="st">"https"</span>, Host = host, Path = path };
+
+    <span class="kw">if</span> (queryParams != <span class="kw">null</span>)
+    {
+        <span class="kw">var</span> qs = HttpUtility.<span class="fn">ParseQueryString</span>(<span class="tp">string</span>.Empty);
+        <span class="kw">foreach</span> (<span class="kw">var</span> kv <span class="kw">in</span> queryParams) qs[kv.Key] = kv.Value;
+        uri.Query = qs.ToString();
+    }
+
+    <span class="kw">return</span> uri.ToString();
+}
+
+<span class="cm">// Usage in tests:</span>
+<span class="kw">string</span> url = <span class="fn">BuildUrl</span>(<span class="st">"api.example.com"</span>, <span class="st">"/users"</span>,
+    <span class="kw">new</span>() { { <span class="st">"role"</span>, <span class="st">"admin"</span> }, { <span class="st">"active"</span>, <span class="st">"true"</span> } });
+
+<span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">GetAsync</span>(url);
+<span class="kw">string</span> body       = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+<span class="tp">List</span>&lt;<span class="tp">User</span>&gt; admins = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">List</span>&lt;<span class="tp">User</span>&gt;&gt;(body, JsonSettings);</pre>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Property</th><th>Maps to</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>Scheme</code></td>    <td>Protocol</td>      <td><code>"https"</code></td></tr>
+        <tr><td><code>Host</code></td>      <td>Domain</td>        <td><code>"api.example.com"</code></td></tr>
+        <tr><td><code>Port</code></td>      <td>Port number</td>   <td><code>8443</code> (omit for default)</td></tr>
+        <tr><td><code>Path</code></td>      <td>URL path</td>      <td><code>$"/users/{id}/posts"</code></td></tr>
+        <tr><td><code>Query</code></td>     <td>Query string</td>  <td><code>qs.ToString()</code> or <code>"page=1"</code></td></tr>
+        <tr><td><code>ToString()</code></td><td>Full URL string</td><td>Pass directly to any Playwright method</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 10 SERIALIZATION -->
+<section class="section" id="serialization">
+  <div class="sh"><span class="sn">10</span><h2>Serialization with Newtonsoft.Json</h2></div>
+  <p>All serialize/deserialize operations use <code>Newtonsoft.Json</code>. Configure <code>JsonSerializerSettings</code> once and pass it to every call.</p>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — JsonSerializerSettings</span></div>
+    <pre><span class="kw">private static readonly</span> <span class="tp">JsonSerializerSettings</span> JsonSettings = <span class="kw">new</span>()
+{
+    ContractResolver     = <span class="kw">new</span> <span class="tp">CamelCasePropertyNamesContractResolver</span>(), <span class="cm">// camelCase output</span>
+    NullValueHandling    = NullValueHandling.Ignore,                        <span class="cm">// skip null fields</span>
+    DefaultValueHandling = DefaultValueHandling.Ignore,                     <span class="cm">// skip 0/false/empty</span>
+    DateFormatHandling   = DateFormatHandling.IsoDateFormat,                <span class="cm">// ISO 8601 dates</span>
+    Formatting           = Formatting.None                                  <span class="cm">// compact (no indents)</span>
+};</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Serialize &amp; Deserialize patterns</span></div>
+    <pre><span class="cm">// Object → JSON string  (use as request body via Data =)</span>
+<span class="kw">string</span> json = JsonConvert.<span class="fn">SerializeObject</span>(myObject, JsonSettings);
+
+<span class="cm">// JSON string → single object  (from response.TextAsync())</span>
+<span class="tp">Post</span> post = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">Post</span>&gt;(body, JsonSettings);
+
+<span class="cm">// JSON string → collection</span>
+<span class="tp">List</span>&lt;<span class="tp">Post</span>&gt; posts = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Post</span>&gt;&gt;(body, JsonSettings);</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Model annotations</span></div>
+    <pre><span class="kw">public class</span> <span class="tp">User</span>
+{
+    [<span class="tp">JsonProperty</span>(<span class="st">"id"</span>)]
+    <span class="kw">public int</span> Id { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="tp">JsonProperty</span>(<span class="st">"first_name"</span>)]       <span class="cm">// snake_case API field → PascalCase C# property</span>
+    <span class="kw">public string</span> FirstName { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="tp">JsonProperty</span>(<span class="st">"email"</span>)]
+    <span class="kw">public string</span> Email { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="tp">JsonProperty</span>(<span class="st">"created_at"</span>)]
+    <span class="kw">public</span> <span class="tp">DateTime</span> CreatedAt { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    [<span class="tp">JsonIgnore</span>]                          <span class="cm">// never serialized or deserialized</span>
+    <span class="kw">public string</span> InternalNote { <span class="kw">get</span>; <span class="kw">set</span>; }
+}</pre>
+  </div>
+
+  <div class="cb">
+    <div class="cl"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span>C# — Full PUT round-trip (UriBuilder + Newtonsoft)</span></div>
+    <pre>[<span class="tp">Test</span>]
+<span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">Put_FullRoundTrip_UriBuilderAndNewtonsoft</span>()
+{
+    <span class="kw">int</span> userId = <span class="nm">5</span>;
+
+    <span class="cm">// 1 — Build URL with UriBuilder</span>
+    <span class="kw">var</span> uri = <span class="kw">new</span> <span class="tp">UriBuilder</span>
+    {
+        Scheme = <span class="st">"https"</span>,
+        Host   = <span class="st">"jsonplaceholder.typicode.com"</span>,
+        Path   = <span class="st">$"/users/{userId}"</span>
+    };
+
+    <span class="cm">// 2 — Serialize request body with Newtonsoft</span>
+    <span class="kw">var</span> payload = <span class="kw">new</span> <span class="tp">User</span>
+    {
+        Id        = userId,
+        FirstName = <span class="st">"Alice"</span>,
+        Email     = <span class="st">"alice@example.com"</span>
+    };
+    <span class="kw">string</span> requestJson = JsonConvert.<span class="fn">SerializeObject</span>(payload, JsonSettings);
+
+    <span class="cm">// 3 — Send PUT</span>
+    <span class="kw">var</span> response = <span class="kw">await</span> Request.<span class="fn">PutAsync</span>(uri.ToString(), <span class="kw">new</span> <span class="tp">APIRequestContextOptions</span>
+    {
+        Headers = <span class="kw">new</span> <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">string</span>&gt;
+        {
+            { <span class="st">"Content-Type"</span>, <span class="st">"application/json"</span> }
+        },
+        Data = requestJson
+    });
+
+    Assert.<span class="fn">That</span>(response.Ok, Is.<span class="fn">True</span>);
+
+    <span class="cm">// 4 — Deserialize response with Newtonsoft</span>
+    <span class="kw">string</span> body  = <span class="kw">await</span> response.<span class="fn">TextAsync</span>();
+    <span class="tp">User</span> result  = JsonConvert.<span class="fn">DeserializeObject</span>&lt;<span class="tp">User</span>&gt;(body, JsonSettings);
+
+    Assert.<span class="fn">That</span>(result.Email, Is.<span class="fn">EqualTo</span>(<span class="st">"alice@example.com"</span>));
+}</pre>
+  </div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>Annotation</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>[JsonProperty("name")]</code></td><td>Maps a JSON key name to a C# property</td></tr>
+        <tr><td><code>[JsonIgnore]</code></td>           <td>Excludes property from both serialize and deserialize</td></tr>
+        <tr><td><code>[JsonRequired]</code></td>         <td>Throws if the field is missing during deserialization</td></tr>
+        <tr><td><code>[JsonConverter(...)]</code></td>   <td>Custom converter for dates, enums, polymorphism</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 11 REFERENCE -->
+<section class="section" id="reference">
+  <div class="sh"><span class="sn">11</span><h2>Quick Reference</h2></div>
+
+  <div class="tw">
+    <table>
+      <thead><tr><th>HTTP Method</th><th>Playwright Call</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>GET</td>    <td><code>Request.GetAsync(uri.ToString())</code></td>         <td>200</td></tr>
+        <tr><td>POST</td>   <td><code>Request.PostAsync(uri.ToString(), opts)</code></td>  <td>201</td></tr>
+        <tr><td>PUT</td>    <td><code>Request.PutAsync(uri.ToString(), opts)</code></td>   <td>200</td></tr>
+        <tr><td>PATCH</td>  <td><code>Request.PatchAsync(uri.ToString(), opts)</code></td> <td>200</td></tr>
+        <tr><td>DELETE</td> <td><code>Request.DeleteAsync(uri.ToString())</code></td>      <td>200 / 204</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tw" style="margin-top:32px">
+    <table>
+      <thead><tr><th>Option</th><th>Type</th><th>Use When</th></tr></thead>
+      <tbody>
+        <tr><td><code>Data</code></td>       <td>string</td>     <td>Newtonsoft-serialized JSON string ✅</td></tr>
+        <tr><td><code>DataObject</code></td> <td>object</td>     <td>Auto-serializes via System.Text.Json — avoid with Newtonsoft</td></tr>
+        <tr><td><code>Form</code></td>       <td>Dictionary</td> <td>application/x-www-form-urlencoded</td></tr>
+        <tr><td><code>Multipart</code></td>  <td>FormData</td>   <td>multipart/form-data / file uploads</td></tr>
+        <tr><td><code>Headers</code></td>    <td>Dictionary</td> <td>Per-request header overrides</td></tr>
+        <tr><td><code>Timeout</code></td>    <td>float (ms)</td> <td>Override context-level timeout</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tw" style="margin-top:32px">
+    <table>
+      <thead><tr><th>Response Member</th><th>Returns</th><th>Use For</th></tr></thead>
+      <tbody>
+        <tr><td><code>response.Status</code></td>            <td>int</td>       <td>HTTP status code</td></tr>
+        <tr><td><code>response.Ok</code></td>                <td>bool</td>      <td>True if 200–299</td></tr>
+        <tr><td><code>await response.TextAsync()</code></td> <td>string</td>    <td>Raw body → pass to <code>JsonConvert.DeserializeObject</code></td></tr>
+        <tr><td><code>response.Headers</code></td>           <td>Dictionary</td><td>Response headers</td></tr>
+        <tr><td><code>await response.BodyAsync()</code></td> <td>byte[]</td>    <td>Binary response</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <strong>Playwright API Testing with C#</strong> &nbsp;·&nbsp; Microsoft.Playwright 1.x &nbsp;·&nbsp; Newtonsoft.Json 13.x &nbsp;·&nbsp; System.UriBuilder
+</footer>
+
+</body>
+</html>
